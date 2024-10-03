@@ -16,7 +16,7 @@ const router = Router();
 /** =====================================================================
  *  GET QUERY
 =========================================================================*/
-router.get('/query', validarJWT, getDepartmentsQuery);
+router.post('/query', validarJWT, getDepartmentsQuery);
 
 /** =====================================================================
  *  GET ID

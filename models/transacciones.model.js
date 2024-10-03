@@ -62,7 +62,8 @@ const TransaccionesSchema = Schema({
     },
 
     moneda: {
-        type: String,
+        type: Schema.Types.ObjectId,
+        ref: 'Inventories'
     },
 
     monto: {

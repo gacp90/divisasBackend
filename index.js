@@ -34,6 +34,7 @@ app.use('/api/v1/departments', require('./routes/departments.route'));
 app.use('/api/v1/empresa', require('./routes/empresa.route'));
 app.use('/api/v1/inventory', require('./routes/inventory.route'));
 app.use('/api/v1/login', require('./routes/auth.route'));
+app.use('/api/v1/movimientos', require('./routes/movimientos.route'));
 app.use('/api/v1/users', require('./routes/users.route'));
 app.use('/api/v1/search', require('./routes/search.route'));
 app.use('/api/v1/transacciones', require('./routes/transacciones.route'));

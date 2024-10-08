@@ -1,6 +1,6 @@
 const Inventory = require('../models/inventory.model');
 
-const updateInventory = async(transaccion) => {
+const updateInventoryAmount = async(transaccion) => {
 
     try {
 
@@ -42,6 +42,6 @@ const updateInventory = async(transaccion) => {
 
 }
 
-MediaSourceHandle.exports = {
-    updateInventory
+module.exports = {
+    updateInventoryAmount
 }

@@ -2,7 +2,7 @@ const { response } = require('express');
 
 const Transaccion = require('../models/transacciones.model');
 const { concecutive } = require('../helpers/concecutive');
-const { updateInventory } = require('./inventories.controller');
+const { updateInventoryAmount } = require('../helpers/update-inventory');
 
 /** ======================================================================
  *  GET Transaccion
@@ -117,7 +117,7 @@ const createTransaccion = async(req, res = response) => {
         await newTransaccion.save();
 
         // UPDATE INVENTORY
-        await updateInventory(newTransaccion);
+        await updateInventoryAmount(newTransaccion);
 
         res.json({
             ok: true,

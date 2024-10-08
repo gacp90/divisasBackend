@@ -16,7 +16,6 @@ const concecutive = async(type) => {
         });
     }
 
-
 };
 
 module.exports = {

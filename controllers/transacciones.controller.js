@@ -89,10 +89,10 @@ const createTransaccion = async(req, res = response) => {
             newTransaccion.number = await concecutive('Compra');
 
             // VALIDAR EL MONTO Y OBTENER EL CONCECUTIVO DEPENDIENDO DEL MONTO
-            if (newTransaccion.monto > 200 && newTransaccion.monto < 500) {
+            if (newTransaccion.equivalencia > 200 && newTransaccion.equivalencia < 500) {
                 // Asignar número de control para facturas entre $200 y $500
                 newTransaccion.control = await concecutive('1121');
-            } else if (newTransaccion.monto >= 500) {
+            } else if (newTransaccion.equivalencia >= 500) {
                 // Asignar número de control para facturas mayores a $500
                 newTransaccion.control = await concecutive('1099');
             }
@@ -101,10 +101,10 @@ const createTransaccion = async(req, res = response) => {
             newTransaccion.number = await concecutive('Venta');
 
             // VALIDAR EL MONTO Y OBTENER EL CONCECUTIVO DEPENDIENDO DEL MONTO
-            if (newTransaccion.monto > 200 && newTransaccion.monto < 500) {
+            if (newTransaccion.equivalencia > 200 && newTransaccion.equivalencia < 500) {
                 // Asignar número de control para facturas entre $200 y $500
                 newTransaccion.control = await concecutive('1121');
-            } else if (newTransaccion.monto >= 500) {
+            } else if (newTransaccion.equivalencia >= 500) {
                 // Asignar número de control para facturas mayores a $500
                 newTransaccion.control = await concecutive('1100');
             }

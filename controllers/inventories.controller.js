@@ -74,9 +74,10 @@ const getInventoryId = async(req, res = response) => {
 =========================================================================*/
 const createInventory = async(req, res = response) => {
 
-    let { currency } = req.body;
+    let { currency, code } = req.body;
 
     currency = currency.trim();
+    code = code.trim().toUpperCase();
 
     try {
 
@@ -86,6 +87,14 @@ const createInventory = async(req, res = response) => {
             return res.status(400).json({
                 ok: false,
                 msg: 'Ya existe una moneda con este nombre'
+            });
+        }
+
+        const validateCode = await Inventory.findOne({ code })
+        if (validateCode) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Ya existe una moneda con este codigo'
             });
         }
 

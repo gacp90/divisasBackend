@@ -23,6 +23,16 @@ const PaymentsSchema = Schema({
 
 });
 
+const ResolucionSchema = Schema({
+    numberRes: { type: String },
+    prefijo: { type: String },
+    desde: { type: Number },
+    hasta: { type: Number },
+    fechaAp: { type: Date },
+    fechaIni: { type: Date },
+    fechaExp: { type: Date },
+})
+
 const TransaccionesSchema = Schema({
 
     transaccion: {
@@ -142,8 +152,10 @@ const TransaccionesSchema = Schema({
     payments: [PaymentsSchema],
 
     formaPago: {
-        type: Number
+        type: String
     },
+
+    resolucion: ResolucionSchema,
 
     status: {
         type: Boolean,

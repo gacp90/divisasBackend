@@ -30,7 +30,7 @@ router.post('/', [
     validarJWT,
     check('transaccion', 'El tipo de transaccion es obligatorio').not().isEmpty(),
     check('monto', 'El monto es obligatorio').not().isEmpty(),
-    check('monto', 'El monto es obligatorio').not().isEmpty(),
+    check('equivalencia', 'La equivalencia es obligatoria').not().isEmpty(),
     validarCampos
 
 ], createTransaccion);

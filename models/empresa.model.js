@@ -60,6 +60,12 @@ const EmpresaSchema = Schema({
     phoneSuc: {
         type: String
     },
+    regimen: {
+        type: String
+    },
+    codigo: {
+        type: String
+    },
     oficial: OficialSchema,
     numberRes: {
         type: String

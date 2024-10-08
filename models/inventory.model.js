@@ -16,7 +16,7 @@ const InvetorySchema = Schema({
 
     amount: {
         type: Number,
-        require: true
+        dafault: 0
     },
 
     tc: {
@@ -31,12 +31,12 @@ const InvetorySchema = Schema({
 
     tp: {
         type: Number,
-        require: true
+        dafault: 0
     },
 
     tb: {
         type: Number,
-        require: true
+        dafault: 0
     },
 
     status: {

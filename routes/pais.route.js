@@ -9,7 +9,7 @@ const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
 
 // CONTROLLERS
-const { getPaisesQuery, getPaisId, createPais, updatePais } = require('../controllers/pais.controller');
+const { getPaisesQuery, getPaisId, createPais, updatePais, createPaisestExcel } = require('../controllers/pais.controller');
 
 const router = Router();
 
@@ -32,6 +32,11 @@ router.post('/', [
     ],
     createPais
 );
+
+/** =====================================================================
+ *  POST CREATE PAISES EXCEL
+=========================================================================*/
+router.post('/create/excel', validarJWT, createPaisestExcel);
 
 /** =====================================================================
  *  PUT

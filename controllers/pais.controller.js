@@ -114,6 +114,58 @@ const createPais = async(req, res = response) => {
 };
 
 /** =====================================================================
+ *  CREATE PAISES EXCEL
+=========================================================================*/
+const createPaisestExcel = async(req, res = response) => {
+
+    try {
+
+        let paises = req.body.paises;
+
+        if (paises.length === 0) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Lista de paises esta vacia, verifique he intene nuevamente'
+            });
+        }
+
+        let i = 0;
+        for (const pais of paises) {
+
+            const validatePais = await Pais.findOne({ code: pais.code });
+
+            if (validatePais) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: 'Ya existe un país con este código'
+                });
+            }
+
+            const paisNew = new Pais(pais);
+
+            // SAVE PAIS
+            await paisNew.save();
+            i++;
+
+        }
+
+        res.json({
+            ok: true,
+            total: i
+        });
+
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado, porfavor intente nuevamente'
+        });
+    }
+
+};
+
+/** =====================================================================
  *  UPDATE PAIS
 =========================================================================*/
 const updatePais = async(req, res = response) => {
@@ -170,5 +222,6 @@ module.exports = {
     getPaisesQuery,
     createPais,
     updatePais,
-    getPaisId
+    getPaisId,
+    createPaisestExcel
 };

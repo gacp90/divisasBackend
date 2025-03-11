@@ -45,12 +45,21 @@ const TransaccionesSchema = Schema({
         ref: 'Clients'
     },
 
+    declarant: {
+        type: Schema.Types.ObjectId,
+        ref: 'Clients'
+    },
+
     cajero: {
         type: Schema.Types.ObjectId,
         ref: 'Users'
     },
 
     prefix: {
+        type: String
+    },
+
+    prefix2: {
         type: String
     },
 
@@ -146,7 +155,8 @@ const TransaccionesSchema = Schema({
     },
 
     tipoNeg: {
-        type: String
+        type: String,
+        default: '1'
     },
 
     payments: [PaymentsSchema],
@@ -156,6 +166,23 @@ const TransaccionesSchema = Schema({
     },
 
     resolucion: ResolucionSchema,
+
+    // PAIS NO COPERANTE
+    pnc: {
+        type: Boolean,
+        default: false
+    },
+
+    alerta: {
+        type: Boolean,
+        default: false
+    },
+
+    // DECLARACION DE RENTA
+    dr: {
+        type: Boolean,
+        default: false
+    },
 
     status: {
         type: Boolean,

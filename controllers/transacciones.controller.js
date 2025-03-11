@@ -7,7 +7,7 @@ const { updateInventoryAmount } = require('../helpers/update-inventory');
 /** ======================================================================
  *  GET Transaccion
 =========================================================================*/
-const getTransaccionesQuery = async(req, res) => {
+const getTransaccionesQuery = async(req, res = response) => {
 
     try {
 
@@ -15,6 +15,8 @@ const getTransaccionesQuery = async(req, res) => {
 
         const [transacciones, total] = await Promise.all([
             Transaccion.find(query)
+            .populate('client')
+            .populate('declarant')
             .limit(hasta)
             .skip(desde)
             .sort(sort),

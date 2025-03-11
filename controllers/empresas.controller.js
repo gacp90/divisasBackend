@@ -1,5 +1,13 @@
 const { response } = require('express');
 
+const path = require('path');
+const fs = require('fs');
+const ObjectId = require('mongoose').Types.ObjectId;
+
+const sharp = require('sharp');
+
+const { v4: uuidv4 } = require('uuid');
+
 const Empresa = require('../models/empresa.model');
 
 /** ======================================================================
@@ -105,10 +113,94 @@ const updateEmpresa = async(req, res = response) => {
 
 };
 
+/** =====================================================================
+ *  UPDATE LOGO
+=========================================================================*/
+const updateLogo = async(req, res = response) => {
+
+    try {
+
+        const eid = req.params.id;
+
+        // SEARCH EMPRESA
+        const empresaDB = await Empresa.findById(eid);
+        if (!empresaDB) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'Error al actualizar los datos de la empresa, ID incorrecto'
+            });
+        }
+
+        // VALIDATE IMAGE
+        if (!req.files || Object.keys(req.files).length === 0) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'No has seleccionado ningún archivo'
+            });
+        }
+
+        // PROCESS IMAGE
+        const file = await sharp(req.files.image.data).metadata();
+
+        // FORMAT
+        const extFile = file.format;
+
+        // VALID EXT
+        const validExt = ['jpg', 'png', 'jpeg', 'webp', 'bmp', 'svg'];
+        if (!validExt.includes(extFile)) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'No se permite este tipo de imagen, solo extenciones JPG - PNG - WEBP - SVG'
+            });
+        }
+
+        // GENERATE NAME UID
+        const nameFile = `${ uuidv4() }.webp`;
+
+        // PATH IMAGE
+        const path = `./uploads/logo/${ nameFile }`;
+
+        sharp(req.files.image.data)
+            .resize(600, 400)
+            .webp({ equality: 75, effort: 6 })
+            .toFile(path, (err, info) => {
+
+                // VALIDATE IMAGE
+                if (empresaDB.logo) {                    
+                    if (fs.existsSync(`./uploads/logo/${ empresaDB.logo }`)) {
+                        // DELET IMAGE OLD
+                        fs.unlinkSync(`./uploads/logo/${ empresaDB.logo }`);
+                    }
+                }
+
+                // UPDATE IMAGE
+                empresaDB.logo = nameFile;
+                empresaDB.save();
+
+                res.json({
+                    ok: true,
+                    empresa: empresaUpdate
+                });
+                
+
+            });
+
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Error Inesperado'
+        });
+    }
+
+};
+
 
 // EXPORTS
 module.exports = {
     getEmpresa,
     createEmpresa,
-    updateEmpresa
+    updateEmpresa,
+    updateLogo
 };

@@ -33,6 +33,10 @@ const InvetorySchema = Schema({
         type: Number,
         dafault: 0
     },
+    trm: {
+        type: Number,
+        dafault: 0
+    },
 
     tb: {
         type: Number,

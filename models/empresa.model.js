@@ -12,7 +12,7 @@ const OficialSchema = Schema({
 })
 
 const CamaraSchema = Schema({
-    deparment: { type: String },
+    department: { type: String },
     city: { type: String },
     numberMat: { type: String },
 })
@@ -37,7 +37,7 @@ const EmpresaSchema = Schema({
     represent: {
         type: String
     },
-    phoneRep: {
+    phone: {
         type: String
     },
     address: {
@@ -53,7 +53,8 @@ const EmpresaSchema = Schema({
         type: String
     },
     camara: CamaraSchema,
-    resolucion: ResolucionSchema,
+    resolucionC: ResolucionSchema,
+    resolucionV: ResolucionSchema,
     numberSuc: {
         type: String
     },
@@ -67,6 +68,9 @@ const EmpresaSchema = Schema({
         type: String
     },
     oficial: OficialSchema,
+    logo: {
+        type: String
+    },
     numberRes: {
         type: String
     },

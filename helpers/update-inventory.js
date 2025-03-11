@@ -3,7 +3,7 @@ const Inventory = require('../models/inventory.model');
 const updateInventoryAmount = async(transaccion) => {
 
     try {
-
+        
         const inventory = await Inventory.findById(transaccion.moneda);
         const pesos = await Inventory.findOne({ code: 'COP' });
 

@@ -12,7 +12,12 @@ const UserSchema = Schema({
         type: String,
         require: true
     },
-
+    address: {
+        type: String
+    },
+    phone: {
+        type: String
+    },
     password: {
         type: String,
         require: true

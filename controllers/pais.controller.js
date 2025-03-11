@@ -1,27 +1,28 @@
 const { response } = require('express');
 
-const Inventory = require('../models/inventory.model');
+const Pais = require('../models/pais.model');
 
 /** ======================================================================
- *  GET INVENTORY
+ *  GET PAISES
 =========================================================================*/
-const getInventoriesQuery = async(req, res) => {
+const getPaisesQuery = async(req, res) => {
 
     try {
 
         const { desde, hasta, sort, ...query } = req.body;
 
-        const [inventories, total] = await Promise.all([
-            Inventory.find(query)
+        const [paises, total] = await Promise.all([
+
+            Pais.find(query)
             .limit(hasta)
             .skip(desde)
             .sort(sort),
-            Inventory.countDocuments({ status: true })
+            Pais.countDocuments({ status: true })
         ])
 
         res.json({
             ok: true,
-            inventories,
+            paises,
             total
         });
 
@@ -38,24 +39,24 @@ const getInventoriesQuery = async(req, res) => {
 };
 
 /** =====================================================================
- *  GET INVENTORY ID
+ *  GET PAIS ID
 =========================================================================*/
-const getInventoryId = async(req, res = response) => {
+const getPaisId = async(req, res = response) => {
 
     try {
-        const invid = req.params.id;
+        const id = req.params.id;
 
-        const inventoryDB = await Inventory.findById(invid);
-        if (!inventoryDB) {
+        const paisDB = await Pais.findById(id);
+        if (!paisDB) {
             return res.status(400).json({
                 ok: false,
-                msg: 'No hemos encontrado este inventario, porfavor intente nuevamente.'
+                msg: 'No hemos encontrado este país, porfavor intente nuevamente.'
             });
         }
 
         res.json({
             ok: true,
-            inventory: inventoryDB
+            pais: paisDB
         });
 
 
@@ -70,43 +71,37 @@ const getInventoryId = async(req, res = response) => {
 };
 
 /** =====================================================================
- *  CREATE INVENTORY
+ *  CREATE PAIS
 =========================================================================*/
-const createInventory = async(req, res = response) => {
+const createPais = async(req, res = response) => {
 
-    let { currency, code } = req.body;
+    let { code, name } = req.body;
 
-    currency = currency.trim();
-    code = code.trim().toUpperCase();
+    code = code.trim();
+    name = name.trim();
 
     try {
 
-        const validate = await Inventory.findOne({ currency });
+        const validatePais = await Pais.findOne({ code });
 
-        if (validate) {
+        if (validatePais) {
             return res.status(400).json({
                 ok: false,
-                msg: 'Ya existe una moneda con este nombre'
+                msg: 'Ya existe un país con este código'
             });
         }
 
-        const validateCode = await Inventory.findOne({ code })
-        if (validateCode) {
-            return res.status(400).json({
-                ok: false,
-                msg: 'Ya existe una moneda con este codigo'
-            });
-        }
+        const pais = new Pais(req.body);
 
-        const inventory = new Inventory(req.body);
-        inventory.currency = currency;
+        pais.name = name;
+        pais.code = code;
 
-        // SAVE
-        await inventory.save();
+        // SAVE PAIS
+        await pais.save();
 
         res.json({
             ok: true,
-            inventory
+            pais
         });
 
     } catch (error) {
@@ -119,44 +114,44 @@ const createInventory = async(req, res = response) => {
 };
 
 /** =====================================================================
- *  UPDATE INVENTORY
+ *  UPDATE PAIS
 =========================================================================*/
-const updateInventory = async(req, res = response) => {
+const updatePais = async(req, res = response) => {
 
-    const invid = req.params.id;
+    const pid = req.params.id;
 
     try {
 
         // SEARCH
-        const inventoryDB = await Inventory.findById(invid);
-        if (!inventoryDB) {
+        const paisDB = await Pais.findById(pid);
+        if (!paisDB) {
             return res.status(404).json({
                 ok: false,
-                msg: 'No existe ninguna moneda con este ID'
+                msg: 'No existe ningun país con este ID'
             });
         }
         // SEARCH
 
         // VALIDATE
-        const { currency, ...campos } = req.body;
-        if (currency && inventoryDB.currency !== currency) {
-            const validateCurrency = await Inventory.findOne({ currency });
-            if (validateCurrency) {
+        const { code, ...campos } = req.body;
+        if (paisDB.code !== code) {
+            const validateNumberId = await Pais.findOne({ code });
+            if (validateNumberId) {
                 return res.status(400).json({
                     ok: false,
-                    msg: 'Ya existe una moneda con este nombre...'
+                    msg: 'Ya existe un país con este código...'
                 });
             }
 
-            campos.currency = currency.trim();
+            campos.code = code;
         }
 
         // UPDATE
-        const inventoryUpdate = await Inventory.findByIdAndUpdate(invid, campos, { new: true, useFindAndModify: false });
+        const paisUpdate = await Pais.findByIdAndUpdate(pid, campos, { new: true, useFindAndModify: false });
 
         res.json({
             ok: true,
-            inventory: inventoryUpdate
+            pais: paisUpdate
         });
 
     } catch (error) {
@@ -172,8 +167,8 @@ const updateInventory = async(req, res = response) => {
 
 // EXPORTS
 module.exports = {
-    getInventoriesQuery,
-    createInventory,
-    updateInventory,
-    getInventoryId
+    getPaisesQuery,
+    createPais,
+    updatePais,
+    getPaisId
 };

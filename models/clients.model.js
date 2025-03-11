@@ -2,9 +2,16 @@ const { Schema, model } = require('mongoose');
 
 const ClientsSchema = Schema({
 
+    capital: {
+        type: Number
+    },
+
+    razon: {
+        type: String
+    },
+
     name: {
-        type: String,
-        require: true
+        type: String      
     },
 
     secondname: {
@@ -12,8 +19,7 @@ const ClientsSchema = Schema({
     },
 
     lastname: {
-        type: String,
-        require: true
+        type: String
     },
     secondlastname: {
         type: String
@@ -27,6 +33,9 @@ const ClientsSchema = Schema({
     email: {
         type: String
     },
+    resp: {
+        type: String
+    },
     city: {
         type: String
     },
@@ -36,7 +45,7 @@ const ClientsSchema = Schema({
     occupation: {
         type: String
     },
-    funds: {
+    origin: {
         type: String
     },
     destination: {
@@ -62,6 +71,10 @@ const ClientsSchema = Schema({
         require: true,
         unique: true
     },
+
+    dvb: {
+        type: String
+    },
     
     type: {
         type: String,
@@ -69,7 +82,20 @@ const ClientsSchema = Schema({
         default: 'Natural'
     },
 
+    representante: {
+        type: Schema.Types.ObjectId,
+        ref: 'Clients'
+    },
+
     pep: {
+        type: Boolean,
+        dafault: false
+    },
+    dr: {
+        type: Boolean,
+        dafault: false
+    },
+    pnc: {
         type: Boolean,
         dafault: false
     },

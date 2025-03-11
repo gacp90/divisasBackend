@@ -1,49 +1,44 @@
 /** =====================================================================
- *  EMPRESA ROUTER 
+ *  PAISES ROUTER 
 =========================================================================*/
 const { Router } = require('express');
 const { check } = require('express-validator');
 
 // MIDDLEWARES
-const expressFileUpload = require('express-fileupload');
 const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
 
 // CONTROLLERS
-const { getEmpresa, createEmpresa, updateEmpresa, updateLogo } = require('../controllers/empresas.controller');
+const { getPaisesQuery, getPaisId, createPais, updatePais } = require('../controllers/pais.controller');
 
 const router = Router();
 
-router.use(expressFileUpload());
+/** =====================================================================
+ *  GET QUERY
+=========================================================================*/
+router.post('/query', validarJWT, getPaisesQuery);
 
 /** =====================================================================
- *  GET EMPRESA
+ *  GET ID
 =========================================================================*/
-router.get('/', validarJWT, getEmpresa);
+router.get('/user/:id', validarJWT, getPaisId);
+
 /** =====================================================================
- *  GET EMPRESA
-=========================================================================*/
-/** =====================================================================
- *  POST CREATE EMPRESA
+ *  POST CREATE
 =========================================================================*/
 router.post('/', [
-        validarJWT,
+        // check('code', 'El codigo es obligatorio').not().isEmpty(),
         validarCampos
     ],
-    createEmpresa
+    createPais
 );
-/** =====================================================================
- *  POST CREATE EMPRESA
-=========================================================================*/
-/** =====================================================================
- *  PUT EMPRESA
-=========================================================================*/
-router.put('/:id', validarJWT, updateEmpresa);
 
 /** =====================================================================
- *  UPDATE LOGO EMPRESA
+ *  PUT
 =========================================================================*/
-router.put('/update/logo/:id', validarJWT, updateLogo);
+router.put('/:id', validarJWT, updatePais);
+
+
 
 // EXPORT
 module.exports = router;

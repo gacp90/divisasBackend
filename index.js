@@ -30,7 +30,9 @@ app.use(express.static('public'));
 // RUTAS
 app.use('/api/v1/cities', require('./routes/cities.route'));
 app.use('/api/v1/clients', require('./routes/clients.route'));
+app.use('/api/v1/pais', require('./routes/pais.route'));
 app.use('/api/v1/departments', require('./routes/departments.route'));
+app.use('/api/v1/funds', require('./routes/funds.route'));
 app.use('/api/v1/empresa', require('./routes/empresa.route'));
 app.use('/api/v1/inventory', require('./routes/inventory.route'));
 app.use('/api/v1/login', require('./routes/auth.route'));
@@ -38,6 +40,7 @@ app.use('/api/v1/movimientos', require('./routes/movimientos.route'));
 app.use('/api/v1/users', require('./routes/users.route'));
 app.use('/api/v1/search', require('./routes/search.route'));
 app.use('/api/v1/transacciones', require('./routes/transacciones.route'));
+app.use('/api/v1/uploads', require('./routes/uploads.route'));
 
 // SPA
 app.get('*', (req, res) => {

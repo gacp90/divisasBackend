@@ -9,7 +9,7 @@ const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
 
 // CONTROLLERS
-const { getFundsQuery, getFundsId, createFunds, updateFunds } = require('../controllers/funds.controller');
+const { getFundsQuery, getFundsId, createFunds, updateFunds, createFoundstExcel } = require('../controllers/funds.controller');
 
 const router = Router();
 
@@ -32,6 +32,11 @@ router.post('/', [
     ],
     createFunds
 );
+
+/** =====================================================================
+ *  POST CREATE FONDOS EXCEL
+=========================================================================*/
+router.post('/create/excel', validarJWT, createFoundstExcel);
 
 /** =====================================================================
  *  PUT

@@ -111,6 +111,58 @@ const createFunds = async(req, res = response) => {
 };
 
 /** =====================================================================
+ *  CREATE FONDOS EXCEL
+=========================================================================*/
+const createFoundstExcel = async(req, res = response) => {
+
+    try {
+
+        let fondos = req.body.fondos;
+
+        if (fondos.length === 0) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Lista de fondos esta vacia, verifique he intene nuevamente'
+            });
+        }
+
+        let i = 0;
+        for (const fondo of fondos) {
+
+            const validateFunds = await Funds.findOne({ name: fondo.name });
+
+            if (validateFunds) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: 'Ya existe un origen de fondos con este nombre'
+                });
+            }
+
+            const fondoNew = new Funds(fondo);
+
+            // SAVE PAIS
+            await fondoNew.save();
+            i++;
+
+        }
+
+        res.json({
+            ok: true,
+            total: i
+        });
+
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado, porfavor intente nuevamente'
+        });
+    }
+
+};
+
+/** =====================================================================
  *  UPDATE FUNDS
 =========================================================================*/
 const updateFunds = async(req, res = response) => {
@@ -167,5 +219,6 @@ module.exports = {
     getFundsQuery,
     createFunds,
     updateFunds,
-    getFundsId
+    getFundsId,
+    createFoundstExcel
 };

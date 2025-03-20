@@ -134,18 +134,14 @@ const createPaisestExcel = async(req, res = response) => {
 
             const validatePais = await Pais.findOne({ code: pais.code });
 
-            if (validatePais) {
-                return res.status(400).json({
-                    ok: false,
-                    msg: 'Ya existe un país con este código'
-                });
+            if (!validatePais) {
+                
+                const paisNew = new Pais(pais);
+    
+                // SAVE PAIS
+                await paisNew.save();
+                i++;
             }
-
-            const paisNew = new Pais(pais);
-
-            // SAVE PAIS
-            await paisNew.save();
-            i++;
 
         }
 

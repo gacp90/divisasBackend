@@ -131,18 +131,13 @@ const createFoundstExcel = async(req, res = response) => {
 
             const validateFunds = await Funds.findOne({ name: fondo.name });
 
-            if (validateFunds) {
-                return res.status(400).json({
-                    ok: false,
-                    msg: 'Ya existe un origen de fondos con este nombre'
-                });
+            if (!validateFunds) {
+                const fondoNew = new Funds(fondo);
+    
+                // SAVE PAIS
+                await fondoNew.save();
+                i++;
             }
-
-            const fondoNew = new Funds(fondo);
-
-            // SAVE PAIS
-            await fondoNew.save();
-            i++;
 
         }
 

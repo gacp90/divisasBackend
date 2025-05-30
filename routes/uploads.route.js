@@ -8,11 +8,17 @@ const { check } = require('express-validator');
 const expressFileUpload = require('express-fileupload');
 
 // CONTROLLERS
-const { getImages } = require('../controllers/uploads.controller');
+const { getImages, fileUpload } = require('../controllers/uploads.controller');
+const { validarJWT } = require('../middlewares/validar-jwt');
 
 const router = Router();
 
 router.use(expressFileUpload());
+
+/** =====================================================================
+ *  UPLOADS
+=========================================================================*/
+router.put('/:tipo/:id', validarJWT, fileUpload);
 
 /** =====================================================================
  *  GET IMAGES

@@ -16,6 +16,7 @@ const getTransaccionesQuery = async(req, res = response) => {
         const [transacciones, total] = await Promise.all([
             Transaccion.find(query)
             .populate('client')
+            .populate('cajero')
             .populate('declarant')
             .limit(hasta)
             .skip(desde)

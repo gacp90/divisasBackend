@@ -11,7 +11,7 @@ const getUsers = async(req, res) => {
     try {
 
         const [users, total] = await Promise.all([
-            User.find({}, 'user name role address img valid status fecha'),
+            User.find(),
             User.countDocuments()
         ]);
 

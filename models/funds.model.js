@@ -2,6 +2,11 @@ const { Schema, model } = require('mongoose');
 
 const FundsSchema = Schema({
 
+    code: {
+        type: String,
+        require: true
+    },
+    
     name: {
         type: String,
         require: true

@@ -45,7 +45,7 @@ const InvetorySchema = Schema({
 
     status: {
         type: Boolean,
-        require: true
+        default: true
     },
 
     fecha: {

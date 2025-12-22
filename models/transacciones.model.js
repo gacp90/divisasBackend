@@ -23,6 +23,65 @@ const PaymentsSchema = Schema({
 
 });
 
+const ItemsSchema = Schema({
+
+    moneda: {
+        type: Schema.Types.ObjectId,
+        ref: 'Inventories'
+    },
+
+    monto: {
+        type: Number,
+    },
+
+    tasa: {
+        type: Number,
+    },
+
+    subtotal: {
+        type: Number,
+    },
+
+    iva: {
+        type: Number,
+        default: 0
+    },
+
+    total: {
+        type: Number
+    },
+
+    pcda: {
+        type: Number,
+        default: 0
+    },
+
+    dift: {
+        type: Number,
+        default: 0
+    },
+
+    baseliq: {
+        type: Number,
+        default: 0
+    },
+
+    tvb: {
+        type: Number,
+        default: 0
+    },
+
+    trm: {
+        type: Number,
+        default: 0
+    },
+
+    equivalencia: {
+        type: Number
+    }
+
+});
+
 const ResolucionSchema = Schema({
     numberRes: { type: String },
     prefijo: { type: String },
@@ -67,6 +126,18 @@ const TransaccionesSchema = Schema({
         type: Number
     },
 
+    total: {
+        type: Number
+    },
+
+    subtotal: {
+        type: Number
+    },
+
+    equivalencia: {
+        type: Number
+    },
+
     control: {
         type: Number
     },
@@ -80,84 +151,12 @@ const TransaccionesSchema = Schema({
         type: Date,
     },
 
-    moneda: {
-        type: Schema.Types.ObjectId,
-        ref: 'Inventories'
-    },
-
-    monto: {
-        type: Number,
-    },
-
-    tasa: {
-        type: Number,
-    },
-
-    subtotal: {
-        type: Number,
-    },
-
-    iva: {
-        type: Number,
-        default: 0
-    },
-
-    riva: {
-        type: Number,
-        default: 0
-    },
-
-    rica: {
-        type: Number,
-        default: 0
-    },
-
-    rfte: {
-        type: Number,
-        default: 0
-    },
-
-    grav: {
-        type: Number
-    },
-
-    total: {
-        type: Number
-    },
-
-    pcda: {
-        type: Number,
-        default: 0
-    },
-
-    dift: {
-        type: Number,
-        default: 0
-    },
-
-    baseliq: {
-        type: Number,
-        default: 0
-    },
-
-    tvb: {
-        type: Number,
-        default: 0
-    },
-
-    trm: {
-        type: Number,
-        default: 0
-    },
-
-    equivalencia: {
-        type: Number
-    },
-
     tipoNeg: {
         type: String,
         default: '1'
     },
+
+    items: [ItemsSchema],
 
     payments: [PaymentsSchema],
 

@@ -29,7 +29,6 @@ router.get('/:id', validarJWT, getTransaccionId);
 router.post('/', [
     validarJWT,
     check('transaccion', 'El tipo de transaccion es obligatorio').not().isEmpty(),
-    check('monto', 'El monto es obligatorio').not().isEmpty(),
     validarCampos
 
 ], createTransaccion);

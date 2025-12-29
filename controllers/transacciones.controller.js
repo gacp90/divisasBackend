@@ -18,6 +18,7 @@ const getTransaccionesQuery = async(req, res = response) => {
             .populate('client')
             .populate('cajero')
             .populate('declarant')
+            .populate('items.moneda')
             .limit(hasta)
             .skip(desde)
             .sort(sort),

@@ -1,0 +1,2028 @@
+[
+  {
+      "codigo": "0111",
+      "ocupacion": "Cultivo de cereales (excepto arroz), legumbres y semillas oleaginosas."
+  },
+  {
+      "codigo": "0112",
+      "ocupacion": "Cultivo de arroz."
+  },
+  {
+      "codigo": "0113",
+      "ocupacion": "Cultivo de hortalizas, raíces y tubérculos."
+  },
+  {
+      "codigo": "0114",
+      "ocupacion": "Cultivo de tabaco."
+  },
+  {
+      "codigo": "0115",
+      "ocupacion": "Cultivo de plantas textiles."
+  },
+  {
+      "codigo": "0119",
+      "ocupacion": "Otros cultivos transitorios n.c.p."
+  },
+  {
+      "codigo": "0121",
+      "ocupacion": "Cultivo de frutas tropicales y subtropicales."
+  },
+  {
+      "codigo": "0122",
+      "ocupacion": "Cultivo de plátano y banano."
+  },
+  {
+      "codigo": "0123",
+      "ocupacion": "Cultivo de café."
+  },
+  {
+      "codigo": "0124",
+      "ocupacion": "Cultivo de caña de azúcar."
+  },
+  {
+      "codigo": "0125",
+      "ocupacion": "Cultivo de flor de corte."
+  },
+  {
+      "codigo": "0126",
+      "ocupacion": "Cultivo de palma para aceite (palma africana) y otros frutos oleaginosos."
+  },
+  {
+      "codigo": "0127",
+      "ocupacion": "Cultivo de plantas con las que se preparan bebidas."
+  },
+  {
+      "codigo": "0128",
+      "ocupacion": "Cultivo de especias y de plantas aromáticas y medicinales."
+  },
+  {
+      "codigo": "0129",
+      "ocupacion": "Otros cultivos permanentes n.c.p."
+  },
+  {
+      "codigo": "0130",
+      "ocupacion": "Propagación de plantas (actividades de los viveros, excepto viveros forestales)."
+  },
+  {
+      "codigo": "0141",
+      "ocupacion": "Cría de ganado bovino y bufalino."
+  },
+  {
+      "codigo": "0142",
+      "ocupacion": "Cría de caballos y otros equinos."
+  },
+  {
+      "codigo": "0143",
+      "ocupacion": "Cría de ovejas y cabras."
+  },
+  {
+      "codigo": "0144",
+      "ocupacion": "Cría de ganado porcino."
+  },
+  {
+      "codigo": "0145",
+      "ocupacion": "Cría de aves de corral."
+  },
+  {
+      "codigo": "0149",
+      "ocupacion": "Cría de otros animales n.c.p."
+  },
+  {
+      "codigo": "0150",
+      "ocupacion": "Explotación mixta (agrícola y pecuaria)."
+  },
+  {
+      "codigo": "0161",
+      "ocupacion": "Actividades de apoyo a la agricultura."
+  },
+  {
+      "codigo": "0162",
+      "ocupacion": "Actividades de apoyo a la ganadería."
+  },
+  {
+      "codigo": "0163",
+      "ocupacion": "Actividades posteriores a la cosecha."
+  },
+  {
+      "codigo": "0164",
+      "ocupacion": "Tratamiento de semillas para propagación."
+  },
+  {
+      "codigo": "0170",
+      "ocupacion": "Caza ordinaria y mediante trampas y actividades de servicios conexas."
+  },
+  {
+      "codigo": "0210",
+      "ocupacion": "Silvicultura y otras actividades forestales."
+  },
+  {
+      "codigo": "0220",
+      "ocupacion": "Extracción de madera."
+  },
+  {
+      "codigo": "0230",
+      "ocupacion": "Recolección de productos forestales diferentes a la madera."
+  },
+  {
+      "codigo": "0240",
+      "ocupacion": "Servicios de apoyo a la silvicultura."
+  },
+  {
+      "codigo": "0311",
+      "ocupacion": "Pesca marítima."
+  },
+  {
+      "codigo": "0312",
+      "ocupacion": "Pesca de agua dulce."
+  },
+  {
+      "codigo": "0321",
+      "ocupacion": "Acuicultura marítima."
+  },
+  {
+      "codigo": "0322",
+      "ocupacion": "Acuicultura de agua dulce."
+  },
+  {
+      "codigo": "0510",
+      "ocupacion": "Extracción de hulla (carbón de piedra)."
+  },
+  {
+      "codigo": "0520",
+      "ocupacion": "Extracción de carbón lignito."
+  },
+  {
+      "codigo": "0610",
+      "ocupacion": "Extracción de petróleo crudo."
+  },
+  {
+      "codigo": "0620",
+      "ocupacion": "Extracción de gas natural."
+  },
+  {
+      "codigo": "0710",
+      "ocupacion": "Extracción de minerales de hierro."
+  },
+  {
+      "codigo": "0721",
+      "ocupacion": "Extracción de minerales de uranio y de torio."
+  },
+  {
+      "codigo": "0722",
+      "ocupacion": "Extracción de oro y otros metales preciosos."
+  },
+  {
+      "codigo": "0723",
+      "ocupacion": "Extracción de minerales de níquel."
+  },
+  {
+      "codigo": "0729",
+      "ocupacion": "Extracción de otros minerales metalíferos no ferrosos n.c.p."
+  },
+  {
+      "codigo": "0811",
+      "ocupacion": "Extracción de piedra, arena, arcillas comunes, yeso y anhidrita."
+  },
+  {
+      "codigo": "0812",
+      "ocupacion": "Extracción de arcillas de uso industrial, caliza, caolín y bentonitas."
+  },
+  {
+      "codigo": "0820",
+      "ocupacion": "Extracción de esmeraldas, piedras preciosas y semipreciosas."
+  },
+  {
+      "codigo": "0891",
+      "ocupacion": "Extracción de minerales para la fabricación de abonos y productos químicos."
+  },
+  {
+      "codigo": "0892",
+      "ocupacion": "Extracción de halita (sal)."
+  },
+  {
+      "codigo": "0899",
+      "ocupacion": "Extracción de otros minerales no metálicos n.c.p."
+  },
+  {
+      "codigo": "0910",
+      "ocupacion": "Actividades de apoyo para la extracción de petróleo y de gas natural."
+  },
+  {
+      "codigo": "0990",
+      "ocupacion": "Actividades de apoyo para otras actividades de explotación de minas y canteras."
+  },
+  {
+      "codigo": "1011",
+      "ocupacion": "Procesamiento y conservación de carne y productos cárnicos"
+  },
+  {
+      "codigo": "1012",
+      "ocupacion": "Procesamiento y conservación de pescados, crustáceos y moluscos"
+  },
+  {
+      "codigo": "1020",
+      "ocupacion": "Procesamiento y conservación de frutas, legumbres, hortalizas y tubérculos"
+  },
+  {
+      "codigo": "1030",
+      "ocupacion": "Elaboración de aceites y grasas de origen vegetal y animal"
+  },
+
+  {
+    "codigo": "1031",
+    "ocupacion": "Extracción de aceites de origen vegetal crudos"
+  },
+
+  {
+    "codigo": "1032",
+    "ocupacion": "Elaboración de aceites y grasas de origen vegetal refinados"
+  },
+  {
+      "codigo": "1033",
+      "ocupacion": "Elaboración de aceites y grasas de origen animal"
+  },
+  {
+      "codigo": "1040",
+      "ocupacion": "Elaboración de productos lácteos"
+  },
+  {
+      "codigo": "1051",
+      "ocupacion": "Elaboración de productos de molinería"
+  },
+  {
+      "codigo": "1052",
+      "ocupacion": "Elaboración de almidones y productos derivados del almidón"
+  },
+  {
+      "codigo": "1061",
+      "ocupacion": "Trilla de café"
+  },
+  {
+      "codigo": "1062",
+      "ocupacion": "Descafeinado, tostión y molienda del café"
+  },
+  {
+      "codigo": "1063",
+      "ocupacion": "Otros derivados del café"
+  },
+  {
+      "codigo": "1071",
+      "ocupacion": "Elaboración y refinación de azúcar"
+  },
+  {
+      "codigo": "1072",
+      "ocupacion": "Elaboración de panela"
+  },
+  {
+      "codigo": "1081",
+      "ocupacion": "Elaboración de productos de panadería"
+  },
+  {
+      "codigo": "1082",
+      "ocupacion": "Elaboración de cacao, chocolate y productos de confitería"
+  },
+  {
+      "codigo": "1083",
+      "ocupacion": "Elaboración de macarrones, fideos, alcuzcuz y productos farináceos similares"
+  },
+  {
+      "codigo": "1084",
+      "ocupacion": "Elaboración de comidas y platos preparados"
+  },
+  {
+      "codigo": "1089",
+      "ocupacion": "Elaboración de otros productos alimenticios n.c.p."
+  },
+  {
+      "codigo": "1090",
+      "ocupacion": "Elaboración de alimentos preparados para animales"
+  },
+  {
+      "codigo": "1101",
+      "ocupacion": "Destilación, rectificación y mezcla de bebidas alcohólicas"
+  },
+  {
+      "codigo": "1102",
+      "ocupacion": "Elaboración de bebidas fermentadas no destiladas"
+  },
+  {
+      "codigo": "1103",
+      "ocupacion": "Producción de malta, elaboración de cervezas y otras bebidas malteadas"
+  },
+  {
+      "codigo": "1104",
+      "ocupacion": "Elaboración de bebidas no alcohólicas, producción de aguas minerales y de otras aguas embotelladas"
+  },
+  {
+      "codigo": "1200",
+      "ocupacion": "Elaboración de productos de tabaco"
+  },
+  {
+      "codigo": "1311",
+      "ocupacion": "Preparación e hilatura de fibras textiles"
+  },
+  {
+      "codigo": "1312",
+      "ocupacion": "Tejeduría de productos textiles"
+  },
+  {
+      "codigo": "1313",
+      "ocupacion": "Acabado de productos textiles"
+  },
+  {
+      "codigo": "1391",
+      "ocupacion": "Fabricación de tejidos de punto y ganchillo"
+  },
+  {
+      "codigo": "1392",
+      "ocupacion": "Confección de artículos con materiales textiles, excepto prendas de vestir"
+  },
+  {
+      "codigo": "1393",
+      "ocupacion": "Fabricación de tapetes y alfombras para pisos"
+  },
+  {
+      "codigo": "1394",
+      "ocupacion": "Fabricación de cuerdas, cordeles, cables, bramantes y redes"
+  },
+  {
+      "codigo": "1399",
+      "ocupacion": "Fabricación de otros artículos textiles n.c.p."
+  },
+  {
+      "codigo": "1410",
+      "ocupacion": "Confección de prendas de vestir, excepto prendas de piel"
+  },
+  {
+      "codigo": "1420",
+      "ocupacion": "Fabricación de artículos de piel"
+  },
+  {
+      "codigo": "1430",
+      "ocupacion": "Fabricación de artículos de punto y ganchillo"
+  },
+  {
+      "codigo": "1511",
+      "ocupacion": "Curtido y recurtido de cueros; recurtido y teñido de pieles"
+  },
+  {
+      "codigo": "1512",
+      "ocupacion": "Fabricación de artículos de viaje, bolsos de mano y artículos similares elaborados en cuero, y fabricación de artículos de talabartería y guarnicionería"
+  },
+  {
+      "codigo": "1513",
+      "ocupacion": "Fabricación de artículos de viaje, bolsos de mano y artículos similares; artículos de talabartería y guarnicionería elaborados en otros materiales"
+  },
+  {
+      "codigo": "1521",
+      "ocupacion": "Fabricación de calzado de cuero y piel, con cualquier tipo de suela"
+  },
+  {
+      "codigo": "1522",
+      "ocupacion": "Fabricación de otros tipos de calzado, excepto calzado de cuero y piel"
+  },
+  {
+      "codigo": "1523",
+      "ocupacion": "Fabricación de partes del calzado"
+  },
+  {
+    "codigo": "1610",
+    "ocupacion": "Aserrado, acepillado e impregnación de la madera"
+  },
+  {
+    "codigo": "1620",
+    "ocupacion": "Fabricación de hojas de madera para enchapado; fabricación de tableros contrachapados, tableros laminados, tableros de partículas y otros tableros y paneles"
+  },
+  {
+    "codigo": "1630",
+    "ocupacion": "Fabricación de partes y piezas de madera, de carpintería y ebanistería para la construcción"
+  },
+  {
+    "codigo": "1640",
+    "ocupacion": "Fabricación de recipientes de madera"
+  },
+  {
+    "codigo": "1690",
+    "ocupacion": "Fabricación de otros productos de madera; fabricación de artículos de corcho, cestería y espartería"
+  },
+  {
+    "codigo": "1701",
+    "ocupacion": "Fabricación de pulpas (pastas) celulósicas; papel y cartón"
+  },
+  {
+    "codigo": "1702",
+    "ocupacion": "Fabricación de papel y cartón ondulado (corrugado); fabricación de envases, empaques y de embalajes de papel y cartón"
+  },
+  {
+    "codigo": "1709",
+    "ocupacion": "Fabricación de otros artículos de papel y cartón"
+  },
+  {
+    "codigo": "1811",
+    "ocupacion": "Actividades de impresión"
+  },
+  {
+    "codigo": "1812",
+    "ocupacion": "Actividades de servicios relacionados con la impresión"
+  },
+  {
+    "codigo": "1820",
+    "ocupacion": "Producción de copias a partir de grabaciones originales"
+  },
+  {
+    "codigo": "1910",
+    "ocupacion": "Fabricación de productos de hornos de coque"
+  },
+  {
+    "codigo": "1921",
+    "ocupacion": "Fabricación de productos de la refinación del petróleo"
+  },
+  {
+    "codigo": "1922",
+    "ocupacion": "Actividad de mezcla de combustibles"
+  },
+  {
+    "codigo": "2011",
+    "ocupacion": "Fabricación de sustancias y productos químicos básicos"
+  },
+  {
+    "codigo": "2012",
+    "ocupacion": "Fabricación de abonos y compuestos inorgánicos nitrogenados"
+  },
+  {
+    "codigo": "2013",
+    "ocupacion": "Fabricación de plásticos en formas primarias"
+  },
+  {
+    "codigo": "2014",
+    "ocupacion": "Fabricación de caucho sintético en formas primarias"
+  },
+  {
+    "codigo": "2021",
+    "ocupacion": "Fabricación de plaguicidas y otros productos químicos de uso agropecuario"
+  },
+  {
+    "codigo": "2022",
+    "ocupacion": "Fabricación de pinturas, barnices y revestimientos similares, tintas para impresión y masillas"
+  },
+  {
+    "codigo": "2023",
+    "ocupacion": "Fabricación de jabones y detergentes, preparados para limpiar y pulir; perfumes y preparados de tocador"
+  },
+  {
+    "codigo": "2029",
+    "ocupacion": "Fabricación de otros productos químicos n.c.p."
+  },
+  {
+    "codigo": "2030",
+    "ocupacion": "Fabricación de fibras sintéticas y artificiales"
+  },
+  {
+    "codigo": "2100",
+    "ocupacion": "Fabricación de productos farmacéuticos, sustancias químicas medicinales y productos botánicos de uso farmacéutico"
+  },
+  {
+    "codigo": "2211",
+    "ocupacion": "Fabricación de llantas y neumáticos de caucho"
+  },
+  {
+    "codigo": "2212",
+    "ocupacion": "Reencauche de llantas usadas"
+  },
+  {
+    "codigo": "2219",
+    "ocupacion": "Fabricación de formas básicas de caucho y otros productos de caucho n.c.p."
+  },
+  {
+    "codigo": "2221",
+    "ocupacion": "Fabricación de formas básicas de plástico"
+  },
+  {
+    "codigo": "2229",
+    "ocupacion": "Fabricación de artículos de plástico n.c.p."
+  },
+  {
+    "codigo": "2310",
+    "ocupacion": "Fabricación de vidrio y productos de vidrio"
+  },
+  {
+    "codigo": "2391",
+    "ocupacion": "Fabricación de productos refractarios"
+  },
+  {
+    "codigo": "2392",
+    "ocupacion": "Fabricación de materiales de arcilla para la construcción"
+  },
+  {
+    "codigo": "2393",
+    "ocupacion": "Fabricación de otros productos de cerámica y porcelana"
+  },
+  {
+    "codigo": "2394",
+    "ocupacion": "Fabricación de cemento, cal y yeso"
+  },
+  {
+    "codigo": "2395",
+    "ocupacion": "Fabricación de artículos de hormigón, cemento y yeso"
+  },
+  {
+    "codigo": "2396",
+    "ocupacion": "Corte, tallado y acabado de la piedra"
+  },
+  {
+    "codigo": "2399",
+    "ocupacion": "Fabricación de otros productos minerales no metálicos n.c.p."
+  },
+  {
+    "codigo": "2410",
+    "ocupacion": "Industrias básicas de hierro y de acero"
+  },
+  {
+    "codigo": "2421",
+    "ocupacion": "Industrias básicas de metales preciosos"
+  },
+  {
+    "codigo": "2429",
+    "ocupacion": "Industrias básicas de otros metales no ferrosos"
+  },
+  {
+    "codigo": "2431",
+    "ocupacion": "Fundición de hierro y de acero"
+  },
+  {
+    "codigo": "2432",
+    "ocupacion": "Fundición de metales no ferrosos"
+  },
+  {
+    "codigo": "2511",
+    "ocupacion": "Fabricación de productos metálicos para uso estructural"
+  },
+  {
+    "codigo": "2512",
+    "ocupacion": "Fabricación de tanques, depósitos y recipientes de metal, excepto los utilizados para el envase o transporte de mercancías"
+  },
+  {
+    "codigo": "2513",
+    "ocupacion": "Fabricación de generadores de vapor, excepto calderas de agua caliente para calefacción central"
+  },
+  {
+    "codigo": "2520",
+    "ocupacion": "Fabricación de armas y municiones"
+  },
+  {
+    "codigo": "2591",
+    "ocupacion": "Forja, prensado, estampado y laminado de metal; pulvimetalurgia"
+  },
+  {
+    "codigo": "2592",
+    "ocupacion": "Tratamiento y revestimiento de metales; mecanizado"
+  },
+  {
+    "codigo": "2593",
+    "ocupacion": "Fabricación de artículos de cuchillería, herramientas de mano y artículos de ferretería"
+  },
+  {
+    "codigo": "2599",
+    "ocupacion": "Fabricación de otros productos elaborados de metal n.c.p."
+  },
+  {
+    "codigo": "2610",
+    "ocupacion": "Fabricación de componentes y tableros electrónicos"
+  },
+  {
+    "codigo": "2620",
+    "ocupacion": "Fabricación de computadoras y de equipo periférico"
+  },
+  {
+    "codigo": "2630",
+    "ocupacion": "Fabricación de equipos de comunicación"
+  },
+  {
+    "codigo": "2640",
+    "ocupacion": "Fabricación de aparatos electrónicos de consumo"
+  },
+  {
+    "codigo": "2651",
+    "ocupacion": "Fabricación de equipo de medición, prueba, navegación y control"
+  },
+  {
+    "codigo": "2652",
+    "ocupacion": "Fabricación de relojes"
+  },
+  {
+    "codigo": "2660",
+    "ocupacion": "Fabricación de equipo de irradiación y equipo electrónico de uso médico y terapéutico"
+  },
+  {
+    "codigo": "2670",
+    "ocupacion": "Fabricación de instrumentos ópticos y equipo fotográfico"
+  },
+  {
+    "codigo": "2680",
+    "ocupacion": "Fabricación de medios magnéticos y ópticos para almacenamiento de datos"
+  },
+  {
+    "codigo": "2711",
+    "ocupacion": "Fabricación de motores, generadores y transformadores eléctricos"
+  },
+  {
+    "codigo": "2712",
+    "ocupacion": "Fabricación de aparatos de distribución y control de la energía eléctrica"
+  },
+  {
+    "codigo": "2720",
+    "ocupacion": "Fabricación de pilas, baterías y acumuladores eléctricos"
+  },
+  {
+    "codigo": "2731",
+    "ocupacion": "Fabricación de hilos y cables eléctricos y de fibra óptica"
+  },
+  {
+    "codigo": "2732",
+    "ocupacion": "Fabricación de dispositivos de cableado"
+  },
+  {
+    "codigo": "2740",
+    "ocupacion": "Fabricación de equipos eléctricos de iluminación"
+  },
+  {
+    "codigo": "2750",
+    "ocupacion": "Fabricación de aparatos de uso doméstico"
+  },
+  {
+    "codigo": "2790",
+    "ocupacion": "Fabricación de otros tipos de equipo eléctrico n.c.p."
+  },
+  {
+    "codigo": "2811",
+    "ocupacion": "Fabricación de motores, turbinas, y partes para motores de combustión interna"
+  },
+  {
+    "codigo": "2812",
+    "ocupacion": "Fabricación de equipos de potencia hidráulica y neumática"
+  },
+  {
+    "codigo": "2813",
+    "ocupacion": "Fabricación de otras bombas, compresores, grifos y válvulas"
+  },
+  {
+    "codigo": "2814",
+    "ocupacion": "Fabricación de cojinetes, engranajes, trenes de engranajes y piezas de transmisión"
+  },
+  {
+    "codigo": "2815",
+    "ocupacion": "Fabricación de hornos, hogares y quemadores industriales"
+  },
+  {
+    "codigo": "2816",
+    "ocupacion": "Fabricación de equipo de elevación y manipulación"
+  },
+  {
+    "codigo": "2817",
+    "ocupacion": "Fabricación de maquinaria y equipo de oficina (excepto computadoras y equipo periférico)"
+  },
+  {
+    "codigo": "2818",
+    "ocupacion": "Fabricación de herramientas manuales con motor"
+  },
+  {
+    "codigo": "2819",
+    "ocupacion": "Fabricación de otros tipos de maquinaria y equipo de uso general n.c.p."
+  },
+  {
+    "codigo": "2821",
+    "ocupacion": "Fabricación de maquinaria agropecuaria y forestal"
+  },
+  {
+    "codigo": "2822",
+    "ocupacion": "Fabricación de máquinas formadoras de metal y de máquinas herramienta"
+  },
+  {
+    "codigo": "2823",
+    "ocupacion": "Fabricación de maquinaria para la metalurgia"
+  },
+  {
+    "codigo": "2824",
+    "ocupacion": "Fabricación de maquinaria para explotación de minas y canteras y para obras de construcción"
+  },
+  {
+    "codigo": "2825",
+    "ocupacion": "Fabricación de maquinaria para la elaboración de alimentos, bebidas y tabaco"
+  },
+  {
+    "codigo": "2826",
+    "ocupacion": "Fabricación de maquinaria para la elaboración de productos textiles, prendas de vestir y cueros"
+  },
+  {
+    "codigo": "2829",
+    "ocupacion": "Fabricación de otros tipos de maquinaria y equipo de uso especial n.c.p."
+  },
+  {
+    "codigo": "2910",
+    "ocupacion": "Fabricación de vehículos automotores y sus motores"
+  },
+  {
+    "codigo": "2920",
+    "ocupacion": "Fabricación de carrocerías para vehículos automotores; fabricación de remolques y semirremolques "
+  },
+  {
+    "codigo": "2930",
+    "ocupacion": "Fabricación de partes, piezas (autopartes) y accesorios (lujos) para vehículos automotores"
+  },
+  {
+    "codigo": "3011",
+    "ocupacion": "Construcción de barcos y de estructuras flotantes"
+  },
+  {
+    "codigo": "3012",
+    "ocupacion": "Construcción de embarcaciones de recreo y deporte"
+  },
+  {
+    "codigo": "3020",
+    "ocupacion": "Fabricación de locomotoras y de material rodante para ferrocarriles"
+  },
+  {
+    "codigo": "3030",
+    "ocupacion": "Fabricación de aeronaves, naves espaciales y de maquinaria conexa"
+  },
+  {
+    "codigo": "3040",
+    "ocupacion": "Fabricación de vehículos militares de combate"
+  },
+  {
+    "codigo": "3091",
+    "ocupacion": "Fabricación de motocicletas"
+  },
+  {
+    "codigo": "3092",
+    "ocupacion": "Fabricación de bicicletas y de sillas de ruedas para personas con discapacidad"
+  },
+  {
+    "codigo": "3099",
+    "ocupacion": "Fabricación de otros tipos de equipo de transporte n.c.p."
+  },
+  {
+    "codigo": "3110",
+    "ocupacion": "Fabricación de muebles"
+  },
+  {
+    "codigo": "3120",
+    "ocupacion": "Fabricación de colchones y somieres"
+  },
+  {
+    "codigo": "3210",
+    "ocupacion": "Fabricación de joyas, bisutería y artículos conexos"
+  },
+  {
+    "codigo": "3220",
+    "ocupacion": "Fabricación de instrumentos musicales"
+  },
+  {
+    "codigo": "3230",
+    "ocupacion": "Fabricación de artículos y equipo para la práctica del deporte"
+  },
+  {
+    "codigo": "3240",
+    "ocupacion": "Fabricación de juegos, juguetes y rompecabezas"
+  },
+  {
+    "codigo": "3250",
+    "ocupacion": "Fabricación de instrumentos, aparatos y materiales médicos y odontológicos (incluido mobiliario)"
+  },
+  {
+    "codigo": "3290",
+    "ocupacion": "Otras industrias manufactureras n.c.p."
+  },
+  {
+    "codigo": "3311",
+    "ocupacion": "Mantenimiento y reparación especializado de productos elaborados en metal"
+  },
+  {
+    "codigo": "3312",
+    "ocupacion": "Mantenimiento y reparación especializado de maquinaria y equipo"
+  },
+  {
+    "codigo": "3313",
+    "ocupacion": "Mantenimiento y reparación especializado de equipo electrónico y óptico"
+  },
+  {
+    "codigo": "3314",
+    "ocupacion": "Mantenimiento y reparación especializado de equipo eléctrico"
+  },
+  {
+    "codigo": "3315",
+    "ocupacion": "Mantenimiento y reparación especializado de equipo de transporte, excepto los vehículos automotores, motocicletas y bicicletas"
+  },
+  {
+    "codigo": "3319",
+    "ocupacion": "Mantenimiento y reparación de otros tipos de equipos y sus componentes n.c.p."
+  },
+  {
+    "codigo": "3320",
+    "ocupacion": "Instalación especializada de maquinaria y equipo industrial"
+  },
+  {
+    "codigo": "3511",
+    "ocupacion": "Generación de energía eléctrica"
+  },
+  {
+    "codigo": "3512",
+    "ocupacion": "Transmisión de energía eléctrica"
+  },
+  {
+    "codigo": "3513",
+    "ocupacion": "Distribución de energía eléctrica"
+  },
+  {
+    "codigo": "3514",
+    "ocupacion": "Comercialización de energía eléctrica"
+  },
+  {
+    "codigo": "3520",
+    "ocupacion": "Producción de gas; distribución de combustibles gaseosos por tuberías"
+  },
+  {
+    "codigo": "3530",
+    "ocupacion": "Suministro de vapor y aire acondicionado"
+  },
+  {
+    "codigo": "3600",
+    "ocupacion": "Captación, tratamiento y distribución de agua"
+  },
+  {
+    "codigo": "3700",
+    "ocupacion": "Evacuación y tratamiento de aguas residuales"
+  },
+  {
+    "codigo": "3811",
+    "ocupacion": "Recolección de desechos no peligrosos"
+  },
+  {
+    "codigo": "3812",
+    "ocupacion": "Recolección de desechos peligrosos"
+  },
+  {
+    "codigo": "3821",
+    "ocupacion": "Tratamiento y disposición de desechos no peligrosos"
+  },
+  {
+    "codigo": "3822",
+    "ocupacion": "Tratamiento y disposición de desechos peligrosos"
+  },
+  {
+    "codigo": "3830",
+    "ocupacion": "Recuperación de materiales"
+  },
+  {
+    "codigo": "3900",
+    "ocupacion": "Actividades de saneamiento ambiental y otros servicios de gestión de desechos"
+  },
+  {
+    "codigo": "4111",
+    "ocupacion": "Construcción de edificios residenciales"
+  },
+  {
+    "codigo": "4112",
+    "ocupacion": "Construcción de edificios no residenciales"
+  },
+  {
+    "codigo": "4210",
+    "ocupacion": "Construcción de carreteras y vías de ferrocarril"
+  },
+  {
+    "codigo": "4220",
+    "ocupacion": "Construcción de proyectos de servicio público"
+  },
+  {
+    "codigo": "4290",
+    "ocupacion": "Construcción de otras obras de ingeniería civil"
+  },
+  {
+    "codigo": "4311",
+    "ocupacion": "Demolición"
+  },
+  {
+    "codigo": "4312",
+    "ocupacion": "Preparación del terreno"
+  },
+  {
+    "codigo": "4321",
+    "ocupacion": "Instalaciones eléctricas"
+  },
+  {
+    "codigo": "4322",
+    "ocupacion": "Instalaciones de fontanería, calefacción y aire acondicionado"
+  },
+  {
+    "codigo": "4329",
+    "ocupacion": "Otras instalaciones especializadas"
+  },
+  {
+    "codigo": "4330",
+    "ocupacion": "Terminación y acabado de edificios y obras de ingeniería civil"
+  },
+  {
+    "codigo": "4390",
+    "ocupacion": "Otras actividades especializadas para la construcción de edificios y obras de ingeniería civil"
+  },
+  {
+    "codigo": "4511",
+    "ocupacion": "Comercio de vehículos automotores nuevos."
+  },
+  {
+    "codigo": "4512",
+    "ocupacion": "Comercio de vehículos automotores usados."
+  },
+  {
+    "codigo": "4520",
+    "ocupacion": "Mantenimiento y reparación de vehículos automotores."
+  },
+  {
+    "codigo": "4530",
+    "ocupacion": "Comercio de partes, piezas (autopartes) y accesorios (lujos) para vehículos automotores."
+  },
+  {
+    "codigo": "4541",
+    "ocupacion": "Comercio de motocicletas y de sus partes, piezas y accesorios."
+  },
+  {
+    "codigo": "4542",
+    "ocupacion": "Mantenimiento y reparación de motocicletas y de sus partes y piezas."
+  },
+  {
+    "codigo": "4610",
+    "ocupacion": "Comercio al por mayor a cambio de una retribución o por contrata."
+  },
+  {
+    "codigo": "4620",
+    "ocupacion": "Comercio al por mayor de materias primas agropecuarias; animales vivos."
+  },
+  {
+    "codigo": "4631",
+    "ocupacion": "Comercio al por mayor de productos alimenticios."
+  },
+  {
+    "codigo": "4632",
+    "ocupacion": "Comercio al por mayor de bebidas y tabaco."
+  },
+  {
+    "codigo": "4641",
+    "ocupacion": "Comercio al por mayor de productos textiles, productos confeccionados para uso doméstico."
+  },
+  {
+    "codigo": "4642",
+    "ocupacion": "Comercio al por mayor de prendas de vestir."
+  },
+  {
+    "codigo": "4643",
+    "ocupacion": "Comercio al por mayor de calzado."
+  },
+  {
+    "codigo": "4644",
+    "ocupacion": "Comercio al por mayor de aparatos y equipo de uso doméstico."
+  },
+  {
+    "codigo": "4645",
+    "ocupacion": "Comercio al por mayor de productos farmacéuticos, medicinales, cosméticos y de tocador."
+  },
+  {
+    "codigo": "4649",
+    "ocupacion": "Comercio al por mayor de otros utensilios domésticos n.c.p."
+  },
+  {
+    "codigo": "4651",
+    "ocupacion": "Comercio al por mayor de computadores, equipo periférico y programas de informática."
+  },
+  {
+    "codigo": "4652",
+    "ocupacion": "Comercio al por mayor de equipo, partes y piezas electrónicos y de telecomunicaciones."
+  },
+  {
+    "codigo": "4653",
+    "ocupacion": "Comercio al por mayor de maquinaria y equipo agropecuarios."
+  },
+  {
+    "codigo": "4659",
+    "ocupacion": "Comercio al por mayor de otros tipos de maquinaria y equipo n.c.p."
+  },
+  {
+    "codigo": "4661",
+    "ocupacion": "Comercio al por mayor de combustibles sólidos, líquidos, gaseosos y productos conexos."
+  },
+  {
+    "codigo": "4662",
+    "ocupacion": "Comercio al por mayor de metales y productos metalíferos."
+  },
+  {
+    "codigo": "4663",
+    "ocupacion": "Comercio al por mayor de materiales de construcción, artículos de ferretería, pinturas, productos de vidrio, equipo y materiales de fontanería y calefacción."
+  },
+  {
+    "codigo": "4664",
+    "ocupacion": "Comercio al por mayor de productos químicos básicos, cauchos y plásticos en formas primarias y productos químicos de uso agropecuario."
+  },
+  {
+    "codigo": "4665",
+    "ocupacion": "Comercio al por mayor de desperdicios, desechos y chatarra."
+  },
+  {
+    "codigo": "4669",
+    "ocupacion": "Comercio al por mayor de otros productos n.c.p."
+  },
+  {
+    "codigo": "4690",
+    "ocupacion": "Comercio al por mayor no especializado."
+  },
+  {
+    "codigo": "4711",
+    "ocupacion": "Comercio al por menor en establecimientos no especializados con surtido compuesto principalmente por alimentos, bebidas o tabaco."
+  },
+  {
+    "codigo": "4719",
+    "ocupacion": "Comercio al por menor en establecimientos no especializados, con surtido compuesto principalmente por productos diferentes de alimentos (víveres en general), bebidas y tabaco."
+  },
+  {
+    "codigo": "4721",
+    "ocupacion": "Comercio al por menor de productos agrícolas para el consumo en establecimientos especializados."
+  },
+  {
+    "codigo": "4722",
+    "ocupacion": "Comercio al por menor de leche, productos lácteos y huevos, en establecimientos especializados."
+  },
+  {
+    "codigo": "4723",
+    "ocupacion": "Comercio al por menor de carnes (incluye aves de corral), productos cárnicos, pescados y productos de mar, en establecimientos especializados."
+  },
+  {
+    "codigo": "4724",
+    "ocupacion": "Comercio al por menor de bebidas y productos del tabaco, en establecimientos especializados."
+  },
+  {
+    "codigo": "4729",
+    "ocupacion": "Comercio al por menor de otros productos alimenticios n.c.p., en establecimientos especializados."
+  },
+  {
+    "codigo": "4731",
+    "ocupacion": "Comercio al por menor de combustible para automotores."
+  },
+  {
+    "codigo": "4732",
+    "ocupacion": "Comercio al por menor de lubricantes (aceites, grasas), aditivos y productos de limpieza para vehículos automotores."
+  },
+  {
+    "codigo": "4741",
+    "ocupacion": "Comercio al por menor de computadores, equipos periféricos, programas de informática y equipos de telecomunicaciones en establecimientos especializados."
+  },
+  {
+    "codigo": "4742",
+    "ocupacion": "Comercio al por menor de equipos y aparatos de sonido y de video, en establecimientos especializados."
+  },
+  {
+    "codigo": "4751",
+    "ocupacion": "Comercio al por menor de productos textiles en establecimientos especializados."
+  },
+  {
+    "codigo": "4752",
+    "ocupacion": "Comercio al por menor de artículos de ferretería, pinturas y productos de vidrio en establecimientos especializados."
+  },
+  {
+    "codigo": "4753",
+    "ocupacion": "Comercio al por menor de tapices, alfombras y cubrimientos para paredes y pisos en establecimientos especializados."
+  },
+  {
+    "codigo": "4754",
+    "ocupacion": "Comercio al por menor de electrodomésticos y gasodomésticos de uso doméstico, muebles y equipos de iluminación."
+  },
+  {
+    "codigo": "4755",
+    "ocupacion": "Comercio al por menor de artículos y utensilios de uso doméstico."
+  },
+  {
+    "codigo": "4761",
+    "ocupacion": "Comercio al por menor de libros, periódicos, materiales y artículos de papelería y escritorio, en establecimientos especializados."
+  },
+  {
+    "codigo": "4762",
+    "ocupacion": "Comercio al por menor de artículos deportivos, en establecimientos especializados."
+  },
+  {
+    "codigo": "4769",
+    "ocupacion": "Comercio al por menor de otros artículos culturales y de entretenimiento n.c.p. en establecimientos especializados."
+  },
+  {
+    "codigo": "4771",
+    "ocupacion": "Comercio al por menor de prendas de vestir y sus accesorios (incluye artículos de piel) en establecimientos especializados."
+  },
+  {
+    "codigo": "4772",
+    "ocupacion": "Comercio al por menor de todo tipo de calzado y artículos de cuero y sucedáneos del cuero en establecimientos especializados."
+  },
+  {
+    "codigo": "4773",
+    "ocupacion": "Comercio al por menor de productos farmacéuticos y medicinales, cosméticos y artículos de tocador en establecimientos especializados."
+  },
+  {
+    "codigo": "4774",
+    "ocupacion": "Comercio al por menor de otros productos nuevos en establecimientos especializados."
+  },
+  {
+    "codigo": "4775",
+    "ocupacion": "Comercio al por menor de artículos de segunda mano."
+  },
+  {
+    "codigo": "4781",
+    "ocupacion": "Comercio al por menor de alimentos, bebidas y tabaco, en puestos de venta móviles."
+  },
+  {
+    "codigo": "4782",
+    "ocupacion": "Comercio al por menor de productos textiles, prendas de vestir y calzado, en puestos de venta móviles."
+  },
+  {
+    "codigo": "4789",
+    "ocupacion": "Comercio al por menor de otros productos en puestos de venta móviles."
+  },
+  {
+    "codigo": "4791",
+    "ocupacion": "Comercio al por menor realizado a través de internet."
+  },
+  {
+    "codigo": "4792",
+    "ocupacion": "Comercio al por menor realizado a través de casas de venta o por correo."
+  },
+  {
+    "codigo": "4799",
+    "ocupacion": "Otros tipos de comercio al por menor no realizado en establecimientos, puestos de venta o mercados."
+  },
+  {
+    "codigo": "4911",
+    "ocupacion": "Transporte férreo de pasajeros."
+  },
+  {
+    "codigo": "4912",
+    "ocupacion": "Transporte férreo de carga."
+  },
+  {
+    "codigo": "4921",
+    "ocupacion": "Transporte de pasajeros."
+  },
+  {
+    "codigo": "4922",
+    "ocupacion": "Transporte mixto."
+  },
+  {
+    "codigo": "4923",
+    "ocupacion": "Transporte de carga por carretera."
+  },
+  {
+    "codigo": "4930",
+    "ocupacion": "Transporte por tuberías."
+  },
+  {
+    "codigo": "5011",
+    "ocupacion": "Transporte de pasajeros marítimo y de cabotaje."
+  },
+  {
+    "codigo": "5012",
+    "ocupacion": "Transporte de carga marítimo y de cabotaje."
+  },
+  {
+    "codigo": "5021",
+    "ocupacion": "Transporte fluvial de pasajeros."
+  },
+  {
+    "codigo": "5022",
+    "ocupacion": "Transporte fluvial de carga."
+  },
+  {
+    "codigo": "5111",
+    "ocupacion": "Transporte aéreo nacional de pasajeros."
+  },
+  {
+    "codigo": "5112",
+    "ocupacion": "Transporte aéreo internacional de pasajeros."
+  },
+  {
+    "codigo": "5121",
+    "ocupacion": "Transporte aéreo nacional de carga."
+  },
+  {
+    "codigo": "5122",
+    "ocupacion": "Transporte aéreo internacional de carga."
+  },
+  {
+    "codigo": "5210",
+    "ocupacion": "Almacenamiento y depósito."
+  },
+  {
+    "codigo": "5221",
+    "ocupacion": "Actividades de estaciones, vías y servicios complementarios para el transporte terrestre."
+  },
+  {
+    "codigo": "5222",
+    "ocupacion": "Actividades de puertos y servicios complementarios para el transporte acuático."
+  },
+  {
+    "codigo": "5223",
+    "ocupacion": "Actividades de aeropuertos, servicios de navegación aérea y demás actividades conexas al transporte aéreo."
+  },
+  {
+    "codigo": "5224",
+    "ocupacion": "Manipulación de carga."
+  },
+  {
+    "codigo": "5229",
+    "ocupacion": "Otras actividades complementarias al transporte."
+  },
+  {
+    "codigo": "5310",
+    "ocupacion": "Actividades postales nacionales."
+  },
+  {
+    "codigo": "5320",
+    "ocupacion": "Actividades de mensajería."
+  },
+  {
+    "codigo": "5511",
+    "ocupacion": "Alojamiento en hoteles."
+  },
+  {
+    "codigo": "5512",
+    "ocupacion": "Alojamiento en apartahoteles."
+  },
+  {
+    "codigo": "5513",
+    "ocupacion": "Alojamiento en centros vacacionales."
+  },
+  {
+    "codigo": "5514",
+    "ocupacion": "Alojamiento rural."
+  },
+  {
+    "codigo": "5519",
+    "ocupacion": "Otros tipos de alojamientos para visitantes."
+  },
+  {
+    "codigo": "5520",
+    "ocupacion": "Actividades de zonas de camping y parques para vehículos recreacionales."
+  },
+  {
+    "codigo": "5530",
+    "ocupacion": "Servicio por horas."
+  },
+  {
+    "codigo": "5590",
+    "ocupacion": "Otros tipos de alojamiento n.c.p."
+  },
+  {
+    "codigo": "5611",
+    "ocupacion": "Expendio a la mesa de comidas preparadas."
+  },
+  {
+    "codigo": "5612",
+    "ocupacion": "Expendio por autoservicio de comidas preparadas."
+  },
+  {
+    "codigo": "5613",
+    "ocupacion": "Expendio de comidas preparadas en cafeterías."
+  },
+  {
+    "codigo": "5619",
+    "ocupacion": "Otros tipos de expendio de comidas preparadas n.c.p."
+  },
+  {
+    "codigo": "5621",
+    "ocupacion": "Catering para eventos."
+  },
+  {
+    "codigo": "5629",
+    "ocupacion": "Actividades de otros servicios de comidas."
+  },
+  {
+    "codigo": "5630",
+    "ocupacion": "Expendio de bebidas alcohólicas para el consumo dentro del establecimiento."
+  },
+  {
+    "codigo": "5811",
+    "ocupacion": "Edición de libros"
+  },
+  {
+    "codigo": "5812",
+    "ocupacion": "Edición de directorios y listas de correo"
+  },
+  {
+    "codigo": "5813",
+    "ocupacion": "Edición de periódicos, revistas y otras publicaciones periódicas"
+  },
+  {
+    "codigo": "5819",
+    "ocupacion": "Otros trabajos de edición"
+  },
+  {
+    "codigo": "5820",
+    "ocupacion": "Edición de programas de informática (software)"
+  },
+  {
+    "codigo": "5911",
+    "ocupacion": "Actividades de producción de películas cinematográficas, videos, programas, anuncios y comerciales de televisión"
+  },
+  {
+    "codigo": "5912",
+    "ocupacion": "Actividades de posproducción de películas cinematográficas, videos, programas, anuncios y comerciales de televisión"
+  },
+  {
+    "codigo": "5913",
+    "ocupacion": "Actividades de distribución de películas cinematográficas, videos, programas, anuncios y comerciales de televisión"
+  },
+  {
+    "codigo": "5914",
+    "ocupacion": "Actividades de exhibición de películas cinematográficas y videos"
+  },
+  {
+    "codigo": "5920",
+    "ocupacion": "Actividades de grabación de sonido y edición de música"
+  },
+  {
+    "codigo": "6010",
+    "ocupacion": "Actividades de programación y transmisión en el servicio de radiodifusión sonora"
+  },
+  {
+    "codigo": "6020",
+    "ocupacion": "Actividades de programación y transmisión de televisión"
+  },
+  {
+    "codigo": "6110",
+    "ocupacion": "Actividades de telecomunicaciones alámbricas"
+  },
+  {
+    "codigo": "6120",
+    "ocupacion": "Actividades de telecomunicaciones inalámbricas"
+  },
+  {
+    "codigo": "6130",
+    "ocupacion": "Actividades de telecomunicación satelital"
+  },
+  {
+    "codigo": "6190",
+    "ocupacion": "Otras actividades de telecomunicaciones"
+  },
+  {
+    "codigo": "6201",
+    "ocupacion": "Actividades de desarrollo de sistemas informáticos (planificación, análisis, diseño, programación, pruebas)"
+  },
+  {
+    "codigo": "6202",
+    "ocupacion": "Actividades de consultoría informática y actividades de administración de instalaciones informáticas"
+  },
+  {
+    "codigo": "6209",
+    "ocupacion": "Otras actividades de tecnologías de información y actividades de servicios informáticos"
+  },
+  {
+    "codigo": "6311",
+    "ocupacion": "Procesamiento de datos, alojamiento (hosting) y actividades relacionadas"
+  },
+  {
+    "codigo": "6312",
+    "ocupacion": "Portales web"
+  },
+  {
+    "codigo": "6391",
+    "ocupacion": "Actividades de agencias de noticias"
+  },
+  {
+    "codigo": "6399",
+    "ocupacion": "Otras actividades de servicio de información n.c.p."
+  },
+  {
+    "codigo": "6411",
+    "ocupacion": "Banco Central"
+  },
+  {
+    "codigo": "6412",
+    "ocupacion": "Bancos comerciales"
+  },
+  {
+    "codigo": "6421",
+    "ocupacion": "Actividades de las corporaciones financieras"
+  },
+  {
+    "codigo": "6422",
+    "ocupacion": "Actividades de las compañías de financiamiento"
+  },
+  {
+    "codigo": "6423",
+    "ocupacion": "Banca de segundo piso"
+  },
+  {
+    "codigo": "6424",
+    "ocupacion": "Actividades de las cooperativas financieras"
+  },
+  {
+    "codigo": "6431",
+    "ocupacion": "Fideicomisos, fondos y entidades financieras similares"
+  },
+  {
+    "codigo": "6432",
+    "ocupacion": "Fondos de cesantías"
+  },
+  {
+    "codigo": "6491",
+    "ocupacion": "Leasing financiero (arrendamiento financiero)"
+  },
+  {
+    "codigo": "6492",
+    "ocupacion": "Actividades financieras de fondos de empleados y otras formas asociativas del sector solidario"
+  },
+  {
+    "codigo": "6493",
+    "ocupacion": "Actividades de compra de cartera o factoring"
+  },
+  {
+    "codigo": "6494",
+    "ocupacion": "Otras actividades de distribución de fondos"
+  },
+  {
+    "codigo": "6495",
+    "ocupacion": "Instituciones especiales oficiales"
+  },
+  {
+    "codigo": "6496",
+    "ocupacion": "Capitalización"
+  },
+  {
+    "codigo": "6499",
+    "ocupacion": "Otras actividades de servicio financiero, excepto las de seguros y pensiones n.c.p."
+  },
+  {
+    "codigo": "6511",
+    "ocupacion": "Seguros generales"
+  },
+  {
+    "codigo": "6512",
+    "ocupacion": "Seguros de vida"
+  },
+  {
+    "codigo": "6513",
+    "ocupacion": "Reaseguros"
+  },
+  {
+    "codigo": "6515",
+    "ocupacion": "Seguros de salud"
+  },
+  {
+    "codigo": "6521",
+    "ocupacion": "Servicios de seguros sociales de salud"
+  },
+  {
+    "codigo": "6522",
+    "ocupacion": "Servicios de seguros sociales de riesgos profesionales"
+  },
+  {
+    "codigo": "6523",
+    "ocupacion": "Servicios de seguros sociales en riesgos de familia"
+  },
+  {
+    "codigo": "6531",
+    "ocupacion": "Régimen de prima media con prestación definida (RPM)"
+  },
+  {
+    "codigo": "6532",
+    "ocupacion": "Régimen de ahorro individual (RAI)"
+  },
+  {
+    "codigo": "6611",
+    "ocupacion": "Administración de mercados financieros"
+  },
+  {
+    "codigo": "6612",
+    "ocupacion": "Corretaje de valores y de contratos de productos básicos"
+  },
+  {
+    "codigo": "6613",
+    "ocupacion": "Otras actividades relacionadas con el mercado de valores"
+  },
+  {
+    "codigo": "6614",
+    "ocupacion": "Actividades de las casas de cambio"
+  },
+  {
+    "codigo": "6615",
+    "ocupacion": "Actividades de los profesionales de compra y venta de divisas"
+  },
+  {
+    "codigo": "6619",
+    "ocupacion": "Otras actividades auxiliares de las actividades de servicios financieros n.c.p."
+  },
+  {
+    "codigo": "6621",
+    "ocupacion": "Actividades de agentes y corredores de seguros"
+  },
+  {
+    "codigo": "6629",
+    "ocupacion": "Evaluación de riesgos y daños, y otras actividades de servicios auxiliares"
+  },
+  {
+    "codigo": "6630",
+    "ocupacion": "Actividades de administración de fondos"
+  },
+  {
+    "codigo": "6810",
+    "ocupacion": "Actividades inmobiliarias realizadas con bienes propios o arrendados"
+  },
+  {
+    "codigo": "6820",
+    "ocupacion": "Actividades inmobiliarias realizadas a cambio de una retribución o por contrata"
+  },
+  {
+    "codigo": "6910",
+    "ocupacion": "Actividades jurídicas"
+  },
+  {
+    "codigo": "6920",
+    "ocupacion": "Actividades de contabilidad, teneduría de libros, auditoría financiera y asesoría tributaria"
+  },
+  {
+    "codigo": "7010",
+    "ocupacion": "Actividades de administración empresarial"
+  },
+  {
+    "codigo": "7020",
+    "ocupacion": "Actividades de consultaría de gestión"
+  },
+  {
+    "codigo": "7111",
+    "ocupacion": "Actividades de arquitectura"
+  },
+  {
+    "codigo": "7112",
+    "ocupacion": "Actividades de ingeniería y otras actividades conexas de consultoría técnica"
+  },
+  {
+    "codigo": "7120",
+    "ocupacion": "Ensayos y análisis técnicos"
+  },
+  {
+    "codigo": "7210",
+    "ocupacion": "Investigaciones y desarrollo experimental en el campo de las ciencias naturales y la ingeniería"
+  },
+  {
+    "codigo": "7220",
+    "ocupacion": "Investigaciones y desarrollo experimental en el campo de las ciencias sociales y las humanidades"
+  },
+  {
+    "codigo": "7310",
+    "ocupacion": "Publicidad"
+  },
+  {
+    "codigo": "7320",
+    "ocupacion": "Estudios de mercado y realización de encuestas de opinión pública"
+  },
+  {
+    "codigo": "7410",
+    "ocupacion": "Actividades especializadas de diseño"
+  },
+  {
+    "codigo": "7420",
+    "ocupacion": "Actividades de fotografía"
+  },
+  {
+    "codigo": "7490",
+    "ocupacion": "Otras actividades profesionales, científicas y técnicas n.c.p."
+  },
+  {
+    "codigo": "7500",
+    "ocupacion": "Actividades veterinarias"
+  },
+  {
+    "codigo": "7710",
+    "ocupacion": "Alquiler y arrendamiento de vehículos automotores"
+  },
+  {
+    "codigo": "7721",
+    "ocupacion": "Alquiler y arrendamiento de equipo recreativo y deportivo"
+  },
+  {
+    "codigo": "7722",
+    "ocupacion": "Alquiler de videos y discos"
+  },
+  {
+    "codigo": "7729",
+    "ocupacion": "Alquiler y arrendamiento de otros efectos personales y enseres domésticos n.c.p."
+  },
+  {
+    "codigo": "7730",
+    "ocupacion": "Alquiler y arrendamiento de otros tipos de maquinaria, equipo y bienes tangibles n.c.p."
+  },
+  {
+    "codigo": "7740",
+    "ocupacion": "Arrendamiento de propiedad intelectual y productos similares, excepto obras protegidas por derechos de autor"
+  },
+  {
+    "codigo": "7810",
+    "ocupacion": "Actividades de agencias de empleo"
+  },
+  {
+    "codigo": "7820",
+    "ocupacion": "Actividades de agencias de empleo temporal"
+  },
+  {
+    "codigo": "7830",
+    "ocupacion": "Otras actividades de suministro de recurso humano"
+  },
+  {
+    "codigo": "7911",
+    "ocupacion": "Actividades de las agencias de viaje"
+  },
+  {
+    "codigo": "7912",
+    "ocupacion": "Actividades de operadores turísticos"
+  },
+  {
+    "codigo": "7990",
+    "ocupacion": "Otros servicios de reserva y actividades relacionadas"
+  },
+  {
+    "codigo": "8010",
+    "ocupacion": "Actividades de seguridad privada"
+  },
+  {
+    "codigo": "8020",
+    "ocupacion": "Actividades de servicios de sistemas de seguridad"
+  },
+  {
+    "codigo": "8030",
+    "ocupacion": "Actividades de detectives e investigadores privados"
+  },
+  {
+    "codigo": "8110",
+    "ocupacion": "Actividades combinadas de apoyo a instalaciones"
+  },
+  {
+    "codigo": "8121",
+    "ocupacion": "Limpieza general interior de edificios"
+  },
+  {
+    "codigo": "8129",
+    "ocupacion": "Otras actividades de limpieza de edificios e instalaciones industriales"
+  },
+  {
+    "codigo": "8130",
+    "ocupacion": "Actividades de paisajismo y servicios de mantenimiento conexos"
+  },
+  {
+    "codigo": "8211",
+    "ocupacion": "Actividades combinadas de servicios administrativos de oficina"
+  },
+  {
+    "codigo": "8219",
+    "ocupacion": "Fotocopiado, preparación de documentos y otras actividades especializadas de apoyo a oficina"
+  },
+  {
+    "codigo": "8220",
+    "ocupacion": "Actividades de centros de llamadas (Call center)"
+  },
+  {
+    "codigo": "8230",
+    "ocupacion": "Organización de convenciones y eventos comerciales"
+  },
+  {
+    "codigo": "8291",
+    "ocupacion": "Actividades de agencias de cobranza y oficinas de calificación crediticia"
+  },
+  {
+    "codigo": "8292",
+    "ocupacion": "Actividades de envase y empaque"
+  },
+  {
+    "codigo": "8299",
+    "ocupacion": "Otras actividades de servicio de apoyo a las empresas n.c.p."
+  },
+  {
+    "codigo": "8411",
+    "ocupacion": "Actividades legislativas de la administración pública"
+  },
+  {
+    "codigo": "8412",
+    "ocupacion": "Actividades ejecutivas de la administración pública"
+  },
+  {
+    "codigo": "8413",
+    "ocupacion": "Regulación de las actividades de organismos que prestan servicios de salud, educativos, culturales y otros servicios sociales, excepto servicios de seguridad social"
+  },
+  {
+    "codigo": "8414",
+    "ocupacion": "Actividades reguladoras y facilitadoras de la actividad económica"
+  },
+  {
+    "codigo": "8415",
+    "ocupacion": "Actividades de los otros órganos de control"
+  },
+  {
+    "codigo": "8421",
+    "ocupacion": "Relaciones exteriores"
+  },
+  {
+    "codigo": "8422",
+    "ocupacion": "Actividades de defensa"
+  },
+  {
+    "codigo": "8423",
+    "ocupacion": "Orden público y actividades de seguridad"
+  },
+  {
+    "codigo": "8424",
+    "ocupacion": "Administración de justicia"
+  },
+  {
+    "codigo": "8430",
+    "ocupacion": "Actividades de planes de seguridad social de afiliación obligatoria"
+  },
+  {
+    "codigo": "8511",
+    "ocupacion": "Educación de la primera infancia"
+  },
+  {
+    "codigo": "8512",
+    "ocupacion": "Educación preescolar"
+  },
+  {
+    "codigo": "8513",
+    "ocupacion": "Educación básica primaria"
+  },
+  {
+    "codigo": "8521",
+    "ocupacion": "Educación básica secundaria"
+  },
+  {
+    "codigo": "8522",
+    "ocupacion": "Educación media académica"
+  },
+  {
+    "codigo": "8523",
+    "ocupacion": "Educación media técnica y de formación laboral"
+  },
+  {
+    "codigo": "8530",
+    "ocupacion": "Establecimientos que combinan diferentes niveles de educación"
+  },
+  {
+    "codigo": "8541",
+    "ocupacion": "Educación técnica profesional"
+  },
+  {
+    "codigo": "8542",
+    "ocupacion": "Educación tecnológica"
+  },
+  {
+    "codigo": "8543",
+    "ocupacion": "Educación de instituciones universitarias o de escuelas tecnológicas"
+  },
+  {
+    "codigo": "8544",
+    "ocupacion": "Educación de universidades"
+  },
+  {
+    "codigo": "8551",
+    "ocupacion": "Formación académica no formal"
+  },
+  {
+    "codigo": "8552",
+    "ocupacion": "Enseñanza deportiva y recreativa"
+  },
+  {
+    "codigo": "8553",
+    "ocupacion": "Enseñanza cultural"
+  },
+  {
+    "codigo": "8559",
+    "ocupacion": "Otros tipos de educación n.c.p."
+  },
+  {
+    "codigo": "8560",
+    "ocupacion": "Actividades de apoyo a la educación"
+  },
+  {
+    "codigo": "8610",
+    "ocupacion": "Actividades de hospitales y clínicas, con internación"
+  },
+  {
+    "codigo": "8621",
+    "ocupacion": "Actividades de la práctica médica, sin internación"
+  },
+  {
+    "codigo": "8622",
+    "ocupacion": "Actividades de la práctica odontológica"
+  },
+  {
+    "codigo": "8691",
+    "ocupacion": "Actividades de apoyo diagnóstico"
+  },
+  {
+    "codigo": "8692",
+    "ocupacion": "Actividades de apoyo terapéutico"
+  },
+  {
+    "codigo": "8699",
+    "ocupacion": "Otras actividades de atención de la salud humana"
+  },
+  {
+    "codigo": "8710",
+    "ocupacion": "Actividades de atención residencial medicalizada de tipo general"
+  },
+  {
+    "codigo": "8720",
+    "ocupacion": "Actividades de atención residencial, para el cuidado de pacientes con retardo mental, enfermedad mental y consumo de sustancias psicoactivas"
+  },
+  {
+    "codigo": "8730",
+    "ocupacion": "Actividades de atención en instituciones para el cuidado de personas mayores y/o discapacitadas"
+  },
+  {
+    "codigo": "8790",
+    "ocupacion": "Otras actividades de atención en instituciones con alojamiento"
+  },
+  {
+    "codigo": "8810",
+    "ocupacion": "Actividades de asistencia social sin alojamiento para personas mayores y discapacitadas"
+  },
+  {
+    "codigo": "8891",
+    "ocupacion": "Actividades de guarderías para niños y niñas"
+  },
+  {
+    "codigo": "8899",
+    "ocupacion": "Otras actividades de asistencia social n.c.p."
+  },
+  {
+    "codigo": "9001",
+    "ocupacion": "Creación literaria"
+  },
+  {
+    "codigo": "9002",
+    "ocupacion": "Creación musical"
+  },
+  {
+    "codigo": "9003",
+    "ocupacion": "Creación teatral"
+  },
+  {
+    "codigo": "9004",
+    "ocupacion": "Creación audiovisual"
+  },
+  {
+    "codigo": "9005",
+    "ocupacion": "Artes plásticas y visuales"
+  },
+  {
+    "codigo": "9006",
+    "ocupacion": "Actividades teatrales"
+  },
+  {
+    "codigo": "9007",
+    "ocupacion": "Actividades de espectáculos musicales en vivo"
+  },
+  {
+    "codigo": "9008",
+    "ocupacion": "Otras actividades de espectáculos en vivo"
+  },
+  {
+    "codigo": "9101",
+    "ocupacion": "Actividades de bibliotecas y archivos"
+  },
+  {
+    "codigo": "9102",
+    "ocupacion": "Actividades y funcionamiento de museos, conservación de edificios y sitios históricos"
+  },
+  {
+    "codigo": "9103",
+    "ocupacion": "Actividades de jardines botánicos, zoológicos y reservas naturales"
+  },
+  {
+    "codigo": "9200",
+    "ocupacion": "Actividades de juegos de azar y apuestas"
+  },
+  {
+    "codigo": "9311",
+    "ocupacion": "Gestión de instalaciones deportivas"
+  },
+  {
+    "codigo": "9312",
+    "ocupacion": "Actividades de clubes deportivos"
+  },
+  {
+    "codigo": "9319",
+    "ocupacion": "Otras actividades deportivas"
+  },
+  {
+    "codigo": "9321",
+    "ocupacion": "Actividades de parques de atracciones y parques temáticos"
+  },
+  {
+    "codigo": "9329",
+    "ocupacion": "Otras actividades recreativas y de esparcimiento n.c.p."
+  },
+  {
+    "codigo": "9411",
+    "ocupacion": "Actividades de asociaciones empresariales y de empleadores"
+  },
+  {
+    "codigo": "9412",
+    "ocupacion": "Actividades de asociaciones profesionales"
+  },
+  {
+    "codigo": "9420",
+    "ocupacion": "Actividades de sindicatos de empleados"
+  },
+  {
+    "codigo": "9491",
+    "ocupacion": "Actividades de asociaciones religiosas"
+  },
+  {
+    "codigo": "9492",
+    "ocupacion": "Actividades de asociaciones políticas"
+  },
+  {
+    "codigo": "9499",
+    "ocupacion": "Actividades de otras asociaciones n.c.p."
+  },
+  {
+    "codigo": "9511",
+    "ocupacion": "Mantenimiento y reparación de computadores y de equipo periférico"
+  },
+  {
+    "codigo": "9512",
+    "ocupacion": "Mantenimiento y reparación de equipos de comunicación"
+  },
+  {
+    "codigo": "9521",
+    "ocupacion": "Mantenimiento y reparación de aparatos electrónicos de consumo"
+  },
+  {
+    "codigo": "9522",
+    "ocupacion": "Mantenimiento y reparación de aparatos y equipos domésticos y de jardinería"
+  },
+  {
+    "codigo": "9523",
+    "ocupacion": "Reparación de calzado y artículos de cuero"
+  },
+  {
+    "codigo": "9524",
+    "ocupacion": "Reparación de muebles y accesorios para el hogar"
+  },
+  {
+    "codigo": "9529",
+    "ocupacion": "Mantenimiento y reparación de otros efectos personales y enseres domésticos"
+  },
+  {
+    "codigo": "9601",
+    "ocupacion": "Lavado y limpieza, incluso la limpieza en seco, de productos textiles y de piel"
+  },
+  {
+    "codigo": "9602",
+    "ocupacion": "Peluquería y otros tratamientos de belleza"
+  },
+  {
+    "codigo": "9603",
+    "ocupacion": "Pompas fúnebres y actividades relacionadas"
+  },
+  {
+    "codigo": "9609",
+    "ocupacion": "Otras actividades de servicios personales n.c.p."
+  },
+  {
+    "codigo": "9700",
+    "ocupacion": "Actividades de los hogares individuales como empleadores de personal doméstico"
+  },
+  {
+    "codigo": "9810",
+    "ocupacion": "Actividades no diferenciadas de los hogares individuales como productores de bienes para uso propio"
+  },
+  {
+    "codigo": "9820",
+    "ocupacion": "Actividades no diferenciadas de los hogares individuales como productores de servicios para uso propio"
+  },
+  {
+    "codigo": "9900",
+    "ocupacion": "Actividades de organizaciones y entidades extraterritoriales"
+  },
+  {
+    "codigo": "0010",
+    "ocupacion": "Asalariados. (Personas naturales cuyos ingresos provengan de la relación laboral, legal o reglamentaria o tenga su origen en ella.)"
+  },
+  {
+    "codigo": "0020",
+    "ocupacion": "Pensionados. (Personas naturales cuyos ingresos provengan de la relación pensional, legal o reglamentaria o tenga su origen en ella.)"
+  },
+  {
+    "codigo": "0081",
+    "ocupacion": "Personas Naturales sin Actividad Económica. (Personas naturales o sucesiones ilíquidas, que sin percibir ingresos y/o recibir recursos provenientes de terceros, se encuentran obligados a presentar declaración del impuesto de renta y complementarios de acuerdo con los parámetros establecidos por ley; así como aquellas personas, que registraron una actividad económica y dejan de ejercerla con razón plenamente justificada.)"
+  },
+  {
+    "codigo": "0082",
+    "ocupacion": "Personas Naturales Subsidiadas por Terceros. (Personas naturales que reciben recursos otorgados por terceros, que aún sin tener ingresos objeto de una relación laboral o como rentista de capital, se encuentran obligados a presentar declaración del impuesto de renta y complementarios de acuerdo con los parámetros establecidos por ley; así como aquellas personas, que registraron una actividad económica, dejan de ejercerla y sus recursos en la actualidad provienen de terceros.)"
+  },
+  {
+    "codigo": "0090",
+    "ocupacion": "Rentistas de Capital, solo para personas naturales. (Personas naturales o sucesiones ilíquidas cuyos ingresos provienen de intereses, descuentos, beneficios, ganancias, utilidades y en general, todo cuanto represente rendimiento de capital o diferencia entre el valor invertido o aportado, y el valor futuro y/o pagado o abonado al aportante o inversionista.)"
+  }
+]

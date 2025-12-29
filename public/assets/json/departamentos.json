@@ -1,0 +1,133 @@
+[{
+        "codigo": "91",
+        "departamento": "AMAZONAS"
+    },
+    {
+        "codigo": "05",
+        "departamento": "ANTIOQUIA"
+    },
+    {
+        "codigo": "81",
+        "departamento": "ARAUCA"
+    },
+    {
+        "codigo": "08",
+        "departamento": "ATLANTICO"
+    },
+    {
+        "codigo": "11",
+        "departamento": "BOGOTA"
+    },
+    {
+        "codigo": "13",
+        "departamento": "BOLIVAR"
+    },
+    {
+        "codigo": "15",
+        "departamento": "BOYACA"
+    },
+    {
+        "codigo": "17",
+        "departamento": "CALDAS"
+    },
+    {
+        "codigo": "18",
+        "departamento": "CAQUETA"
+    },
+    {
+        "codigo": "85",
+        "departamento": "CASANARE"
+    },
+    {
+        "codigo": "19",
+        "departamento": "CAUCA"
+    },
+    {
+        "codigo": "20",
+        "departamento": "CESAR"
+    },
+    {
+        "codigo": "27",
+        "departamento": "CHOCO"
+    },
+    {
+        "codigo": "23",
+        "departamento": "CORDOBA"
+    },
+    {
+        "codigo": "25",
+        "departamento": "CUNDINAMARCA"
+    },
+    {
+        "codigo": "94",
+        "departamento": "GUAINIA"
+    },
+    {
+        "codigo": "95",
+        "departamento": "GUAVIARE"
+    },
+    {
+        "codigo": "41",
+        "departamento": "HUILA"
+    },
+    {
+        "codigo": "44",
+        "departamento": "LA GUAJIRA"
+    },
+    {
+        "codigo": "47",
+        "departamento": "MAGDALENA"
+    },
+    {
+        "codigo": "50",
+        "departamento": "META"
+    },
+    {
+        "codigo": "54",
+        "departamento": "NORTE DE SANTANDER"
+    },
+    {
+        "codigo": "52",
+        "departamento": "NARIÑO"
+    },
+    {
+        "codigo": "86",
+        "departamento": "PUTUMAYO"
+    },
+    {
+        "codigo": "63",
+        "departamento": "QUINDIO"
+    },
+    {
+        "codigo": "66",
+        "departamento": "RISARALDA"
+    },
+    {
+        "codigo": "88",
+        "departamento": "SAN ANDRES"
+    },
+    {
+        "codigo": "68",
+        "departamento": "SANTANDER"
+    },
+    {
+        "codigo": "70",
+        "departamento": "SUCRE"
+    },
+    {
+        "codigo": "73",
+        "departamento": "TOLIMA"
+    },
+    {
+        "codigo": "76",
+        "departamento": "VALLE DEL CAUCA"
+    },
+    {
+        "codigo": "97",
+        "departamento": "VAUPES"
+    },
+    {
+        "codigo": "99",
+        "departamento": "VICHADA"
+    }
+]

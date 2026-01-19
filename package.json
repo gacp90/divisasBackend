@@ -19,6 +19,7 @@
         "jsonwebtoken": "^9.0.2",
         "mongoose": "^8.4.3",
         "mongoose-auto-increment": "^5.0.1",
+        "node-cron": "^4.2.1",
         "sharp": "^0.33.5",
         "short-uuid": "^4.2.2"
     }

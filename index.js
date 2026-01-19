@@ -6,6 +6,8 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 
+const runDailyAverageRate = require('./cron/dailyRate');
+
 //Conection DB
 const { dbConection } = require('./database/config');
 
@@ -37,8 +39,9 @@ app.use('/api/v1/empresa', require('./routes/empresa.route'));
 app.use('/api/v1/inventory', require('./routes/inventory.route'));
 app.use('/api/v1/login', require('./routes/auth.route'));
 app.use('/api/v1/movimientos', require('./routes/movimientos.route'));
-app.use('/api/v1/users', require('./routes/users.route'));
+app.use('/api/v1/rates', require('./routes/rates.route'));
 app.use('/api/v1/search', require('./routes/search.route'));
+app.use('/api/v1/users', require('./routes/users.route'));
 app.use('/api/v1/transacciones', require('./routes/transacciones.route'));
 app.use('/api/v1/uploads', require('./routes/uploads.route'));
 
@@ -50,3 +53,6 @@ app.get('*', (req, res) => {
 app.listen(process.env.PORT, () => {
     console.log('Servidor Corriendo en el Puerto', process.env.PORT);
 });
+
+// Iniciar cron jobs
+runDailyAverageRate();

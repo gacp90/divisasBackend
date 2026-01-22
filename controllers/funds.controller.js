@@ -90,11 +90,12 @@ const createFunds = async(req, res = response) => {
         }
 
         const funds = new Funds(req.body);
-
         funds.name = name;
 
         // SAVE
         await funds.save();
+
+        funds.funid = funds._id;
 
         res.json({
             ok: true,

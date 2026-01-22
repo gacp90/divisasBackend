@@ -21,7 +21,7 @@ router.post('/query', validarJWT, getInventoriesQuery);
 /** =====================================================================
  *  GET ID
 =========================================================================*/
-router.get('/user/:id', validarJWT, getInventoryId);
+router.get('/divisa/:id', validarJWT, getInventoryId);
 
 /** =====================================================================
  *  POST CREATE

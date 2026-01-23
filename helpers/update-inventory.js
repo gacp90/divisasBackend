@@ -36,6 +36,7 @@ const updateInventoryAmount = async(transaccion) => {
                 // TASA PROMEDIO ACTUAL
                 daily.avgRatec = daily.totalValue / daily.totalAmount;
                 inventory.tpc = daily.totalValue / daily.totalAmount;
+                inventory.tc = t.tasa;
 
                 await daily.save();
     
@@ -64,6 +65,7 @@ const updateInventoryAmount = async(transaccion) => {
                 // TASA PROMEDIO ACTUAL
                 daily.avgRate = daily.totalValue / daily.totalAmount;
                 inventory.tp = daily.totalValue / daily.totalAmount;
+                inventory.tv = t.tasa;
 
                 await daily.save();
     

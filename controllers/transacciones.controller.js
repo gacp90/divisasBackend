@@ -123,9 +123,15 @@ const createTransaccion = async(req, res = response) => {
         // UPDATE INVENTORY
         await updateInventoryAmount(newTransaccion);
 
+        const transaccion = await Transaccion.findById(newTransaccion._id)
+            .populate('client')
+            .populate('cajero')
+            .populate('declarant')
+            .populate('items.moneda');
+
         res.json({
             ok: true,
-            transaccion: newTransaccion
+            transaccion
         });
 
     } catch (error) {

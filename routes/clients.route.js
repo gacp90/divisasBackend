@@ -21,7 +21,7 @@ router.post('/query', validarJWT, getClientsQuery);
 /** =====================================================================
  *  GET ID
 =========================================================================*/
-router.get('/user/:id', validarJWT, getClientId);
+router.get('/cliente/:id', validarJWT, getClientId);
 
 /** =====================================================================
  *  POST CREATE

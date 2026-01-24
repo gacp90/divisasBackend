@@ -43,7 +43,5 @@ router.post('/create/excel', validarJWT, createPaisestExcel);
 =========================================================================*/
 router.put('/:id', validarJWT, updatePais);
 
-
-
 // EXPORT
 module.exports = router;

@@ -6,7 +6,13 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 
+// CRON JOBS
 const runDailyAverageRate = require('./cron/dailyRate');
+const { startSanctionsCron } = require('./cron/sanctions.cron');
+const { downloadAndProcessONU } = require('./helpers/onuSanctions.helper');
+const { downloadAndProcessOFAC } = require('./helpers/ofac.helper');
+
+
 
 //Conection DB
 const { dbConection } = require('./database/config');
@@ -44,6 +50,8 @@ app.use('/api/v1/search', require('./routes/search.route'));
 app.use('/api/v1/users', require('./routes/users.route'));
 app.use('/api/v1/transacciones', require('./routes/transacciones.route'));
 app.use('/api/v1/uploads', require('./routes/uploads.route'));
+app.use('/api/v1/sanctions', require('./routes/sanctions.routes'));
+
 
 // SPA
 app.get('*', (req, res) => {
@@ -54,5 +62,9 @@ app.listen(process.env.PORT, () => {
     console.log('Servidor Corriendo en el Puerto', process.env.PORT);
 });
 
+downloadAndProcessONU();
+downloadAndProcessOFAC();
+
 // Iniciar cron jobs
 runDailyAverageRate();
+startSanctionsCron();

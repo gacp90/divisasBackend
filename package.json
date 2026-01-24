@@ -10,8 +10,11 @@
     "author": "Gilmer Contreras",
     "license": "ISC",
     "dependencies": {
+        "axios": "^1.13.2",
         "bcryptjs": "^2.4.3",
         "cors": "^2.8.5",
+        "crypto": "^1.0.1",
+        "csv-parser": "^3.2.0",
         "dotenv": "^16.4.5",
         "express": "^4.19.2",
         "express-fileupload": "^1.5.1",
@@ -21,6 +24,7 @@
         "mongoose-auto-increment": "^5.0.1",
         "node-cron": "^4.2.1",
         "sharp": "^0.33.5",
-        "short-uuid": "^4.2.2"
+        "short-uuid": "^4.2.2",
+        "xml2js": "^0.6.2"
     }
 }

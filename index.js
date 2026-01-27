@@ -62,9 +62,6 @@ app.listen(process.env.PORT, () => {
     console.log('Servidor Corriendo en el Puerto', process.env.PORT);
 });
 
-downloadAndProcessONU();
-downloadAndProcessOFAC();
-
 // Iniciar cron jobs
 runDailyAverageRate();
 startSanctionsCron();

@@ -191,7 +191,14 @@ const TransaccionesSchema = Schema({
     fecha: {
         type: Date,
         default: Date.now
-    }
+    },
+    userCancel: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    fechaCancel: {
+        type: Date,
+    },
 
 });
 

@@ -2,7 +2,7 @@ const { response } = require('express');
 
 const Transaccion = require('../models/transacciones.model');
 const { concecutive } = require('../helpers/concecutive');
-const { updateInventoryAmount } = require('../helpers/update-inventory');
+const { updateInventoryAmount, revertInventoryAmount } = require('../helpers/update-inventory');
 
 /** ======================================================================
  *  GET Transaccion
@@ -18,6 +18,7 @@ const getTransaccionesQuery = async(req, res = response) => {
             .populate('client')
             .populate('cajero')
             .populate('declarant')
+            .populate('userCancel')
             .populate('items.moneda')
             .limit(hasta)
             .skip(desde)
@@ -182,11 +183,62 @@ const updateTransaccion = async(req, res = response) => {
 
 };
 
+/** =====================================================================
+ *  CANCEL TRANSACCION
+=========================================================================*/
+const cancelTransaccion = async(req, res = response) => {
+    try {
+        
+        const tid = req.params.id;
+        const uid = req.uid;
+
+        const transaccion = await Transaccion.findById(tid);
+        if (!transaccion) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'No existe ninguna transaccion con este ID'
+            });
+        }
+
+        if (!transaccion.status) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'Esta transaccion a sido cancelada previamente'
+            });
+        }
+
+        
+        await revertInventoryAmount(transaccion);
+
+        transaccion.status = false;
+        transaccion.userCancel = uid;
+        transaccion.fechaCancel = new Date();
+
+        await transaccion.save();
+
+        res.json({
+            ok: true,
+            transaccion
+        });
+
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Error Inesperado'
+        });
+    }
+
+}
+
+
 
 // EXPORTS
 module.exports = {
     getTransaccionesQuery,
     createTransaccion,
     updateTransaccion,
-    getTransaccionId
+    getTransaccionId,
+    cancelTransaccion
 };

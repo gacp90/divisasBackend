@@ -13,6 +13,7 @@ const getDepartmentsQuery = async(req, res) => {
 
         const [departments, total] = await Promise.all([
             Department.find(query)
+            .populate('pais')
             .limit(hasta)
             .skip(desde)
             .sort(sort),
@@ -74,13 +75,13 @@ const getDepartmentId = async(req, res = response) => {
 =========================================================================*/
 const createDepartment = async(req, res = response) => {
 
-    let { code } = req.body;
+    let { code, pais, name } = req.body;
 
     code = code.trim();
 
     try {
 
-        const validateDepartment = await Department.findOne({ code });
+        const validateDepartment = await Department.findOne({ code, pais });
 
         if (validateDepartment) {
             return res.status(400).json({
@@ -89,12 +90,17 @@ const createDepartment = async(req, res = response) => {
             });
         }
 
-        const department = new Department(req.body);
+        const departmentNew = new Department(req.body);
 
-        department.code = code;
+        departmentNew.code = code;
+        departmentNew.name = name.trim().toUpperCase();
 
         // SAVE
-        await department.save();
+        await departmentNew.save();
+
+        const department = await Department.findById(departmentNew._id);
+
+
 
         res.json({
             ok: true,
@@ -108,6 +114,52 @@ const createDepartment = async(req, res = response) => {
             msg: 'Error Inesperado'
         });
     }
+};
+
+/** =====================================================================
+ *  CREATE EXCEL
+=========================================================================*/
+const createDepartamentostExcel = async(req, res = response) => {
+
+    try {
+
+        let { pais, ...departamentos } = req.body;
+
+        if (departamentos.departamentos.length === 0) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Lista de departamentos esta vacia, verifique he intene nuevamente'
+            });
+        }
+
+        let i = 0;
+        for (const departamento of departamentos.departamentos) {
+            
+            const validateDepartamento = await Department.findOne({ code: departamento.code, pais });
+            if (!validateDepartamento) {                
+                const departmentNew = new Department(departamento);
+                departmentNew.pais = pais;
+    
+                // SAVE
+                await departmentNew.save();
+                i++;
+            }
+        }
+
+        res.json({
+            ok: true,
+            total: i
+        });
+
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado, porfavor intente nuevamente'
+        });
+    }
+
 };
 
 /** =====================================================================
@@ -167,5 +219,6 @@ module.exports = {
     getDepartmentsQuery,
     createDepartment,
     updateDepartment,
-    getDepartmentId
+    getDepartmentId,
+    createDepartamentostExcel
 };

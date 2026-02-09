@@ -9,7 +9,7 @@ const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
 
 // CONTROLLERS
-const { getTransaccionesQuery, getTransaccionId, createTransaccion, updateTransaccion } = require('../controllers/transacciones.controller');
+const { getTransaccionesQuery, getTransaccionId, createTransaccion, updateTransaccion, cancelTransaccion } = require('../controllers/transacciones.controller');
 
 const router = Router();
 
@@ -37,6 +37,11 @@ router.post('/', [
  *  PUT
 =========================================================================*/
 router.put('/:id', validarJWT, updateTransaccion);
+
+/** =====================================================================
+ *  DELETE
+=========================================================================*/
+router.delete('/cancel/:id', validarJWT, cancelTransaccion);
 
 
 

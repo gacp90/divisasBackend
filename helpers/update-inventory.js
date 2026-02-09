@@ -87,10 +87,103 @@ const updateInventoryAmount = async(transaccion) => {
             msg: 'Error Inesperado'
         });
     }
+}
 
+const revertInventoryAmount = async(transaccion) => {
 
+    try {
+
+        for (const t of transaccion.items) {
+            
+            const inventory = await Inventory.findById(t.moneda);
+            const pesos = await Inventory.findOne({ code: 'COP' });
+
+            // Usamos la fecha de la transacción original para revertir la estadística correcta
+            const transactionDate = new Date(transaccion.fecha);
+            transactionDate.setHours(0,0,0,0);
+    
+            // VERIFICAR EL TIPO DE TRANSACCION PARA INVERTIR LA OPERACION
+            if (transaccion.transaccion === 'Compra') {
+    
+                // REVERTIR COMPRA:
+                // 1. Restamos la moneda que habíamos sumado
+                inventory.amount -= t.monto;
+                // 2. Devolvemos los pesos que habíamos restado
+                pesos.amount += (t.monto * t.tasa);
+
+                // 3. ACTUALIZAR TASA DIARIA (Restamos los valores acumulados)
+                const daily = await Rate.findOneAndUpdate(
+                    { currency: inventory._id, date: transactionDate },
+                    {
+                        $inc: {
+                            totalAmount: -t.monto,
+                            totalValue: -(t.monto * t.tasa) 
+                        }
+                    },
+                    { new: true } 
+                );
+
+                if (daily) {
+                    // Recalcular el promedio evitando división por cero
+                    if (daily.totalAmount > 0) {
+                        daily.avgRatec = daily.totalValue / daily.totalAmount;
+                        inventory.tpc = daily.totalValue / daily.totalAmount;
+                    } else {
+                        // Si se anulan todas las operaciones del día, volvemos a 0 o al valor anterior
+                        daily.avgRatec = 0; 
+                        
+                    }
+                    
+                    
+                    await daily.save();
+                }
+    
+            } else if (transaccion.transaccion === 'Venta') {
+    
+                // REVERTIR VENTA:
+                inventory.amount += t.monto;
+                
+                pesos.amount -= (t.monto * t.tasa);
+
+                // 3. ACTUALIZAR TASA DIARIA
+                const daily = await Rate.findOneAndUpdate(
+                    { currency: inventory._id, date: transactionDate },
+                    {
+                        $inc: {
+                            totalAmount: -t.monto,
+                            totalValue: -(t.monto * t.tasa)
+                        }
+                    },
+                    { new: true }
+                );
+
+                if (daily) {
+                    if (daily.totalAmount > 0) {
+                        daily.avgRate = daily.totalValue / daily.totalAmount;
+                        inventory.tp = daily.totalValue / daily.totalAmount;
+                    } else {
+                        daily.avgRate = 0;
+                    }
+                    
+                    await daily.save();
+                }
+            }
+    
+            await Promise.all([
+                inventory.save(),
+                pesos.save()
+            ]);
+        }
+        
+        return true;
+
+    } catch (error) {
+        console.log(error);        
+        throw new Error('Error al revertir inventario'); 
+    }
 }
 
 module.exports = {
-    updateInventoryAmount
+    updateInventoryAmount,
+    revertInventoryAmount
 }

@@ -96,6 +96,10 @@ const EmpresaSchema = Schema({
         type: Boolean,
         default: true
     },
+    frontera: {
+        type: Boolean,
+        default: true
+    },
     fecha: {
         type: Date,
         defaul: Date.now

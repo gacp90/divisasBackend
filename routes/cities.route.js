@@ -9,7 +9,7 @@ const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
 
 // CONTROLLERS
-const { getCitiesQuery, getCityId, createCity, updateCity } = require('../controllers/cities.controller');
+const { getCitiesQuery, getCityId, createCity, updateCity, createCitiesExcel } = require('../controllers/cities.controller');
 
 const router = Router();
 
@@ -32,6 +32,11 @@ router.post('/', [
     ],
     createCity
 );
+
+/** =====================================================================
+ *  POST CREATE EXCEL
+=========================================================================*/
+router.post('/create/excel', validarJWT, createCitiesExcel);
 
 /** =====================================================================
  *  PUT

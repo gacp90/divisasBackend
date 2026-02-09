@@ -2,7 +2,7 @@ const { Schema, model } = require('mongoose');
 
 const CitySchema = Schema({
 
-    city: {
+    name: {
         type: String,
         require: true
     },
@@ -12,8 +12,13 @@ const CitySchema = Schema({
         require: true
     },
 
-    department: {
+    zip: {
         type: String
+    },
+
+    department: {
+        type: Schema.Types.ObjectId,
+        ref: 'Departments'
     },
 
     fecha: {

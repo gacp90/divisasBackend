@@ -9,7 +9,7 @@ const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
 
 // CONTROLLERS
-const { getDepartmentsQuery, getDepartmentId, createDepartment, updateDepartment } = require('../controllers/deparments.controller');
+const { getDepartmentsQuery, getDepartmentId, createDepartment, updateDepartment, createDepartamentostExcel } = require('../controllers/deparments.controller');
 
 const router = Router();
 
@@ -32,6 +32,11 @@ router.post('/', [
     ],
     createDepartment
 );
+
+/** =====================================================================
+ *  POST CREATE EXCEL
+=========================================================================*/
+router.post('/create/excel', validarJWT, createDepartamentostExcel);
 
 /** =====================================================================
  *  PUT

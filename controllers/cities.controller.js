@@ -13,6 +13,7 @@ const getCitiesQuery = async(req, res) => {
 
         const [cities, total] = await Promise.all([
             City.find(query)
+            .populate('department')
             .limit(hasta)
             .skip(desde)
             .sort(sort),
@@ -74,13 +75,13 @@ const getCityId = async(req, res = response) => {
 =========================================================================*/
 const createCity = async(req, res = response) => {
 
-    let { code } = req.body;
+    let { code, department, name } = req.body;
 
     code = code.trim();
 
     try {
 
-        const validateCity = await City.findOne({ code });
+        const validateCity = await City.findOne({ code, department });
 
         if (validateCity) {
             return res.status(400).json({
@@ -89,12 +90,15 @@ const createCity = async(req, res = response) => {
             });
         }
 
-        const city = new City(req.body);
+        const cityNew = new City(req.body);
 
-        city.code = code;
+        cityNew.code = code;
+        cityNew.name = name.trim().toUpperCase();
 
         // SAVE
-        await city.save();
+        await cityNew.save();
+
+        const city = await City.findById(cityNew._id);
 
         res.json({
             ok: true,
@@ -108,6 +112,54 @@ const createCity = async(req, res = response) => {
             msg: 'Error Inesperado'
         });
     }
+};
+
+/** =====================================================================
+ *  CREATE EXCEL
+=========================================================================*/
+const createCitiesExcel = async(req, res = response) => {
+
+    try {
+
+        let { ciudades } = req.body;
+
+        if (ciudades.length === 0) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Lista de ciudades esta vacia, verifique he intene nuevamente'
+            });
+        }
+
+        let i = 0;
+        for (const ciudad of ciudades) {
+
+            if (!ciudad.code && !ciudad.department) { continue }
+            
+            const validateCiudad = await City.findOne({ code: ciudad.code, department: ciudad.department });
+            if (!validateCiudad) {                
+                
+                const ciudadNew = new City(ciudad);
+                    
+                // SAVE
+                await ciudadNew.save();
+                i++;
+            }
+        }
+
+        res.json({
+            ok: true,
+            total: i
+        });
+
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado, porfavor intente nuevamente'
+        });
+    }
+
 };
 
 /** =====================================================================
@@ -167,5 +219,6 @@ module.exports = {
     getCitiesQuery,
     createCity,
     updateCity,
-    getCityId
+    getCityId,
+    createCitiesExcel
 };

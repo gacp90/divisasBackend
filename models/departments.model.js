@@ -1,15 +1,20 @@
 const { Schema, model } = require('mongoose');
 
 const DepartmentsSchema = Schema({
-
-    department: {
+    
+    code: {
         type: String,
         require: true
     },
 
-    code: {
+    name: {
         type: String,
         require: true
+    },
+
+    pais: {
+        type: Schema.Types.ObjectId,
+        ref: 'Pais'
     },
 
     fecha: {

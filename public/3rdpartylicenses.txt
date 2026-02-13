@@ -16,6 +16,9 @@ MIT
 @angular/router
 MIT
 
+@ng-select/ng-select
+MIT
+
 aos
 MIT
 The MIT License (MIT)

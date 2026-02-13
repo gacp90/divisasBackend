@@ -14,6 +14,7 @@ const getClientsQuery = async(req, res) => {
         const [clients, total] = await Promise.all([
 
             Client.find(query)
+            .populate('representante')
             .limit(hasta)
             .skip(desde)
             .sort(sort),
@@ -46,7 +47,8 @@ const getClientId = async(req, res = response) => {
     try {
         const id = req.params.id;
 
-        const clientDB = await Client.findById(id);
+        const clientDB = await Client.findById(id)
+            .populate('representante');
         if (!clientDB) {
             return res.status(400).json({
                 ok: false,

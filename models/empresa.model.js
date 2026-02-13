@@ -52,6 +52,9 @@ const EmpresaSchema = Schema({
     email: {
         type: String
     },
+    emailcorp: {
+        type: String
+    },
     camara: CamaraSchema,
     resolucionC: ResolucionSchema,
     resolucionV: ResolucionSchema,

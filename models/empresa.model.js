@@ -52,6 +52,10 @@ const EmpresaSchema = Schema({
     email: {
         type: String
     },
+    capital: {
+        type: Number,
+        default: 0
+    },
     emailcorp: {
         type: String
     },

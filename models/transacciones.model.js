@@ -183,6 +183,25 @@ const TransaccionesSchema = Schema({
         default: false
     },
 
+    intensificada: {
+        type: Boolean,
+        default: true
+    },
+
+    reforzada: {
+        type: Boolean,
+        default: true
+    },
+
+    simplificada: {
+        type: Boolean,
+        default: true
+    },
+
+    typetransaction: {
+        type: String,
+        default: 'Simplificada'
+    },
     status: {
         type: Boolean,
         default: true

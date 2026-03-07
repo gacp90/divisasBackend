@@ -1,6 +1,7 @@
 const { response } = require('express');
 
 const Movimiento = require('../models/movimientos.model');
+const User = require('../models/users.model');
 
 /** ======================================================================
  *  GET MOVIMIENTOS
@@ -78,6 +79,23 @@ const createMovimiento = async(req, res = response) => {
 
 
     try {
+
+        const uid = req.uid;
+        const user = await User.findById(uid)
+            .populate('turno');
+        if (!user) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'No existe ningun usuario con este ID'
+            });
+        }
+
+        if (!user.turno) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'No has abierto turno.'
+            });
+        }
 
         const movimiento = new Movimiento(req.body);
 

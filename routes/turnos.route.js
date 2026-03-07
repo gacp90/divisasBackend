@@ -1,0 +1,37 @@
+/** =====================================================================
+ *  MOVIMIENTOS ROUTER 
+=========================================================================*/
+const { Router } = require('express');
+const { check } = require('express-validator');
+
+// MIDDLEWARES
+const { validarCampos } = require('../middlewares/validar-campos');
+const { validarJWT } = require('../middlewares/validar-jwt');
+
+// CONTROLLERS
+const { getTurnosQuery, getTurnoId, createTurno, updateTurno } = require('../controllers/turnos.controller');
+
+const router = Router();
+
+/** =====================================================================
+ *  GET QUERY
+=========================================================================*/
+router.post('/query', validarJWT, getTurnosQuery);
+
+/** =====================================================================
+ *  GET ID
+=========================================================================*/
+router.get('/:id', validarJWT, getTurnoId);
+
+/** =====================================================================
+ *  POST CREATE
+=========================================================================*/
+router.post('/', validarJWT, createTurno);
+
+/** =====================================================================
+ *  PUT
+=========================================================================*/
+router.put('/:id', validarJWT, updateTurno);
+
+// EXPORT
+module.exports = router;

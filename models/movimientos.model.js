@@ -22,6 +22,11 @@ const MovimientosSchema = Schema({
         require: true
     },
 
+    turno: {
+        type: Schema.Types.ObjectId,
+        ref: 'turnos'
+    },
+
     fecha: {
         type: Date,
         default: Date.now

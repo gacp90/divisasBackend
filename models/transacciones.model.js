@@ -185,17 +185,17 @@ const TransaccionesSchema = Schema({
 
     intensificada: {
         type: Boolean,
-        default: true
+        default: false
     },
 
     reforzada: {
         type: Boolean,
-        default: true
+        default: false
     },
 
     simplificada: {
         type: Boolean,
-        default: true
+        default: false
     },
 
     typetransaction: {
@@ -214,6 +214,10 @@ const TransaccionesSchema = Schema({
     userCancel: {
         type: Schema.Types.ObjectId,
         ref: 'User'
+    },
+    turno: {
+        type: Schema.Types.ObjectId,
+        ref: 'turnos'
     },
     fechaCancel: {
         type: Date,

@@ -79,7 +79,14 @@ const renewJWT = async(req, res = response) => {
     const token = await generarJWT(uid);
 
     // SEARCH USER
-    const usuario = await User.findById(uid, 'user name role img address uid valid fecha status');
+    const usuario = await User.findById(uid, 'user name role img address uid valid turno fecha status')
+        .populate({
+            path: 'turno',
+            populate: {
+                path: 'saldos.moneda', // <--- Aquí le decimos que entre a los saldos y popule la moneda
+                model: 'Inventories'   // (Opcional) Asegura de qué modelo va a sacar la data
+            }
+        });
     // SEARCH USER
 
     res.status(200).json({
@@ -89,9 +96,6 @@ const renewJWT = async(req, res = response) => {
     });
 
 };
-/** =====================================================================
- *  RENEW TOKEN
-=========================================================================*/
 /** =====================================================================
  *  RENEW TOKEN
 =========================================================================*/

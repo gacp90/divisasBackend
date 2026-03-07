@@ -1,7 +1,7 @@
 const Inventory = require('../models/inventory.model');
 const Rate = require('../models/rates.model');
 
-const updateInventoryAmount = async(transaccion) => {
+const updateInventoryAmount = async(transaccion, turno) => {
 
     try {
 
@@ -9,6 +9,9 @@ const updateInventoryAmount = async(transaccion) => {
             
             const inventory = await Inventory.findById(t.moneda);
             const pesos = await Inventory.findOne({ code: 'COP' });
+
+            const indexDivisaTurno = turno.saldos.findIndex(s => String(s.moneda._id) === String(inventory._id));
+            const indexCopTurno = turno.saldos.findIndex(s => String(s.moneda._id) === String(pesos._id));
     
             // VERIFICAR EL TIPO DE TRANSACCION PARA SUMAR O RESTAR EL INVENTARIO
             if (transaccion.transaccion === 'Compra') {
@@ -17,6 +20,10 @@ const updateInventoryAmount = async(transaccion) => {
                 inventory.amount += t.monto;
                 // RESTA LOS PESOS
                 pesos.amount -= (t.monto * t.tasa);
+
+                // --- CAJA DEL TURNO ---
+                if (indexDivisaTurno >= 0) turno.saldos[indexDivisaTurno].saldoActual += t.monto;
+                if (indexCopTurno >= 0) turno.saldos[indexCopTurno].saldoActual -= (t.monto * t.tasa);
 
                 // ACTUALIZAR TASA DIARIA
                 const today = new Date();
@@ -46,6 +53,10 @@ const updateInventoryAmount = async(transaccion) => {
                 inventory.amount -= t.monto;
                 // SUMA LOS PESOS
                 pesos.amount += (t.monto * t.tasa);
+
+                // --- CAJA DEL TURNO ---
+                if (indexDivisaTurno >= 0) turno.saldos[indexDivisaTurno].saldoActual -= t.monto;
+                if (indexCopTurno >= 0) turno.saldos[indexCopTurno].saldoActual += (t.monto * t.tasa);
 
                 // ACTUALIZAR TASA DIARIA
                 const today = new Date();
@@ -77,7 +88,8 @@ const updateInventoryAmount = async(transaccion) => {
             ])
         }
         
-
+        // GUARDAMOS EL TURNO ACTUALIZADO
+        await turno.save();
         return true;
 
     } catch (error) {

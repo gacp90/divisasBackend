@@ -1,6 +1,9 @@
 const { response } = require('express');
 
 const Transaccion = require('../models/transacciones.model');
+const Inventory= require('../models/inventory.model');
+const User = require('../models/users.model');
+
 const { concecutive } = require('../helpers/concecutive');
 const { updateInventoryAmount, revertInventoryAmount } = require('../helpers/update-inventory');
 
@@ -84,12 +87,42 @@ const createTransaccion = async(req, res = response) => {
     try {
 
         const uid = req.uid;
+        const user = await User.findById(uid)
+            .populate({
+                path: 'turno',
+                populate: {
+                    path: 'saldos.moneda', // <--- Aquí le decimos que entre a los saldos y popule la moneda
+                    model: 'Inventories'   // (Opcional) Asegura de qué modelo va a sacar la data
+                }
+            });
+        if (!user) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'No existe ningun usuario con este ID'
+            });
+        }
 
+        if (!user.turno) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'No has abierto turno.'
+            });
+        }
+        
         let newTransaccion = new Transaccion(req.body);
-
-
+        
         // VERIFICAR EL TIPO DE TRANSACCION
         if (newTransaccion.transaccion === 'Compra') {
+
+            // VERIFICAR SI HAY SALDO
+            const inventory = await Inventory.findOne({code: 'COP'});
+            if (inventory.amount < newTransaccion.total) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: 'Lo sentimos, no tienes el saldo suficiente para realizar esta transacción.'
+                });                
+            }
+
             // OBTENER EL CONCECUTIVO DE LA COMPRA
             newTransaccion.number = await concecutive('Compra');
 
@@ -117,12 +150,13 @@ const createTransaccion = async(req, res = response) => {
 
         // ASIGNAR EL CAJERO
         newTransaccion.cajero = uid;
-
+        newTransaccion.turno = user.turno._id;
+        
         // SAVE
         await newTransaccion.save();
 
         // UPDATE INVENTORY
-        await updateInventoryAmount(newTransaccion);
+        await updateInventoryAmount(newTransaccion, user.turno);
 
         const transaccion = await Transaccion.findById(newTransaccion._id)
             .populate('client')
@@ -132,7 +166,8 @@ const createTransaccion = async(req, res = response) => {
 
         res.json({
             ok: true,
-            transaccion
+            transaccion,
+            turno: user.turno
         });
 
     } catch (error) {

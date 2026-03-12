@@ -45,6 +45,15 @@ const TurnosSchema = Schema({
         dafult: true
     },
 
+    totalEntradasCOP: {
+        type: Number,
+        default: 0
+    },
+    totalSalidasCOP: {
+        type: Number,
+        default: 0
+    },
+
     saldos: [SaldosSchema],
 
     open: {

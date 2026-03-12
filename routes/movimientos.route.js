@@ -9,7 +9,7 @@ const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
 
 // CONTROLLERS
-const { getMovimientosQuery, getMovimientoId, createMovimiento, updateMovimiento } = require('../controllers/movimientos.controller');
+const { getMovimientosQuery, getMovimientoId, createMovimiento, updateMovimiento, deleteMovimiento } = require('../controllers/movimientos.controller');
 
 const router = Router();
 
@@ -39,6 +39,12 @@ router.post('/', [
  *  PUT
 =========================================================================*/
 router.put('/:id', validarJWT, updateMovimiento);
+
+/** =====================================================================
+ *  DELETE
+=========================================================================*/
+router.delete('/:id', validarJWT, deleteMovimiento);
+
 
 // EXPORT
 module.exports = router;

@@ -1,7 +1,9 @@
 const { response } = require('express');
 
 const Traslado = require('../models/traslados.model');
+const Turno = require('../models/turnos.model');
 const User = require('../models/users.model');
+const { actualizarSaldosTraslado } = require('../helpers/updateSaldosTurnos');
 
 /** ======================================================================
  *  GET QUERY
@@ -119,33 +121,49 @@ const createTraslado = async (req, res = response) => {
     const uid = req.uid;
 
     try {
-        
         const userDB = await User.findById(uid).populate('turno');
+        
         if (!userDB) {
             return res.status(404).json({ ok: false, msg: 'Usuario no encontrado' });
         }
 
         if (!userDB.turno?.abierto) {
-            return res.status(400).json({
-                ok: false,
-                msg: 'Debes de abrir turno'
-            });
+            return res.status(400).json({ ok: false, msg: 'Debes tener un turno abierto' });
         }
 
-        const traslado = new Turno(req.body);
+        req.body.emisor = uid;
+        req.body.turnoEmisor = userDB.turno._id;
+        const traslado = new Traslado(req.body);
+        
+        const resultadoSaldos = await actualizarSaldosTraslado(req.body);
 
-        traslado.save(),
+        traslado.receptor = resultadoSaldos.tReceptor.user;
 
-        res.status(201).json({
+        const [trasladoNew, turno] = await Promise.all([
+            traslado.save(),
+            Turno.findById(resultadoSaldos.tEmisor._id || resultadoSaldos.tEmisor.turid)
+                .populate('user')
+                .populate('saldos.moneda')
+        ]);
+
+        res.json({
             ok: true,
-            traslado
+            traslado: trasladoNew,
+            turno
         });
 
     } catch (error) {
         console.error('Error en createTraslado:', error);
+        if (error.message) {
+             return res.status(400).json({
+                ok: false,
+                msg: error.message
+            });
+        }
+
         res.status(500).json({
             ok: false,
-            msg: 'Error al crear el turno, hable con el administrador'
+            msg: 'Error interno al procesar el traslado'
         });
     }
 };

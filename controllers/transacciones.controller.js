@@ -91,8 +91,8 @@ const createTransaccion = async(req, res = response) => {
             .populate({
                 path: 'turno',
                 populate: {
-                    path: 'saldos.moneda', // <--- Aquí le decimos que entre a los saldos y popule la moneda
-                    model: 'Inventories'   // (Opcional) Asegura de qué modelo va a sacar la data
+                    path: 'saldos.moneda',
+                    model: 'Inventories'  
                 }
             });
         if (!user) {

@@ -9,7 +9,7 @@ const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
 
 // CONTROLLERS
-const { getTurnosQuery, getTurnoId, createTurno, updateTurno } = require('../controllers/turnos.controller');
+const { getTurnosQuery, getTurnoId, createTurno, updateTurno, cerrarTurno } = require('../controllers/turnos.controller');
 
 const router = Router();
 
@@ -32,6 +32,11 @@ router.post('/', validarJWT, createTurno);
  *  PUT
 =========================================================================*/
 router.put('/:id', validarJWT, updateTurno);
+
+/** =====================================================================
+ *  PUT
+=========================================================================*/
+router.post('/cerrar/turno', validarJWT, cerrarTurno);
 
 // EXPORT
 module.exports = router;

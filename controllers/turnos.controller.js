@@ -1,6 +1,7 @@
 const { response } = require('express');
 
 const Turno = require('../models/turnos.model');
+const Inventory = require('../models/inventory.model');
 const User = require('../models/users.model');
 
 /** ======================================================================
@@ -81,11 +82,9 @@ const createTurno = async (req, res = response) => {
     const uid = req.uid;
 
     try {
-
-        const {saldos} = req.body;
+        const { saldos } = req.body;
         
-        const userDB = await User.findById(uid)
-            .populate('turno');
+        const userDB = await User.findById(uid).populate('turno');
         if (!userDB) {
             return res.status(404).json({ ok: false, msg: 'Usuario no encontrado' });
         }
@@ -97,6 +96,34 @@ const createTurno = async (req, res = response) => {
             });
         }
 
+        // VALIDAR SALDO DISPONIBLE EN INVENTARIO
+        const inventariosParaActualizar = [];
+
+        for (const saldo of saldos) {
+            // SALDO DE APERTURA
+            const montoInicial = Number(saldo.montoInicial) || 0;
+            
+            if (montoInicial > 0) {
+                const inventario = await Inventory.findById(saldo.moneda);
+                
+                if (!inventario) {
+                    return res.status(404).json({ ok: false, msg: 'Una de las monedas solicitadas no existe en el inventario' });
+                }
+
+                // VALIDAMOS SI TENEMOS EL SALDO SUFICIENTE
+                if (inventario.disponible < montoInicial) {
+                    return res.status(400).json({ 
+                        ok: false, 
+                        msg: `No hay suficiente saldo disponible en bóveda. Solicitas ${montoInicial}, pero solo hay ${inventario.disponible}${inventario.code}.` 
+                    });
+                }
+                
+                inventario.disponible -= montoInicial;
+                inventariosParaActualizar.push(inventario);
+            }
+        }
+
+        // CREAMOS EL TURNO
         const turno = new Turno({
             ...req.body,
             user: uid,
@@ -104,11 +131,15 @@ const createTurno = async (req, res = response) => {
             saldos
         });
 
-        const [turnoGuardado] = await Promise.all([
+        // Promise ALL
+        const promesasDeGuardado = [
             turno.save(),
-            userDB.updateOne({ turno: turno._id })
-        ]);
+            userDB.updateOne({ turno: turno._id }),
+            ...inventariosParaActualizar.map(inv => inv.save())
+        ];
 
+        
+        const [turnoGuardado] = await Promise.all(promesasDeGuardado);
         const turnoNew = await Turno.findById(turnoGuardado._id)
             .populate('user')
             .populate('saldos.moneda');
@@ -167,11 +198,66 @@ const updateTurno = async(req, res = response) => {
 
 };
 
+/** =====================================================================
+ *  CERRAR TURNO
+=========================================================================*/
+const cerrarTurno = async (req, res = response) => {
+    
+    const { turnoId, arqueo } = req.body;
+    try {
+        const turno = await Turno.findById(turnoId);
+        
+        if (!turno) {
+            return res.status(404).json({ ok: false, msg: 'Turno no encontrado' });
+        }
+
+        if (!turno.abierto) {
+            return res.status(400).json({ ok: false, msg: 'El turno ya se encuentra cerrado' });
+        }
+
+        for (const item of arqueo) {
+            const idx = turno.saldos.findIndex(s => String(s.moneda) === String(item.monedaId));            
+            
+            if (idx !== -1) {
+                turno.saldos[idx].saldoFisico = item.fisico;
+                turno.saldos[idx].diferencia = item.diferencia;
+                
+                const inventario = await Inventory.findById(item.monedaId);
+                
+                if (inventario) {
+                    
+                    if (!inventario.disponible) {inventario.disponible = 0;}
+
+                    inventario.disponible += item.fisico;
+                    await inventario.save();
+                }
+            }
+        }
+
+        // 2. Cerramos formalmente el turno
+        turno.abierto = false;
+        turno.close = Date.now();
+
+        await turno.save();
+
+        res.json({
+            ok: true,
+            msg: 'Turno cerrado con éxito',
+            turno
+        });
+
+    } catch (error) {
+        console.error('Error al cerrar turno:', error);
+        res.status(500).json({ ok: false, msg: 'Error inesperado al procesar el cierre' });
+    }
+};
+
 
 // EXPORTS
 module.exports = {
     getTurnosQuery,
     createTurno,
     updateTurno,
-    getTurnoId
+    getTurnoId,
+    cerrarTurno
 };

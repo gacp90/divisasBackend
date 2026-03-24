@@ -100,6 +100,7 @@ const createInventory = async(req, res = response) => {
 
         const inventory = new Inventory(req.body);
         inventory.currency = currency;
+        inventory.disponible = inventory.amount;
 
         // SAVE
         await inventory.save();

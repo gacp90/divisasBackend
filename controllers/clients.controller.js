@@ -73,6 +73,67 @@ const getClientId = async(req, res = response) => {
 };
 
 /** =====================================================================
+ *  GET DUPLICATES
+=========================================================================*/
+const getDuplicates = async (req, res) => {
+    try {
+        // Recibimos el array de campos desde el body
+        const { field } = req.body; 
+
+        // Validamos que 'field' sea un array
+        if (!Array.isArray(field)) {
+            return res.status(400).json({ message: "Se esperaba un array de campos en 'field'" });
+        }
+
+        // Ejecutamos una agregación por cada campo enviado
+        const results = await Promise.all(field.map(async (f) => {
+            const duplicates = await Client.aggregate([
+                {
+                    // Agrupamos por el campo actual de la iteración
+                    $group: {
+                        _id: `$${f}`, 
+                        count: { $sum: 1 },         
+                        docs: { $push: "$$ROOT" }    
+                    }
+                },
+                {
+                    // Filtramos: que se repita y que no sea nulo/vacío
+                    $match: {
+                        count: { $gt: 1 },
+                        _id: { $ne: null, $ne: "" } 
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        valorDuplicado: "$_id",
+                        repeticiones: "$count",
+                        usuarios: "$docs"
+                    }
+                }
+            ]);
+
+            return {
+                campo: f,
+                cantidadDuplicados: duplicates.length,
+                detalles: duplicates
+            };
+        }));
+
+        const reporteFinal = results.filter(item => item.cantidadDuplicados > 0);
+        res.status(200).json({
+            mensaje: "Auditoría de duplicados finalizada",
+            reporte: reporteFinal, // Este array ahora solo tiene lo que "falló"
+            totalCamposConErrores: reporteFinal.length
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error al detectar duplicados", error: error.message });
+    }
+};
+
+/** =====================================================================
  *  CREATE CLIENT
 =========================================================================*/
 const createClient = async(req, res = response) => {
@@ -172,5 +233,6 @@ module.exports = {
     getClientsQuery,
     createClient,
     updateClient,
-    getClientId
+    getClientId,
+    getDuplicates
 };

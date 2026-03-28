@@ -3,6 +3,8 @@ const { response } = require('express');
 const Transaccion = require('../models/transacciones.model');
 const Inventory= require('../models/inventory.model');
 const User = require('../models/users.model');
+const Turno = require('../models/turnos.model');
+
 
 const { concecutive } = require('../helpers/concecutive');
 const { updateInventoryAmount, revertInventoryAmount } = require('../helpers/update-inventory');
@@ -55,7 +57,12 @@ const getTransaccionId = async(req, res = response) => {
     try {
         const tid = req.params.id;
 
-        const transaccionDB = await Transaccion.findById(tid);
+        const transaccionDB = await Transaccion.findById(tid)
+            .populate('client')
+            .populate('cajero')
+            .populate('declarant')
+            .populate('userCancel')
+            .populate('items.moneda');
         if (!transaccionDB) {
             return res.status(400).json({
                 ok: false,
@@ -223,28 +230,37 @@ const updateTransaccion = async(req, res = response) => {
 =========================================================================*/
 const cancelTransaccion = async(req, res = response) => {
     try {
-        
         const tid = req.params.id;
         const uid = req.uid;
 
+        const userDB = await User.findById(uid).populate('turno');
         const transaccion = await Transaccion.findById(tid);
+
         if (!transaccion) {
-            return res.status(404).json({
-                ok: false,
-                msg: 'No existe ninguna transaccion con este ID'
-            });
+            return res.status(404).json({ ok: false, msg: 'No existe ninguna transaccion con este ID' });
         }
 
         if (!transaccion.status) {
-            return res.status(404).json({
-                ok: false,
-                msg: 'Esta transaccion a sido cancelada previamente'
+            return res.status(400).json({ ok: false, msg: 'Esta transaccion ha sido cancelada previamente' });
+        }
+
+        if (!userDB || !userDB.turno || !userDB.turno.abierto) {
+            return res.status(400).json({ ok: false, msg: 'Debes tener un turno abierto para anular una transacción' });
+        }
+
+        if (String(transaccion.turno) !== String(userDB.turno._id)) {
+            return res.status(403).json({ 
+                ok: false, 
+                msg: 'No puedes anular esta factura directamente porque pertenece a un turno distinto o cerrado. Solicita una Nota de Crédito.' 
             });
         }
 
         
-        await revertInventoryAmount(transaccion);
-
+        const turnoActual = await Turno.findById(userDB.turno._id);
+        
+        
+        await revertInventoryAmount(transaccion, turnoActual);
+        
         transaccion.status = false;
         transaccion.userCancel = uid;
         transaccion.fechaCancel = new Date();
@@ -253,18 +269,19 @@ const cancelTransaccion = async(req, res = response) => {
 
         res.json({
             ok: true,
-            transaccion
+            msg: 'Transacción anulada correctamente y saldos restaurados',
+            transaccion,
+            turno: turnoActual
         });
-
 
     } catch (error) {
         console.log(error);
         res.status(500).json({
             ok: false,
-            msg: 'Error Inesperado'
+            // Si el helper lanzó un error personalizado (Ej: fondos insuficientes), lo mostramos
+            msg: error.message || 'Error Inesperado al cancelar la transacción'
         });
     }
-
 }
 
 

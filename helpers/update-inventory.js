@@ -1,5 +1,6 @@
 const Inventory = require('../models/inventory.model');
 const Rate = require('../models/rates.model');
+const Turno = require('../models/turnos.model');
 
 const updateInventoryAmount = async(transaccion, turno) => {
 
@@ -101,7 +102,109 @@ const updateInventoryAmount = async(transaccion, turno) => {
     }
 }
 
-const revertInventoryAmount = async(transaccion) => {
+const revertInventoryAmount = async(transaccion, turno) => {
+
+    try {
+        for (const t of transaccion.items) {
+            
+            const inventory = await Inventory.findById(t.moneda);
+            const pesos = await Inventory.findOne({ code: 'COP' });
+
+            const indexDivisaTurno = turno.saldos.findIndex(s => String(s.moneda) === String(inventory._id));
+            const indexCopTurno = turno.saldos.findIndex(s => String(s.moneda) === String(pesos._id));
+
+            
+            const transactionDate = new Date(transaccion.fecha);
+            transactionDate.setHours(0,0,0,0);
+    
+            if (transaccion.transaccion === 'Compra') {
+
+                // VALIDACIÓN DEl TURNO
+                if (indexDivisaTurno === -1 || turno.saldos[indexDivisaTurno].saldoActual < t.monto) {
+                    throw new Error(`Fondos insuficientes en gaveta. No tienes ${t.monto} ${inventory.code} para devolver al cliente.`);
+                }
+
+                inventory.amount -= t.monto;
+                pesos.amount += (t.monto * t.tasa);
+
+                if (indexDivisaTurno >= 0) turno.saldos[indexDivisaTurno].saldoActual -= t.monto;
+                if (indexCopTurno >= 0) turno.saldos[indexCopTurno].saldoActual += (t.monto * t.tasa);
+
+                const daily = await Rate.findOneAndUpdate(
+                    { currency: inventory._id, date: transactionDate },
+                    {
+                        $inc: {
+                            totalAmount: -t.monto,
+                            totalValue: -(t.monto * t.tasa) 
+                        }
+                    },
+                    { new: true } 
+                );
+
+                if (daily) {
+                    if (daily.totalAmount > 0) {
+                        daily.avgRatec = daily.totalValue / daily.totalAmount;
+                        inventory.tpc = daily.totalValue / daily.totalAmount;
+                    } else {
+                        daily.avgRatec = 0; 
+                    }
+                    await daily.save();
+                }
+    
+            } else if (transaccion.transaccion === 'Venta') {
+
+                // VALIDACIÓN DE TURNO
+                const pesosADevolver = t.monto * t.tasa;
+                if (indexCopTurno === -1 || turno.saldos[indexCopTurno].saldoActual < pesosADevolver) {
+                    throw new Error(`Fondos insuficientes en gaveta. No tienes ${pesosADevolver} COP para devolver al cliente.`);
+                }
+
+                inventory.amount += t.monto;
+                pesos.amount -= pesosADevolver;
+
+                if (indexDivisaTurno >= 0) turno.saldos[indexDivisaTurno].saldoActual += t.monto;
+                if (indexCopTurno >= 0) turno.saldos[indexCopTurno].saldoActual -= pesosADevolver;
+
+                const daily = await Rate.findOneAndUpdate(
+                    { currency: inventory._id, date: transactionDate },
+                    {
+                        $inc: {
+                            totalAmount: -t.monto,
+                            totalValue: -(t.monto * t.tasa)
+                        }
+                    },
+                    { new: true }
+                );
+
+                if (daily) {
+                    if (daily.totalAmount > 0) {
+                        daily.avgRate = daily.totalValue / daily.totalAmount;
+                        inventory.tp = daily.totalValue / daily.totalAmount;
+                    } else {
+                        daily.avgRate = 0;
+                    }
+                    await daily.save();
+                }
+            }
+    
+            // Guardamos Inventarios Globales
+            await Promise.all([
+                inventory.save(),
+                pesos.save()
+            ]);
+        }
+        
+        // Guardamos el Turno
+        await turno.save();
+        return true;
+
+    } catch (error) {
+        // Relanzamos el error para que el controlador lo atrape y lo mande al frontend (Ej: "Fondos insuficientes")
+        throw new Error(error.message || 'Error al revertir inventario'); 
+    }
+}
+
+/* const revertInventoryAmount = async(transaccion) => {
 
     try {
 
@@ -193,7 +296,7 @@ const revertInventoryAmount = async(transaccion) => {
         console.log(error);        
         throw new Error('Error al revertir inventario'); 
     }
-}
+} */
 
 module.exports = {
     updateInventoryAmount,

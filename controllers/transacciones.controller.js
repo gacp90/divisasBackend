@@ -23,6 +23,7 @@ const getTransaccionesQuery = async(req, res = response) => {
             .populate('client')
             .populate('cajero')
             .populate('declarant')
+            .populate('representante')
             .populate('userCancel')
             .populate('items.moneda')
             .limit(hasta)

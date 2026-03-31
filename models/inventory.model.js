@@ -49,6 +49,10 @@ const InvetorySchema = Schema({
         dafault: 0
     },
 
+    trmUpdate: {
+        type: Date
+    },
+
     tb: {
         type: Number,
         dafault: 0

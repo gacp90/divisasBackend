@@ -92,6 +92,12 @@ const ResolucionSchema = Schema({
     fechaExp: { type: Date },
 })
 
+const conexusSchema = Schema({
+    CodQR: {type: String},
+    Base64QR: {type: String},
+    CodigoTransaccion: {type: String}
+})
+
 const TransaccionesSchema = Schema({
 
     transaccion: {
@@ -219,6 +225,14 @@ const TransaccionesSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: 'turnos'
     },
+
+    electronica: {
+        type: Boolean,
+        default: true
+    },
+
+    conexus: conexusSchema,
+    
     fechaCancel: {
         type: Date,
     },

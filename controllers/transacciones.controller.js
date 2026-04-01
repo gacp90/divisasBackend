@@ -50,8 +50,6 @@ const getTransaccionesQuery = async(req, res = response) => {
         });
 
     }
-
-
 };
 
 /** =====================================================================

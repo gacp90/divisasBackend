@@ -27,6 +27,13 @@ const ResolucionSchema = Schema({
     fechaExp: { type: Date },
 })
 
+const conexusSchema = Schema({
+    GuidEmpresa: {type: String},
+    GuidOrigen: {type: String},
+    HashSeguridad: {type: String},
+    ClaveTecnica: {type: String}
+})
+
 const EmpresaSchema = Schema({
     name: {
         type: String
@@ -111,6 +118,7 @@ const EmpresaSchema = Schema({
         type: Boolean,
         default: true
     },
+    conexus: conexusSchema,
     fecha: {
         type: Date,
         defaul: Date.now

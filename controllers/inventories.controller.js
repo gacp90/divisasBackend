@@ -99,6 +99,7 @@ const createInventory = async(req, res = response) => {
         }
 
         const inventory = new Inventory(req.body);
+        inventory.code = code;
         inventory.currency = currency;
         inventory.disponible = inventory.amount;
 

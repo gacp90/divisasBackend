@@ -39,6 +39,52 @@ const enviarFacturaConexus = async (transaccionPopulated) => {
         const nit = empresa.nit.split('-')[0];
         const dv = empresa.nit.split('-')[1];
 
+        // SETEAMOS EL CLIENTE O BENEFICIARIO DEPENDIENDO DE SI ES PERSONA NATURAL O JURIDICA
+        let compradorFactura = {
+            "CompradorTipoIdentificacion": cliente.tipoIdentificacion,
+            "CompradorIdentificacion": cliente.identificacion,
+            "CompradorPais": codigoPais,
+            "CompradorNombrePais": nombrePais,
+            "CompradorDepartamento": nombreDepartamento,
+            "CompradorCodDepartamento": cliente.codDepartamento,
+            "CompradorCiudad": nombreCiudad,
+            "CompradorCodCiudad": cliente.codCiudad,
+            "CompradorCodPostal": cliente.codCiudad, 
+            "CompradorDireccion": cliente.direccion,
+            "CompradorEnviarCorreo": true,
+            "CompradorTipoRegimen": cliente.regimen || "49",
+            "CompradorRespFiscal": cliente.respFiscal || "R-99-PN",
+            "CompradorCorreoElectronico": cliente.email || ""
+        };
+
+        if (cliente.type === '1' || cliente.razon) {
+                
+            compradorFactura.CompradorTipoPersona = "1";
+            compradorFactura.CompradorRazonSocial = cliente.razon;
+            
+            // DVB (si existe, lo agregamos al payload)
+            if (cliente.dvb) {
+                compradorFactura.CompradorDVIdentificacion = cliente.dvb;
+            }
+
+            // AGREGAMOS EL BENEFICIARIO SI EL CLIENTE TIENE REPRESENTANTE LEGAL
+            if (cliente.representante) {
+                compradorFactura.Beneficiario = {
+                    "BeneficiarioTipoIdentificacion": cliente.representante.typeid || "13",
+                    "BeneficiarioIdentificacion": cliente.representante.numberid,
+                    "BeneficiarioNombres": cliente.representante.name,
+                    "BeneficiarioApellidos": cliente.representante.lastname
+                };
+            }
+
+        } else {
+            // Es una PERSONA NATURAL
+            compradorFactura.CompradorTipoPersona = "2";
+            compradorFactura.CompradorPrimerNombre = cliente.name;
+            compradorFactura.CompradorApellidos = cliente.lastname;
+            compradorFactura.CompradorNombreCompleto = `${cliente.name} ${cliente.lastname}`.trim();
+        }
+
         // MAP DE LOS ITEMS DE LA FACTURA
         const LsDetalle = transaccionPopulated.items.map((item, index) => {
             return {
@@ -95,25 +141,7 @@ const enviarFacturaConexus = async (transaccionPopulated) => {
                     "EmiDVIdentificacion": dv || "5",
                     "EmiPrefijo": empresa.prefijo
                 },
-                "CompradorFactura": {
-                    "CompradorTipoPersona": cliente.type || "2",
-                    "CompradorTipoIdentificacion": cliente.typeid || "13",
-                    "CompradorIdentificacion": cliente.numberid,
-                    "CompradorPrimerNombre": cliente.name,
-                    "CompradorApellidos": cliente.lastname,
-                    "CompradorNombreCompleto": `${cliente.name} ${cliente.lastname}`,
-                    "CompradorPais": pais.code.slice(0, 2) || "CO",
-                    "CompradorNombrePais": pais.name || "Colombia",
-                    "CompradorDepartamento": departamento.name || "NORTE DE SANTANDER",
-                    "CompradorCodDepartamento": departamento.code || "54",
-                    "CompradorCiudad": ciudad.name || "CUCUTA",
-                    "CompradorCodCiudad": departamento.code + ciudad.code || "54001",
-                    "CompradorCodPostal": ciudad.zip || "54001",
-                    "CompradorDireccion": cliente.address || "",
-                    "CompradorEnviarCorreo": true,
-                    "CompradorRespFiscal": cliente.respFiscal || "R-99-PN",
-                    "CompradorCorreoElectronico": cliente.email || empresa.email.toLowerCase()
-                },
+                "CompradorFactura": compradorFactura,
                 "EncabezadoData": {
                     "FacTipoFactura": "01",
                     "FacCodOperacion": codOperacion,

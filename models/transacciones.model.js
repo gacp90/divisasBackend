@@ -95,7 +95,9 @@ const ResolucionSchema = Schema({
 const conexusSchema = Schema({
     CodQR: {type: String},
     Base64QR: {type: String},
-    CodigoTransaccion: {type: String}
+    CodigoTransaccion: {type: String},
+    FechaValidacion: {type: Date},
+    estado: {type: String}
 })
 
 const TransaccionesSchema = Schema({
@@ -230,6 +232,8 @@ const TransaccionesSchema = Schema({
         type: Boolean,
         default: true
     },
+
+    estado: {type: String},
 
     conexus: conexusSchema,
     

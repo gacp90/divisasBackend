@@ -8,6 +8,7 @@ const Turno = require('../models/turnos.model');
 
 const { concecutive } = require('../helpers/concecutive');
 const { updateInventoryAmount, revertInventoryAmount } = require('../helpers/update-inventory');
+const { enviarFacturaConexus } = require('../helpers/conexus');
 
 /** ======================================================================
  *  GET Transaccion
@@ -173,6 +174,37 @@ const createTransaccion = async(req, res = response) => {
             .populate('cajero')
             .populate('declarant')
             .populate('items.moneda');
+
+        // ==============================================
+        // ENVIAR A CONEXUS
+        // ==============================================
+        if (transaccion.electronica) {
+            const conexusResponse = await enviarFacturaConexus(transaccion);
+
+            if (conexusResponse.ok && conexusResponse.data && conexusResponse.data.SetDocumentResult) {
+            
+                const resultado = conexusResponse.data.SetDocumentResult;
+
+                // Verificamos
+                if (resultado.CodResp !== 'ERR') {
+                    
+                    // Actualizamos
+                    transaccion.conexus = {
+                        CodQR: resultado.CodQR,
+                        Base64QR: resultado.Base64QR,
+                        CodigoTransaccion: resultado.CodigoTransaccion,
+                        FechaValidacion: resultado.FechaValidacion,
+                        estado: resultado.DetalleRespuesta
+                    };
+
+                    // Guardamos los nuevos datos en la base de datos
+                    await transaccion.save();
+                } else {
+                    console.log("Factura rechazada por Conexus:", resultado.Detalles);
+                }
+            }
+            
+        }
 
         res.json({
             ok: true,

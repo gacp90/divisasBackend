@@ -67,16 +67,16 @@ const updateInventoryAmount = async(transaccion, turno) => {
                     { currency: inventory._id, date: today },
                     {
                     $inc: {
-                        totalAmount: t.monto,
-                        totalValue: t.monto * t.tasa
+                        totalAmountV: t.monto,
+                        totalValueV: t.monto * t.tasa
                     }
                     },
                     { upsert: true, new: true }
                 );
 
                 // TASA PROMEDIO ACTUAL
-                daily.avgRate = daily.totalValue / daily.totalAmount;
-                inventory.tp = daily.totalValue / daily.totalAmount;
+                daily.avgRate = daily.totalValueV / daily.totalAmountV;
+                inventory.tp = daily.totalValueV / daily.totalAmountV;
                 inventory.tv = t.tasa;
 
                 await daily.save();

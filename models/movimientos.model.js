@@ -27,6 +27,11 @@ const MovimientosSchema = Schema({
         ref: 'turnos'
     },
 
+    pendiente:{
+        type: Boolean,
+        default: false
+    },
+
     fecha: {
         type: Date,
         default: Date.now

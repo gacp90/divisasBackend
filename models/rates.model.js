@@ -18,7 +18,17 @@ const RatesSchema = Schema({
     default: 0
   },
 
+  totalAmountV: {
+    type: Number,
+    default: 0
+  },
+
   totalValue: {
+    type: Number,
+    default: 0
+  },
+
+  totalValueV: {
     type: Number,
     default: 0
   },

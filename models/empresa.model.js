@@ -118,6 +118,10 @@ const EmpresaSchema = Schema({
         type: Boolean,
         default: true
     },
+    type: {
+        type: Boolean,
+        default: true
+    },
     conexus: conexusSchema,
     fecha: {
         type: Date,

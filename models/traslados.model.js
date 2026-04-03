@@ -54,6 +54,11 @@ const TrasladosSchema = Schema({
         default: Date.now
     },
 
+    pendiente: {
+        type: Boolean,
+        default: false
+    },
+
     status: {
         type: Boolean,
         default: true

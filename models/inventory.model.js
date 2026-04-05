@@ -24,6 +24,11 @@ const InvetorySchema = Schema({
         dafault: 0
     },
 
+    anterior: {
+        type: Number,
+        dafault: 0
+    },
+
     tc: {
         type: Number,
         require: true

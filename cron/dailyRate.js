@@ -4,8 +4,8 @@ const Rate = require('../models/rates.model');
 
 const runDailyAverageRate = () => {
 
-  // 🕛 Todos los días a las 12:05 AM || 5 0 * * *  ||  */10 * * * *
-  cron.schedule('5 0 * * *', async () => {
+  // 🕛 Todos los días a las 12:05 AM || 5 0 * * *  ||  */1 * * * *
+  cron.schedule('5 0 * * * ', async () => {
 
     try {
       console.log('⏱ Ejecutando cierre de tasa diaria...');
@@ -19,7 +19,8 @@ const runDailyAverageRate = () => {
       
 
       // Buscar solo monedas con movimientos ayer
-      const dailyRates = await Rate.find({ date: new Date(yesterday) });
+      
+      const dailyRates = await Rate.find({ date: new Date(yesterday) }).populate('currency', 'code amount anterior tbc')
 
       // Si no hubo transacciones, no se hace nada
       if (!dailyRates.length) {
@@ -29,18 +30,20 @@ const runDailyAverageRate = () => {
 
       for (const rate of dailyRates) {
 
-        console.log(rate.currency);
-        
-
         if (rate.avgRate <= 0 && rate.avgRatec <= 0) continue;
 
-        console.log('Actualizando..');
-        
+        let saldoCopAnterior = (rate.currency.anterior * rate.currency.tbc);
+        let totalDivisa = rate.totalAmount + rate.currency.anterior;
+        let totalCop = rate.totalValue + saldoCopAnterior;
 
         await Inventory.findByIdAndUpdate(
           rate.currency,
-          { tb: rate.avgRate, tbc: rate.avgRatec  }
-        );
+          { 
+            tb: rate.avgRate, 
+            tbc: (totalCop / totalDivisa).toFixed(2),
+            anterior: rate.currency.amount
+          }
+        ); 
       }
 
       console.log('✅ Tasas promedio del día anterior actualizadas');

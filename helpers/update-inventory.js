@@ -39,12 +39,19 @@ const updateInventoryAmount = async(transaccion, turno) => {
                     }
                     },
                     { upsert: true, new: true }
-                );
+                ).populate('currency', 'anterior tbc');
 
                 // TASA PROMEDIO ACTUAL
                 daily.avgRatec = daily.totalValue / daily.totalAmount;
                 inventory.tpc = daily.totalValue / daily.totalAmount;
                 inventory.tc = t.tasa;
+
+                // CALCULAR LA TASA ACTUAL CON LA EL MONTO DE COMPRAS DEL DIA ANTERIOR
+                let saldoCopAnterior = (daily.currency.anterior * daily.currency.tbc);
+                let totalDivisa = daily.totalAmount + daily.currency.anterior;
+                let totalCop = daily.totalValue + saldoCopAnterior;
+
+                inventory.ta = (totalCop / totalDivisa).toFixed(4);
 
                 await daily.save();
     
@@ -77,6 +84,7 @@ const updateInventoryAmount = async(transaccion, turno) => {
                 // TASA PROMEDIO ACTUAL
                 daily.avgRate = daily.totalValueV / daily.totalAmountV;
                 inventory.tp = daily.totalValueV / daily.totalAmountV;
+                
                 inventory.tv = t.tasa;
 
                 await daily.save();

@@ -41,6 +41,7 @@ const runDailyAverageRate = () => {
           { 
             tb: rate.avgRate, 
             tbc: (totalCop / totalDivisa).toFixed(2),
+            tpc: (totalCop / totalDivisa).toFixed(2),
             anterior: rate.currency.amount
           }
         ); 

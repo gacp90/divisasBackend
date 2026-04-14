@@ -104,7 +104,7 @@ const TransaccionesSchema = Schema({
 
     transaccion: {
         type: String,
-        enum: ['Compra', 'Venta']
+        enum: ['Compra', 'Venta', 'Nota de Credito']
     },
 
     client: {
@@ -234,6 +234,11 @@ const TransaccionesSchema = Schema({
     },
 
     estado: {type: String},
+
+    nc: {
+        type: Schema.Types.ObjectId,
+        ref: 'Transacciones'
+    },
 
     conexus: conexusSchema,
     

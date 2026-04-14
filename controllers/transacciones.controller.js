@@ -8,7 +8,7 @@ const Turno = require('../models/turnos.model');
 
 const { concecutive } = require('../helpers/concecutive');
 const { updateInventoryAmount, revertInventoryAmount } = require('../helpers/update-inventory');
-const { enviarFacturaConexus } = require('../helpers/conexus');
+const { enviarFacturaConexus, enviarNotaCreditoConexus } = require('../helpers/conexus');
 
 /** ======================================================================
  *  GET Transaccion
@@ -202,6 +202,10 @@ const createTransaccion = async(req, res = response) => {
                 } else {
                     console.log("Factura rechazada por Conexus:", resultado.Detalles);
                 }
+            }else{
+                transaccion.estado = 'Pendiente';
+                await transaccion.save();
+                console.log("Error al enviar la factura a Conexus:", conexusResponse.error || "Respuesta inesperada");
             }
             
         }
@@ -260,6 +264,83 @@ const updateTransaccion = async(req, res = response) => {
 
 };
 
+
+/** =====================================================================
+ *  RESEND CONEXUS
+=========================================================================*/
+const resendConexus = async(req, res = response) => {
+    try {
+        const tid = req.params.id;  
+
+        const transaccionDB = await Transaccion.findById(tid)
+            .populate('client')
+            .populate('cajero')
+            .populate('declarant')
+            .populate('items.moneda');
+
+        if (!transaccionDB) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'No existe ninguna transaccion con este ID'
+            });
+        }
+
+        if (transaccionDB.electronica && !transaccionDB.conexus) {
+
+                // REENVIAR A CONEXUS
+                const conexusResponse = await enviarFacturaConexus(transaccionDB);
+
+                if (conexusResponse.ok && conexusResponse.data && conexusResponse.data.SetDocumentResult) {
+            
+                    const resultado = conexusResponse.data.SetDocumentResult;
+
+                    // Verificamos
+                    if (resultado.CodResp !== 'ERR') {
+                        
+                        // Actualizamos
+                        transaccionDB.conexus = {
+                            CodQR: resultado.CodQR,
+                            Base64QR: resultado.Base64QR,
+                            CodigoTransaccion: resultado.CodigoTransaccion,
+                            FechaValidacion: resultado.FechaValidacion,
+                            estado: resultado.DetalleRespuesta
+                        };
+
+                        // Guardamos los nuevos datos en la base de datos
+                        transaccionDB.estado = 'Enviada';
+                        await transaccionDB.save();
+                    } else {
+                        console.log("Factura rechazada por Conexus:", resultado.Detalles);
+                    }
+                }else{
+                    transaccionDB.estado = 'Pendiente';
+                    await transaccionDB.save();
+                    console.log("Error al enviar la factura a Conexus:", conexusResponse.error || "Respuesta inesperada");
+                }
+
+                res.json({
+                    ok: true,
+                    transaccion : transaccionDB
+                });
+            
+        }else{
+            return res.status(400).json({
+                ok: false,
+                msg: 'Esta transaccion ya se envio a la DIAN o no es electronica, no se puede reenviar.'
+            });
+
+        }
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Error Inesperado'
+        });
+    }
+
+}
+
 /** =====================================================================
  *  CANCEL TRANSACCION
 =========================================================================*/
@@ -269,7 +350,11 @@ const cancelTransaccion = async(req, res = response) => {
         const uid = req.uid;
 
         const userDB = await User.findById(uid).populate('turno');
-        const transaccion = await Transaccion.findById(tid);
+        const transaccion = await Transaccion.findById(tid)
+            .populate('client')
+            .populate('cajero')
+            .populate('declarant')
+            .populate('items.moneda');
 
         if (!transaccion) {
             return res.status(404).json({ ok: false, msg: 'No existe ninguna transaccion con este ID' });
@@ -302,6 +387,55 @@ const cancelTransaccion = async(req, res = response) => {
 
         await transaccion.save();
 
+        // ==============================================
+        // SI LA FACTURA ES ELECTRÓNICA, GENERAR NOTA DE CRÉDITO Y ENVIARLA A CONEXUS
+        // ==============================================
+        if (transaccion.electronica && (!transaccion.conexus || !transaccion.conexus.CodigoTransaccion)) {
+            return res.status(400).json({ ok: false, msg: 'Esta factura no tiene CUFE, no se puede generar Nota de Crédito.' });
+        }
+
+        // 3. Creas tu nueva transacción en base de datos tipo "NC"
+        let devolucion = new Transaccion({
+            transaccion: 'Nota de Credito',
+            client: transaccion.client,
+            prefix: 'NC',
+            number: await concecutive('NC'), // Tu función de consecutivo
+            total: transaccion.total,
+            items: transaccion.items,
+            // ... otros campos
+            cajero: uid,
+            total: transaccion.total,
+            subtotal: transaccion.subtotal,
+            equivalencia: transaccion.equivalencia,
+            type: transaccion.type,
+            electronica: true
+        });
+        await devolucion.save();
+
+        // Haces los populates necesarios para la devolución...
+        const devolucionPopulated = await Transaccion.findById(devolucion._id)
+            .populate('client')
+            .populate('cajero')
+            .populate('declarant')
+            .populate('items.moneda');
+
+        // 4. Invocas el helper pasándole AMBAS transacciones
+        const conexusResponse = await enviarNotaCreditoConexus(devolucionPopulated, transaccion);
+
+        if (conexusResponse.ok && conexusResponse.data.SetDocumentResult.CodResp !== 'ERR') {
+            // Guardas el nuevo CUFE (CUDE en este caso) de la Nota de Crédito
+            devolucion.conexus = {
+                CodQR: conexusResponse.data.SetDocumentResult.CodQR,
+                Base64QR: conexusResponse.data.SetDocumentResult.Base64QR,
+                CodigoTransaccion: conexusResponse.data.SetDocumentResult.CodigoTransaccion
+            };
+            await devolucion.save();
+
+            transaccion.nc = devolucion._id;
+            await transaccion.save();
+        }
+
+
         res.json({
             ok: true,
             msg: 'Transacción anulada correctamente y saldos restaurados',
@@ -327,5 +461,6 @@ module.exports = {
     createTransaccion,
     updateTransaccion,
     getTransaccionId,
-    cancelTransaccion
+    cancelTransaccion,
+    resendConexus
 };

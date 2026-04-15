@@ -28,8 +28,18 @@ const enviarFacturaConexus = async (transaccionPopulated) => {
 
 
         // SET FECHAS
-        const fechaActual = new Date();
-        const fechaFactura = fechaActual.toISOString().slice(0, 19).replace('T', ' ');
+        // const fechaActual = new Date();
+        // const fechaFactura = fechaActual.toISOString().slice(0, 19).replace('T', ' ');
+        const fechaColombia = new Date().toLocaleString("en-US", { timeZone: "America/Bogota" });
+        const dateObj = new Date(fechaColombia);
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const hours = String(dateObj.getHours()).padStart(2, '0');
+        const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+        const seconds = String(dateObj.getSeconds()).padStart(2, '0');
+
+        const fechaFactura = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
         const fechaVencimiento = fechaFactura.split(' ')[0];
 
         // SET VARIABES DE CODIGO DE OPERACION Y NUMERO DE DOCUMENTO
@@ -205,7 +215,7 @@ const enviarFacturaConexus = async (transaccionPopulated) => {
                     "AutSecuenciaFinal": AutSecuenciaFinal
                 }
             }
-        };
+        };       
 
         // ENVIO DE FACTURA A CONEXUS
         const urlConexus = `${process.env.URL_CONEXUS}/SetDocument`;
@@ -265,8 +275,21 @@ const enviarNotaCreditoConexus = async (transaccionDevolucion, transaccionOrigin
         const ciudad = await Ciudad.findOne({ code: cliente.city, department: departamento._id });
 
         // SET FECHAS PARA LA NOTA DE CRÉDITO
-        const fechaActual = new Date();
-        const fechaNC = fechaActual.toISOString().slice(0, 19).replace('T', ' ');
+        // const fechaActual = new Date();
+        // const fechaNC = fechaActual.toISOString().slice(0, 19).replace('T', ' ');
+
+        const fechaColombia = new Date().toLocaleString("en-US", { timeZone: "America/Bogota" });
+        const dateObj = new Date(fechaColombia);
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const hours = String(dateObj.getHours()).padStart(2, '0');
+        const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+        const seconds = String(dateObj.getSeconds()).padStart(2, '0');
+
+        const fechaNC = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        
+
         const fechaVencimientoNC = fechaNC.split(' ')[0];
 
         // FECHA DE LA FACTURA ORIGINAL

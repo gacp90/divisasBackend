@@ -374,7 +374,6 @@ const cancelTransaccion = async(req, res = response) => {
                 msg: 'No puedes anular esta factura directamente porque pertenece a un turno distinto o cerrado. Solicita una Nota de Crédito.' 
             });
         }
-
         
         const turnoActual = await Turno.findById(userDB.turno._id);
         

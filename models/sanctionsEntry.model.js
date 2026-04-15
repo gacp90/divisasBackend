@@ -47,4 +47,6 @@ SanctionsEntrySchema.method("toJSON", function () {
   return object;
 });
 
+SanctionsEntrySchema.index({ fullName: 1, source: 1 });
+
 module.exports = model('SanctionsEntrys', SanctionsEntrySchema);

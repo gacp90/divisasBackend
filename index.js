@@ -51,6 +51,7 @@ app.use('/api/v1/search', require('./routes/search.route'));
 app.use('/api/v1/users', require('./routes/users.route'));
 app.use('/api/v1/transacciones', require('./routes/transacciones.route'));
 app.use('/api/v1/sanctions', require('./routes/sanctions.routes'));
+app.use('/api/v1/sources', require('./routes/sources.route'));
 app.use('/api/v1/traslados', require('./routes/traslados.route'));
 app.use('/api/v1/turnos', require('./routes/turnos.route'));
 app.use('/api/v1/uploads', require('./routes/uploads.route'));

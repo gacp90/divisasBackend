@@ -117,49 +117,47 @@ const createCity = async(req, res = response) => {
 /** =====================================================================
  *  CREATE EXCEL
 =========================================================================*/
-const createCitiesExcel = async(req, res = response) => {
-
+const createCitiesExcel = async (req, res = response) => {
     try {
-
         let { ciudades } = req.body;
 
-        if (ciudades.length === 0) {
+        if (!ciudades || ciudades.length === 0) {
             return res.status(400).json({
                 ok: false,
-                msg: 'Lista de ciudades esta vacia, verifique he intene nuevamente'
+                msg: 'Lista de ciudades está vacía'
             });
         }
+        const ops = ciudades
+            .filter(c => c.code && c.department)
+            .map(ciudad => ({
+                updateOne: {
+                    filter: { code: ciudad.code, department: ciudad.department },
+                    update: { $setOnInsert: ciudad },
+                    upsert: true
+                }
+            }));
 
-        let i = 0;
-        for (const ciudad of ciudades) {
-
-            if (!ciudad.code && !ciudad.department) { continue }
-            
-            const validateCiudad = await City.findOne({ code: ciudad.code, department: ciudad.department });
-            if (!validateCiudad) {                
-                
-                const ciudadNew = new City(ciudad);
-                    
-                // SAVE
-                await ciudadNew.save();
-                i++;
-            }
+        if (ops.length === 0) {
+            return res.status(400).json({ ok: false, msg: 'No hay ciudades válidas para procesar' });
         }
+
+        // GUARDAMOS CON EL BULKWRITE
+        const result = await City.bulkWrite(ops);
 
         res.json({
             ok: true,
-            total: i
+            total: result.upsertedCount,
+            totalProcesados: ops.length,
+            msg: `Se han creado ${result.upsertedCount} nuevas ciudades.`
         });
-
 
     } catch (error) {
         console.log(error);
         return res.status(500).json({
             ok: false,
-            msg: 'Error inesperado, porfavor intente nuevamente'
+            msg: 'Error inesperado, hable con el administrador'
         });
     }
-
 };
 
 /** =====================================================================

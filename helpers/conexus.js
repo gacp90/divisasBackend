@@ -208,7 +208,7 @@ const enviarFacturaConexus = async (transaccionPopulated) => {
         };
 
         // ENVIO DE FACTURA A CONEXUS
-        const urlConexus = 'https://demo.conexusit.com/ServicioWebAPI/Service.svc/SetDocument';
+        const urlConexus = `${process.env.URL_CONEXUS}/SetDocument`;
         
         const response = await axios.post(urlConexus, dataFactura, {
             headers: {
@@ -242,6 +242,16 @@ const enviarNotaCreditoConexus = async (transaccionDevolucion, transaccionOrigin
             throw new Error('Configuración de empresa no encontrada');
         }
 
+        
+        const responseEvent = await axios.get(`${process.env.URL_CONEXUS}/EventosCUFE?CUFE=${transaccionOriginal.conexus.CodigoTransaccion}`, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log('Tipo de evento: ', responseEvent.data);
+        
+
         // El cliente sigue siendo el mismo de la transacción que estamos anulando
         const cliente = transaccionDevolucion.client;
 
@@ -260,7 +270,6 @@ const enviarNotaCreditoConexus = async (transaccionDevolucion, transaccionOrigin
         const fechaVencimientoNC = fechaNC.split(' ')[0];
 
         // FECHA DE LA FACTURA ORIGINAL
-        // Ajusta "fechaC" si en tu modelo la fecha de creación se llama "fecha"
         const fechaOriginal = transaccionOriginal.fechaC ? transaccionOriginal.fechaC.toISOString().slice(0, 19).replace('T', ' ') : fechaNC;
 
         // SET VARIABLES DEL DOCUMENTO
@@ -314,15 +323,14 @@ const enviarNotaCreditoConexus = async (transaccionDevolucion, transaccionOrigin
             };
         });
 
-        // NOTA: Para las NC, la DIAN no exige una resolución formal como en las facturas, 
-        // pero Conexus puede requerir el bloque. Enviamos la misma resolución de la factura original.
+        // RESOLUCION DEP
         let resolucion = transaccionDevolucion.transaccion === 'Venta' ? empresa.resolucionV : empresa.resolucionC;
 
         // PAYLOAD PARA CONEXUS (NOTA DE CRÉDITO)
         const dataNotaCredito = {
             "Documento": {
                 "SoftwareSeguridad": {
-                    "TipoDocumento": "NCR", // <--- CAMBIO IMPORTANTE: NCR
+                    "TipoDocumento": "NCR",
                     "GuidEmpresa": empresa.conexus.GuidEmpresa,
                     "GuidOrigen": empresa.conexus.GuidOrigen,
                     "HashSeguridad": empresa.conexus.HashSeguridad,
@@ -335,12 +343,11 @@ const enviarNotaCreditoConexus = async (transaccionDevolucion, transaccionOrigin
                     "EmiTipoIdentificacion": "31",
                     "EmiIdentificacion": nit,
                     "EmiDVIdentificacion": dv || "5"
-                    // NOTA: Si rechaza por prefijo, agrega "EmiPrefijo": "NC"
                 },
                 "CompradorFactura": compradorFactura,
                 "EncabezadoData": {
-                    "FacTipoFactura": "01", // Mantenemos 01 o 91 según el estándar, el JSON muestra 01
-                    "FacCodOperacion": "22", // <--- CAMBIO: Operación para NC
+                    "FacTipoFactura": "01",
+                    "FacCodOperacion": (responseEvent.data === '033')? '22':'20',
                     "FacFechaHoraFactura": fechaNC,
                     "FacFechaVencimiento": fechaVencimientoNC
                 },
@@ -352,7 +359,7 @@ const enviarNotaCreditoConexus = async (transaccionDevolucion, transaccionOrigin
                     "DescNatCorreccion": "Anulación de la operación comercial",
                     "NumeroFactura": `${transaccionOriginal.prefix}${transaccionOriginal.number}`,
                     "CufeFactura": transaccionOriginal.conexus?.CodigoTransaccion || "",
-                    "FechaFactura": fechaOriginal
+                    "FechaFactura": fechaVencimientoNC
                 },
                 // ==========================================================
                 "InfoMonetarioData": {
@@ -404,7 +411,7 @@ const enviarNotaCreditoConexus = async (transaccionDevolucion, transaccionOrigin
         console.log(JSON.stringify(dataNotaCredito));
         
 
-        const urlConexus = 'https://demo.conexusit.com/ServicioWebAPI/Service.svc/SetDocument';
+        const urlConexus = `${process.env.URL_CONEXUS}/SetDocument`;
         
         const response = await axios.post(urlConexus, dataNotaCredito, {
             headers: {
@@ -423,7 +430,7 @@ const enviarNotaCreditoConexus = async (transaccionDevolucion, transaccionOrigin
             ok: false,
             msg: error.response?.data || error.message
         };
-    }
+    } 
 };
 
 module.exports = {

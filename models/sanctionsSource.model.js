@@ -4,8 +4,7 @@ const SanctionsSourceSchema = new Schema({
 
     name: {
       type: String,
-      required: true,
-      unique: true,
+      required: true
     },
 
     url: {

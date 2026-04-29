@@ -4,6 +4,7 @@ const Transaccion = require('../models/transacciones.model');
 const Inventory= require('../models/inventory.model');
 const User = require('../models/users.model');
 const Turno = require('../models/turnos.model');
+const Client = require('../models/clients.model');
 
 
 const { concecutive } = require('../helpers/concecutive');
@@ -222,6 +223,132 @@ const createTransaccion = async(req, res = response) => {
             ok: false,
             msg: 'Error Inesperado'
         });
+    }
+};
+
+/** =====================================================================
+ *  UPDATE DEPARTMETN
+=========================================================================*/
+const importarTransaccionesBulk = async (req, res = response) => {
+    try {
+        const { transacciones } = req.body;
+
+        if (!transacciones || transacciones.length === 0) {
+            return res.status(400).json({ ok: false, msg: 'No hay datos para importar.' });
+        }
+
+        // Extraer documentos y códigos únicos
+        const documentosClientes = [...new Set(transacciones.map(t => String(t.clienteDoc)))];
+        const codigosMonedas = [...new Set(transacciones.map(t => String(t.monedaCode)))];
+
+        // BUSCAR EN BD Y CREAR DICCIONARIOS
+        const clientesEncontrados = await Client.find({ numberid: { $in: documentosClientes } }, '_id numberid');
+        const monedasEncontradas = await Inventory.find({ code: { $in: codigosMonedas } }, '_id code');
+
+        const mapClientes = clientesEncontrados.reduce((acc, curr) => {
+            acc[curr.numberid] = curr._id;
+            return acc;
+        }, {});
+
+        const mapMonedas = monedasEncontradas.reduce((acc, curr) => {
+            acc[curr.code] = curr._id;
+            return acc;
+        }, {});
+
+        // PREPARAR OPERACIONES
+        let operaciones = [];
+        let facturasOmitidas = 0;
+
+        for (const trx of transacciones) {
+            
+            const clienteId = mapClientes[trx.clienteDoc];
+            const monedaId = mapMonedas[trx.monedaCode];
+
+            // Si no existe el cliente o la moneda en la BD nueva, no podemos guardar la factura
+            if (!clienteId || !monedaId) {
+                if (!clienteId) console.log('Cliente no encontrado...')
+                if (!monedaId) console.log('Moneda no encontrad...')
+                facturasOmitidas++;
+                continue; 
+            }
+
+            // AGREGAMOS EL ITEM
+            const itemUnico = {
+                moneda: monedaId,
+                monto: trx.monto,
+                tasa: trx.tasa,
+                subtotal: trx.monto * trx.tasa,
+                total: trx.total,
+                iva: 0,
+                pcda: trx.tasa,
+                dift: 0,
+                baseliq: trx.baseliq,
+                tvb: trx.tasa,
+                trm: trx.trm,
+                equivalencia: trx.equivalencia 
+            };
+
+            const nuevaTransaccion = {
+                transaccion: trx.transaccion,
+                client: clienteId,
+                declarant: clienteId,
+                prefix: trx.prefix,
+                number: trx.number,
+                control: trx.control,
+                total: trx.total,
+                subtotal: trx.monto * trx.tasa,
+                type: 'Contado',
+                formaPago: 'Efectivo',
+                equivalencia: trx.equivalencia,
+                
+                // Fechas
+                fecha: new Date(trx.fecha),
+                fechaC: trx.fechaC ? new Date(trx.fechaC) : null,
+                
+                // Banderas
+                pnc: trx.pnc,
+                electronica: false,
+                status: true,
+                
+                // PAGO
+                payments: [{
+                    monto: trx.total,
+                    type: 'Efectivo',
+                    status: true,
+                    fecha: new Date(trx.fecha)
+                }],
+                
+                items: [itemUnico]
+            };
+
+            // ADD TRANSACCION
+            operaciones.push({
+                updateOne: {
+                    filter: { prefix: trx.prefix, number: trx.number },
+                    update: { $set: nuevaTransaccion },
+                    upsert: true
+                }
+            });
+        }
+
+        // EJECUCION MASIVA
+        if (operaciones.length > 0) {
+            await Transaccion.bulkWrite(operaciones);
+        }
+
+        res.json({
+            ok: true,
+            msg: 'Importacion de transacciones agregadas exitosamente.',
+            resumen: {
+                importadas: operaciones.length,
+                omitidas: facturasOmitidas,
+                total: transacciones.length
+            }
+        });
+
+    } catch (error) {
+        console.error('Error migrando facturas:', error);
+        res.status(500).json({ ok: false, msg: 'Error interno en la migración de facturas.' });
     }
 };
 
@@ -461,5 +588,6 @@ module.exports = {
     updateTransaccion,
     getTransaccionId,
     cancelTransaccion,
-    resendConexus
+    resendConexus,
+    importarTransaccionesBulk
 };

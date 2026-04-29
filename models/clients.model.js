@@ -79,7 +79,7 @@ const ClientsSchema = Schema({
     type: {
         type: String,
         require: true,
-        default: 'Natural'
+        default: '2'
     },
 
     representante: {

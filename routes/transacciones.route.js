@@ -9,7 +9,7 @@ const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
 
 // CONTROLLERS
-const { getTransaccionesQuery, getTransaccionId, createTransaccion, updateTransaccion, cancelTransaccion, resendConexus } = require('../controllers/transacciones.controller');
+const { getTransaccionesQuery, getTransaccionId, createTransaccion, updateTransaccion, cancelTransaccion, resendConexus, importarTransaccionesBulk } = require('../controllers/transacciones.controller');
 
 const router = Router();
 
@@ -32,6 +32,11 @@ router.post('/', [
     validarCampos
 
 ], createTransaccion);
+
+/** =====================================================================
+ *  POST IMPORT BULK
+=========================================================================*/
+router.post('/import/bulk', validarJWT, importarTransaccionesBulk);
 
 /** =====================================================================
  *  PUT

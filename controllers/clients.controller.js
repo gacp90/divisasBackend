@@ -177,6 +177,102 @@ const createClient = async(req, res = response) => {
 };
 
 /** =====================================================================
+ *  IMPORT BULK CLIENTS
+=========================================================================*/
+const importarClientsBulk = async (req, res = response) => {
+    try {
+        const { clientes } = req.body;
+
+        if (!clientes || clientes.length === 0) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'No se recibieron clientes para importar.'
+            });
+        }
+
+        // SEPARAR CLIENTES NATURALES Y JURÍDICOS
+        const naturales = clientes.filter(c => c.type === '2');
+        const juridicos = clientes.filter(c => c.type === '1');
+
+        let operacionesNaturales = [];
+        let operacionesJuridicos = [];
+
+        // UPSERT NATURALES
+        naturales.forEach(cliente => {
+            operacionesNaturales.push({
+                updateOne: {
+                    filter: { numberid: cliente.numberid, typeid: cliente.typeid },
+                    update: { $set: cliente },
+                    upsert: true
+                }
+            });
+        });
+
+        // Bulk de Naturales
+        if (operacionesNaturales.length > 0) {
+            await Client.bulkWrite(operacionesNaturales);
+        }
+
+        // PREPARAR Y PROCESAR JURÍDICOS
+        for (const empresa of juridicos) {
+            
+            let idRepresentante = null;
+
+            // Si hay info del representante   
+            if (empresa.representanteDoc && empresa.representanteDoc.numberid) {
+                const repEncontrado = await Client.findOne({
+                    numberid: empresa.representanteDoc.numberid,
+                    typeid: empresa.representanteDoc.typeid
+                });
+
+                if (repEncontrado) {
+                    idRepresentante = repEncontrado._id;
+                }
+            }
+
+            // Preparamos el objeto final de la empresa
+            const datosEmpresa = { ...empresa };
+            
+            // Asignamos el _id de Mongo encontrado (o null si no se encontró)
+            datosEmpresa.representante = idRepresentante;
+            
+            // Eliminamos la propiedad temporal usada para la búsqueda para no ensuciar la BD
+            delete datosEmpresa.representanteDoc;
+
+            operacionesJuridicos.push({
+                updateOne: {
+                    filter: { numberid: datosEmpresa.numberid, typeid: datosEmpresa.typeid },
+                    update: { $set: datosEmpresa },
+                    upsert: true
+                }
+            });
+        }
+
+        // Bulk de Jurídicos
+        if (operacionesJuridicos.length > 0) {
+            await Client.bulkWrite(operacionesJuridicos);
+        }
+
+        res.json({
+            ok: true,
+            msg: 'Importación masiva completada con éxito.',
+            resumen: {
+                naturales: naturales.length,
+                juridicos: juridicos.length,
+                total: clientes.length
+            }
+        });
+
+    } catch (error) {
+        console.error('Error en importación bulk:', error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Hable con el administrador. Error procesando el archivo.'
+        });
+    }
+};
+
+/** =====================================================================
  *  UPDATE CLIENT
 =========================================================================*/
 const updateClient = async(req, res = response) => {
@@ -234,5 +330,6 @@ module.exports = {
     createClient,
     updateClient,
     getClientId,
-    getDuplicates
+    getDuplicates,
+    importarClientsBulk
 };

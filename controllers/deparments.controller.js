@@ -184,7 +184,7 @@ const updateDepartment = async(req, res = response) => {
         // VALIDATE
         const { code, ...campos } = req.body;
         if (departmentDB.code !== code) {
-            const validateCode = await City.findOne({ code });
+            const validateCode = await Department.findOne({ code });
             if (validateCode) {
                 return res.status(400).json({
                     ok: false,

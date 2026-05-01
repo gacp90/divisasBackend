@@ -177,6 +177,18 @@ const createClient = async(req, res = response) => {
 };
 
 /** =====================================================================
+ *  SETEAR TEXTO
+=========================================================================*/
+const normalizarTexto = (texto) => {
+    if (!texto) return '';
+    return String(texto)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase()                  
+        .trim();                        
+};
+
+/** =====================================================================
  *  IMPORT BULK CLIENTS
 =========================================================================*/
 const importarClientsBulk = async (req, res = response) => {
@@ -210,7 +222,7 @@ const importarClientsBulk = async (req, res = response) => {
 
         // Bulk de Naturales
         if (operacionesNaturales.length > 0) {
-            await Client.bulkWrite(operacionesNaturales);
+            await Client.bulkWrite(operacionesNaturales, { ordered: false });
         }
 
         // PREPARAR Y PROCESAR JURÍDICOS
@@ -250,7 +262,7 @@ const importarClientsBulk = async (req, res = response) => {
 
         // Bulk de Jurídicos
         if (operacionesJuridicos.length > 0) {
-            await Client.bulkWrite(operacionesJuridicos);
+            await Client.bulkWrite(operacionesJuridicos, { ordered: false });
         }
 
         res.json({

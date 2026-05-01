@@ -227,7 +227,7 @@ const createTransaccion = async(req, res = response) => {
 };
 
 /** =====================================================================
- *  UPDATE DEPARTMETN
+ *  IMPORT BULK TRANSATIONS
 =========================================================================*/
 const importarTransaccionesBulk = async (req, res = response) => {
     try {
@@ -244,6 +244,10 @@ const importarTransaccionesBulk = async (req, res = response) => {
         // BUSCAR EN BD Y CREAR DICCIONARIOS
         const clientesEncontrados = await Client.find({ numberid: { $in: documentosClientes } }, '_id numberid');
         const monedasEncontradas = await Inventory.find({ code: { $in: codigosMonedas } }, '_id code');
+        const admin = await User.findOne({role: 'ADMIN'});
+        if (!admin) {
+            return res.status(400).json({ ok: false, msg: 'Debe de haber almenos un usuario como administrador para continuar.' });
+        }
 
         const mapClientes = clientesEncontrados.reduce((acc, curr) => {
             acc[curr.numberid] = curr._id;
@@ -300,6 +304,7 @@ const importarTransaccionesBulk = async (req, res = response) => {
                 type: 'Contado',
                 formaPago: 'Efectivo',
                 equivalencia: trx.equivalencia,
+                cajero: admin._id ? admin._id : admin.uid,
                 
                 // Fechas
                 fecha: new Date(trx.fecha),

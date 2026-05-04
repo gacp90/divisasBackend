@@ -38,9 +38,12 @@ const login = async(req, res = response) => {
             if (userDB.status) {
                 const token = await generarJWT(userDB.id);
 
+                userDB.password = '*************';
+
                 res.json({
                     ok: true,
-                    token
+                    token,
+                    usuario: userDB
                 });
             } else {
                 return res.status(401).json({

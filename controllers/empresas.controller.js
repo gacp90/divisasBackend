@@ -219,9 +219,9 @@ const getEstadoSuscripcion = async (req, res) => {
     // Obtener el último día del mes actual
     const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
     
-    const isLastTwoDays = currentDay >= lastDayOfMonth - 1;
-    const isFirstThreeDays = currentDay <= 3;
-    const isPastFourth = currentDay >= 4;
+    const isLastTwoDays = currentDay >= 24;
+    const isFirstThreeDays = currentDay <= 5;
+    const isPastFourth = currentDay >= 6;
 
     const ultimoPago = empresa.suscripcion?.ultimoPago;
     
@@ -236,14 +236,14 @@ const getEstadoSuscripcion = async (req, res) => {
             // Si pagó a final del mes pasado (pago adelantado)
             uPago.getFullYear() === currentYear && 
             uPago.getMonth() === currentMonth - 1 && 
-            uPago.getDate() >= new Date(uPago.getFullYear(), uPago.getMonth() + 1, 0).getDate() - 2
+            uPago.getDate() >= 24
         ) {
             isPaidForCurrentMonth = true;
         } else if (
             // Si pagó a final de diciembre del año pasado para enero de este año
             uPago.getFullYear() === currentYear - 1 && 
             uPago.getMonth() === 11 && currentMonth === 0 &&
-            uPago.getDate() >= 29
+            uPago.getDate() >= 24
         ) {
             isPaidForCurrentMonth = true;
         }
@@ -259,11 +259,11 @@ const getEstadoSuscripcion = async (req, res) => {
             mensajeSuscripcion = 'Tu suscripción ha sido bloqueada por falta de pago.';
         } else if (isFirstThreeDays) {
             estadoCalculado = 'ALERTA';
-            diasRestantes = 4 - currentDay; // Ej. si es día 2, faltan 2 días para el bloqueo (día 4)
+            diasRestantes = 6 - currentDay; // Ej. si es día 2, faltan 4 días para el bloqueo (día 6)
             mensajeSuscripcion = `Tu suscripción está vencida. Te quedan ${diasRestantes} día(s) de gracia antes del bloqueo.`;
         } else if (isLastTwoDays) {
             estadoCalculado = 'ALERTA';
-            diasRestantes = (lastDayOfMonth - currentDay) + 4; // Ej. día 29 de 30 = 1 día del mes + 3 de gracia = 4 días
+            diasRestantes = (lastDayOfMonth - currentDay) + 6; // Ej. día 29 de 30 = 1 día del mes + 5 de gracia = 6 días
             mensajeSuscripcion = `Tu suscripción está próxima a vencer.`;
         } else {
             estadoCalculado = 'BLOQUEADA';
@@ -272,7 +272,7 @@ const getEstadoSuscripcion = async (req, res) => {
     } else {
         if (isLastTwoDays) {
             estadoCalculado = 'ALERTA';
-            diasRestantes = (lastDayOfMonth - currentDay) + 4;
+            diasRestantes = (lastDayOfMonth - currentDay) + 6;
             mensajeSuscripcion = `Tu suscripción vencerá pronto. Recuerda renovarla para el próximo mes.`;
         }
     }

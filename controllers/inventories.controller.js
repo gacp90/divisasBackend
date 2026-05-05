@@ -1,6 +1,8 @@
 const { response } = require('express');
 
 const Inventory = require('../models/inventory.model');
+const Transaccion = require('../models/transacciones.model');
+const Traslado = require('../models/traslados.model');
 
 /** ======================================================================
  *  GET INVENTORY
@@ -15,13 +17,32 @@ const getInventoriesQuery = async(req, res) => {
             Inventory.find(query)
             .limit(hasta)
             .skip(desde)
-            .sort(sort),
+            .sort(sort)
+            .lean(),
             Inventory.countDocuments({ status: true })
-        ])
+        ]);
+
+        const usedInTx = await Transaccion.distinct('items.moneda');
+        const usedInTrEntregada = await Traslado.distinct('monedaEntregada');
+        const usedInTrRecibida = await Traslado.distinct('monedaRecibida');
+
+        const usedSet = new Set([
+            ...usedInTx.map(id => id.toString()),
+            ...usedInTrEntregada.map(id => id.toString()),
+            ...usedInTrRecibida.map(id => id.toString())
+        ]);
+
+        const inventoriesWithFlag = inventories.map(inv => {
+            return {
+                ...inv,
+                hasTransactions: usedSet.has(inv._id.toString()),
+                invid: inv._id
+            };
+        });
 
         res.json({
             ok: true,
-            inventories,
+            inventories: inventoriesWithFlag,
             total
         });
 
@@ -153,6 +174,19 @@ const updateInventory = async(req, res = response) => {
             }
 
             campos.currency = currency.trim();
+        }
+
+        // Evitar que se modifique el monto inicial si ya hubo transacciones en el historial
+        if (campos.amount !== undefined) {
+            const usedInTx = await Transaccion.exists({ 'items.moneda': invid });
+            const usedInTr = await Traslado.exists({ $or: [{ monedaEntregada: invid }, { monedaRecibida: invid }] });
+
+            if (inventoryDB.amount !== inventoryDB.disponible || usedInTx || usedInTr) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: 'No se puede modificar el monto porque esta divisa ya tiene un historial de transacciones o traslados.'
+                });
+            }
         }
 
         // UPDATE

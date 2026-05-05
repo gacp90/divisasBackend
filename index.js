@@ -55,6 +55,7 @@ app.use('/api/v1/sources', require('./routes/sources.route'));
 app.use('/api/v1/traslados', require('./routes/traslados.route'));
 app.use('/api/v1/turnos', require('./routes/turnos.route'));
 app.use('/api/v1/uploads', require('./routes/uploads.route'));
+app.use('/api/v1/pagos', require('./routes/pagos.route'));
 
 
 // SPA

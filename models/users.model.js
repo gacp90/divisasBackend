@@ -28,6 +28,11 @@ const UserSchema = Schema({
         require: true
     },
 
+    isOwner: {
+    type: Boolean,
+    default: false
+    },
+
     img: {
         type: String
     },

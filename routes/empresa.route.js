@@ -10,7 +10,7 @@ const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
 
 // CONTROLLERS
-const { getEmpresa, createEmpresa, updateEmpresa, updateLogo } = require('../controllers/empresas.controller');
+const { getEmpresa, createEmpresa, updateEmpresa, updateLogo, getEstadoSuscripcion } = require('../controllers/empresas.controller');
 
 const router = Router();
 
@@ -44,6 +44,11 @@ router.put('/:id', validarJWT, updateEmpresa);
  *  UPDATE LOGO EMPRESA
 =========================================================================*/
 router.put('/update/logo/:id', validarJWT, updateLogo);
+
+/** =========================================
+ *  ESTADO DE SUSCRIPCIÓN
+=========================================*/
+router.get('/suscripcion', validarJWT, getEstadoSuscripcion);
 
 // EXPORT
 module.exports = router;

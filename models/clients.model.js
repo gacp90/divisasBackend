@@ -68,7 +68,8 @@ const ClientsSchema = Schema({
     
     numberid: {
         type: String,
-        require: true
+        require: true,
+        unique: true
     },
 
     dvb: {
@@ -114,8 +115,6 @@ const ClientsSchema = Schema({
     }
 
 });
-
-ClientsSchema.index({ typeid: 1, numberid: 1 }, { unique: true });
 
 ClientsSchema.method('toJSON', function() {
 

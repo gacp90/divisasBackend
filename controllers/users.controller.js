@@ -81,6 +81,23 @@ const createUsers = async(req, res = response) => {
 
     try {
 
+        // Validar permisos según el rol del usuario que solicita
+        const reqUser = await User.findById(req.uid);
+        
+        if (!reqUser) return res.status(404).json({ok: false, msg: 'Usuario no encontrado'});
+
+        if (req.body.role === 'OWNER' && reqUser.role !== 'OWNER') {
+            return res.status(403).json({ok: false, msg: 'Solo el OWNER puede crear usuarios OWNER.'});
+        }
+        
+        if (reqUser.role === 'SUPERVISOR' && req.body.role !== 'CAJERO') {
+            return res.status(403).json({ok: false, msg: 'El SUPERVISOR solo puede crear CAJEROS.'});
+        }
+        
+        if (reqUser.role === 'CAJERO') {
+            return res.status(403).json({ok: false, msg: 'El CAJERO no puede crear usuarios.'});
+        }
+
         const validarUsuario = await User.findOne({ user });
 
         if (validarUsuario) {
@@ -123,6 +140,7 @@ const createUsers = async(req, res = response) => {
 const updateUser = async(req, res = response) => {
 
     const uid = req.params.id;
+   
 
     try {
 
@@ -134,7 +152,27 @@ const updateUser = async(req, res = response) => {
                 msg: 'No existe ningun usuario con este ID'
             });
         }
-        // SEARCH USER
+        
+        // Validar permisos para editar usuarios
+        const reqUser = await User.findById(req.uid);
+        
+        if (!reqUser) return res.status(404).json({ok: false, msg: 'Usuario no encontrado'});
+
+        if (userDB.role === 'OWNER' && reqUser.role !== 'OWNER') {
+            return res.status(403).json({ok: false, msg: 'Solo un OWNER puede editar a otro OWNER.'});
+        }
+        
+        if (req.body.role === 'OWNER' && reqUser.role !== 'OWNER') {
+            return res.status(403).json({ok: false, msg: 'Solo un OWNER puede asignar el rol OWNER.'});
+        }
+        
+        if (reqUser.role === 'SUPERVISOR' && userDB.role !== 'CAJERO' && reqUser.id !== userDB.id) {
+            return res.status(403).json({ok: false, msg: 'El SUPERVISOR solo puede editar a CAJEROS o a sí mismo.'});
+        }
+        
+        if (reqUser.role === 'CAJERO' && reqUser.id !== userDB.id) {
+            return res.status(403).json({ok: false, msg: 'El CAJERO solo puede editar su propio perfil.'});
+        }
 
         // VALIDATE USER
         const { password, user, ...campos } = req.body;
@@ -188,7 +226,7 @@ const deleteUser = async(req, res = response) => {
 
     try {
 
-        // SEARCH DEPARTMENT
+        // SEARCH USER
         const userDB = await User.findById({ _id: uid });
         if (!userDB) {
             return res.status(400).json({
@@ -196,7 +234,23 @@ const deleteUser = async(req, res = response) => {
                 msg: 'No existe ningun usuario con este ID'
             });
         }
-        // SEARCH DEPARTMENT
+        
+        // Validar permisos para eliminar/desactivar usuarios
+        const reqUser = await User.findById(req.uid);
+        
+        if (!reqUser) return res.status(404).json({ok: false, msg: 'Usuario no encontrado'});
+
+        if (userDB.role === 'OWNER' && reqUser.role !== 'OWNER') {
+            return res.status(403).json({ok: false, msg: 'Solo un OWNER puede desactivar a otro OWNER.'});
+        }
+        
+        if (reqUser.role === 'SUPERVISOR' && userDB.role !== 'CAJERO') {
+            return res.status(403).json({ok: false, msg: 'El SUPERVISOR solo puede desactivar a CAJEROS.'});
+        }
+        
+        if (reqUser.role === 'CAJERO') {
+            return res.status(403).json({ok: false, msg: 'El CAJERO no puede desactivar usuarios.'});
+        }
 
         // CHANGE STATUS
         if (userDB.status === true) {

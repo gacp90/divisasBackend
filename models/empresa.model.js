@@ -85,6 +85,15 @@ const EmpresaSchema = Schema({
     logo: {
         type: String
     },
+    suscripcion: {
+    estado: {
+        type: String,
+        default: 'INACTIVA' 
+    },
+    ultimoPago: {
+        type: Date
+    }
+    },
     numberRes: {
         type: String
     },

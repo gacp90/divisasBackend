@@ -28,6 +28,9 @@ const checkClient = async (req, res) => {
         // Creamos un patrón donde entre cada caracter puede haber opcionalmente guiones, puntos o espacios
         const regexPattern = escapedChars.join('[-_.\\s]*');
         query.$or.push({ 'documents.number': { $regex: regexPattern, $options: 'i' } });
+        // Ampliar búsqueda a remarks y aliases porque a veces la OFAC no clasifica bien la cédula
+        query.$or.push({ 'remarks': { $regex: regexPattern, $options: 'i' } });
+        query.$or.push({ 'aliases': { $regex: regexPattern, $options: 'i' } });
       } else {
         query.$or.push({ 'documents.number': document });
       }
@@ -67,6 +70,21 @@ const checkClient = async (req, res) => {
   }
 };
 
+const { downloadAndProcessOFAC } = require('../helpers/ofac.helper');
+const { downloadAndProcessONU } = require('../helpers/onuSanctions.helper');
+
+const forceDownload = async (req, res) => {
+  try {
+    await downloadAndProcessONU();
+    await downloadAndProcessOFAC();
+    res.json({ ok: true, msg: 'Descarga finalizada correctamente' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ ok: false, msg: 'Error durante la descarga', error: error.message });
+  }
+}
+
 module.exports = {
-  checkClient
+  checkClient,
+  forceDownload
 };

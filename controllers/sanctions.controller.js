@@ -19,7 +19,18 @@ const checkClient = async (req, res) => {
 
     // Búsqueda por documento
     if (document) {
-      query.$or.push({ 'documents.number': document });
+      // Quitamos guiones, puntos y espacios de la entrada del usuario
+      const cleanDoc = document.toString().replace(/[-_.\s]/g, '').trim();
+      
+      if (cleanDoc.length > 0) {
+        // Escapamos los caracteres para evitar inyecciones en regex
+        const escapedChars = cleanDoc.split('').map(c => c.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'));
+        // Creamos un patrón donde entre cada caracter puede haber opcionalmente guiones, puntos o espacios
+        const regexPattern = escapedChars.join('[-_.\\s]*');
+        query.$or.push({ 'documents.number': { $regex: regexPattern, $options: 'i' } });
+      } else {
+        query.$or.push({ 'documents.number': document });
+      }
     }
 
     // Búsqueda por Nombre
@@ -28,7 +39,9 @@ const checkClient = async (req, res) => {
       // MAYUSCULAS Y SIN ESPACIOS
       const nameUpper = fullName.toUpperCase().trim();
       
-      query.$or.push({ fullName: nameUpper });
+      // Buscamos con regex para hacer match parcial
+      const escapedName = nameUpper.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+      query.$or.push({ fullName: { $regex: escapedName, $options: 'i' } });
       
       // OPCIONAL TENGO QUE TESTEAR SI ES MAS RAPIDO ASI
       // query.$or.push({ $text: { $search: nameUpper } }); 

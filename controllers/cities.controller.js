@@ -181,7 +181,7 @@ const updateCity = async(req, res = response) => {
 
         // VALIDATE
         const { code, ...campos } = req.body;
-        if (cityDB.code !== code) {
+        if (code && cityDB.code !== code) {
             const validateCode = await City.findOne({ code });
             if (validateCode) {
                 return res.status(400).json({

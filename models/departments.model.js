@@ -17,6 +17,11 @@ const DepartmentsSchema = Schema({
         ref: 'Pais'
     },
 
+    status: {
+        type: Boolean,
+        default: true
+    },
+
     fecha: {
         type: Date,
         default: Date.now

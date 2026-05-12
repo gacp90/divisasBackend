@@ -1,6 +1,7 @@
 const { response } = require('express');
 
 const Department = require('../models/departments.model');
+const City = require('../models/cities.model');
 
 /** ======================================================================
  *  GET DEPARTMENT
@@ -183,7 +184,7 @@ const updateDepartment = async(req, res = response) => {
 
         // VALIDATE
         const { code, ...campos } = req.body;
-        if (departmentDB.code !== code) {
+        if (code && departmentDB.code !== code) {
             const validateCode = await Department.findOne({ code });
             if (validateCode) {
                 return res.status(400).json({
@@ -197,6 +198,16 @@ const updateDepartment = async(req, res = response) => {
 
         // UPDATE
         const departmentUpdate = await Department.findByIdAndUpdate(depid, campos, { new: true, useFindAndModify: false });
+
+        // CASCADING DEACTIVATION
+        if (campos.status === false || campos.status === 'false') {
+            await City.updateMany({ department: depid }, { status: false });
+        }
+        
+        // CASCADING ACTIVATION
+        if (campos.status === true || campos.status === 'true') {
+            await City.updateMany({ department: depid }, { status: true });
+        }
 
         res.json({
             ok: true,

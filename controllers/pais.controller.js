@@ -1,6 +1,8 @@
 const { response } = require('express');
 
 const Pais = require('../models/pais.model');
+const Department = require('../models/departments.model');
+const City = require('../models/cities.model');
 
 /** ======================================================================
  *  GET PAISES
@@ -182,7 +184,7 @@ const updatePais = async(req, res = response) => {
 
         // VALIDATE
         const { code, ...campos } = req.body;
-        if (paisDB.code !== code) {
+        if (code && paisDB.code !== code) {
             const validateNumberId = await Pais.findOne({ code });
             if (validateNumberId) {
                 return res.status(400).json({
@@ -196,6 +198,28 @@ const updatePais = async(req, res = response) => {
 
         // UPDATE
         const paisUpdate = await Pais.findByIdAndUpdate(pid, campos, { new: true, useFindAndModify: false });
+
+        // CASCADING DEACTIVATION
+        if (campos.status === false || campos.status === 'false') {
+            const departments = await Department.find({ pais: pid });
+            const depIds = departments.map(d => d._id);
+            
+            await Department.updateMany({ pais: pid }, { status: false });
+            if (depIds.length > 0) {
+                await City.updateMany({ department: { $in: depIds } }, { status: false });
+            }
+        }
+        
+        // CASCADING ACTIVATION
+        if (campos.status === true || campos.status === 'true') {
+            const departments = await Department.find({ pais: pid });
+            const depIds = departments.map(d => d._id);
+            
+            await Department.updateMany({ pais: pid }, { status: true });
+            if (depIds.length > 0) {
+                await City.updateMany({ department: { $in: depIds } }, { status: true });
+            }
+        }
 
         res.json({
             ok: true,

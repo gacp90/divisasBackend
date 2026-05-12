@@ -8,10 +8,7 @@ const bodyParser = require('body-parser');
 
 // CRON JOBS
 const runDailyAverageRate = require('./cron/dailyRate');
-const { startSanctionsCron } = require('./cron/sanctions.cron');
 const { iniciarCronTRM } = require('./cron/trm.cron');
-const { downloadAndProcessONU } = require('./helpers/onuSanctions.helper');
-const { downloadAndProcessOFAC } = require('./helpers/ofac.helper');
 
 
 
@@ -69,5 +66,4 @@ app.listen(process.env.PORT, () => {
 
 // Iniciar cron jobs
 runDailyAverageRate();
-startSanctionsCron();
 iniciarCronTRM();

@@ -1,4 +1,12 @@
-const SanctionsEntry = require('../models/sanctionsEntry.model');
+const axios = require('axios');
+
+const getSanctionsMicroserviceConfig = () => {
+  return {
+    headers: {
+      'x-api-key': process.env.SANCTIONS_API_KEY
+    }
+  };
+};
 
 const checkClient = async (req, res) => {
   try {
@@ -11,49 +19,46 @@ const checkClient = async (req, res) => {
       });
     }
 
-    // Usaremos un $or para buscar o por documento o por nombre
-    const query = {
-      active: true,
-      $or: []
-    };
+    const microserviceUrl = `${process.env.SANCTIONS_MICROSERVICE_URL}/check`;
+    
+    const response = await axios.post(
+      microserviceUrl,
+      { document, fullName },
+      getSanctionsMicroserviceConfig()
+    );
 
-    // Búsqueda por documento
-    if (document) {
-      query.$or.push({ 'documents.number': document });
-    }
-
-    // Búsqueda por Nombre
-    if (fullName) {
-      
-      // MAYUSCULAS Y SIN ESPACIOS
-      const nameUpper = fullName.toUpperCase().trim();
-      
-      query.$or.push({ fullName: nameUpper });
-      
-      // OPCIONAL TENGO QUE TESTEAR SI ES MAS RAPIDO ASI
-      // query.$or.push({ $text: { $search: nameUpper } }); 
-    }
-
-    // 3. Ejecutar búsqueda
-    const matches = await SanctionsEntry.find(query)
-      .limit(10);
-
-    return res.json({
-      ok: true,
-      matched: matches.length > 0,
-      total: matches.length,
-      results: matches
-    });
+    return res.json(response.data);
 
   } catch (error) {
-    console.error('Error en checkClient:', error);
+    console.error('Error en checkClient contra microservicio:', error.message);
     res.status(500).json({
       ok: false,
-      msg: 'Error validando listas de sanción'
+      msg: 'Error conectando al servicio global de validación de listas'
+    });
+  }
+};
+
+const getStatus = async (req, res) => {
+  try {
+    const microserviceUrl = `${process.env.SANCTIONS_MICROSERVICE_URL}/status`;
+    
+    const response = await axios.get(
+      microserviceUrl,
+      getSanctionsMicroserviceConfig()
+    );
+
+    return res.json(response.data);
+
+  } catch (error) {
+    console.error('Error obteniendo estado del microservicio:', error.message);
+    res.status(500).json({
+      ok: false,
+      msg: 'Error obteniendo estado de listas restrictivas'
     });
   }
 };
 
 module.exports = {
-  checkClient
+  checkClient,
+  getStatus
 };

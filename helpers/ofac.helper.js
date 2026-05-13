@@ -10,7 +10,25 @@ const downloadAndProcessOFAC = async () => {
   try {
     console.log('🔄 Descargando lista OFAC (XML)...');
 
-    const response = await axios.get(OFAC_XML_URL, { responseType: 'text' });
+    // Obtener la última vez que descargamos
+    const lastSource = await SanctionsSource.findOne({ name: 'OFAC' }).sort({ lastDownload: -1 });
+    const headers = { 'User-Agent': 'Mozilla/5.0' };
+
+    if (lastSource && lastSource.lastDownload) {
+      headers['If-Modified-Since'] = new Date(lastSource.lastDownload.getTime() - 60000).toUTCString();
+    }
+
+    const response = await axios.get(OFAC_XML_URL, {
+      responseType: 'text',
+      headers,
+      validateStatus: status => status === 200 || status === 304
+    });
+
+    if (response.status === 304) {
+      console.log('✅ Lista OFAC ya está actualizada (304 Not Modified).');
+      return;
+    }
+
     const xmlData = response.data;
 
     // 1. Hash para detectar cambios
@@ -49,14 +67,14 @@ const downloadAndProcessOFAC = async () => {
         const entityType = entry.sdnType === 'Individual' ? 'INDIVIDUAL' : 'ENTITY';
         const firstName = (entry.firstName || '').toUpperCase();
         const lastName = (entry.lastName || '').toUpperCase();
-        
+
         const fullName = entityType === 'INDIVIDUAL'
           ? `${firstName} ${lastName}`.trim().toUpperCase()
           : lastName.toUpperCase();
 
         // --- Nacionalidad / Países ---
         const nationalitySet = new Set();
-        
+
         // IDs
         const idsRaw = entry.idList?.id ? (Array.isArray(entry.idList.id) ? entry.idList.id : [entry.idList.id]) : [];
         idsRaw.forEach(id => { if (id.idCountry) nationalitySet.add(id.idCountry.toUpperCase()); });

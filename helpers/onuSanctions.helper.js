@@ -9,7 +9,25 @@ const ONU_URL = 'https://scsanctions.un.org/resources/xml/en/consolidated.xml';
 const downloadAndProcessONU = async () => {
   try {
     console.log('🔄 Descargando lista ONU...');
-    const response = await axios.get(ONU_URL, { responseType: 'text' });
+    // 0. Obtener la última vez que descargamos
+    const lastSource = await SanctionsSource.findOne({ name: 'ONU' }).sort({ lastDownload: -1 });
+    const headers = { 'User-Agent': 'Mozilla/5.0' };
+
+    if (lastSource && lastSource.lastDownload) {
+      headers['If-Modified-Since'] = new Date(lastSource.lastDownload.getTime() - 60000).toUTCString();
+    }
+
+    const response = await axios.get(ONU_URL, {
+      responseType: 'text',
+      headers,
+      validateStatus: status => status === 200 || status === 304
+    });
+
+    if (response.status === 304) {
+      console.log('✅ Lista ONU ya está actualizada (304 Not Modified).');
+      return;
+    }
+
     const xmlData = response.data;
 
     // 🔐 Generar Hash para detectar cambios
@@ -45,10 +63,10 @@ const downloadAndProcessONU = async () => {
         // --- Procesar Nacionalidades ---
         const nationality = [];
         if (person.NATIONALITY?.VALUE) {
-          const values = Array.isArray(person.NATIONALITY.VALUE) 
-            ? person.NATIONALITY.VALUE 
+          const values = Array.isArray(person.NATIONALITY.VALUE)
+            ? person.NATIONALITY.VALUE
             : [person.NATIONALITY.VALUE];
-          
+
           values.forEach(v => {
             if (v && typeof v === 'string') nationality.push(v.trim().toUpperCase());
           });
@@ -91,7 +109,7 @@ const downloadAndProcessONU = async () => {
     }
 
     // 🚀 OPERACIONES DE BASE DE DATOS EN BLOQUE
-    
+
     // A. Desactivar registros viejos (Audit Trail)
     await SanctionsEntry.updateMany(
       { source: 'ONU', active: true },

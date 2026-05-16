@@ -210,11 +210,52 @@ const updateFunds = async(req, res = response) => {
 };
 
 
+/** =====================================================================
+ *  SET PREDETERMINADO
+=========================================================================*/
+const setPredeterminadoFund = async(req, res = response) => {
+
+    const funid = req.params.id;
+
+    try {
+
+        // SEARCH
+        const fundsDB = await Funds.findById(funid);
+        if (!fundsDB) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'No existe ningun fondo con este ID'
+            });
+        }
+
+        // SET ALL TO FALSE
+        await Funds.updateMany({}, { predeterminado: false });
+
+        // SET TARGET TO TRUE
+        fundsDB.predeterminado = true;
+        await fundsDB.save();
+
+        res.json({
+            ok: true,
+            funds: fundsDB
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Error Inesperado'
+        });
+    }
+
+};
+
 // EXPORTS
 module.exports = {
     getFundsQuery,
     createFunds,
     updateFunds,
     getFundsId,
-    createFoundstExcel
+    createFoundstExcel,
+    setPredeterminadoFund
 };

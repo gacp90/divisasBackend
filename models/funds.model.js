@@ -17,6 +17,11 @@ const FundsSchema = Schema({
         default: true
     },
 
+    predeterminado: {
+        type: Boolean,
+        default: false
+    },
+
     fecha: {
         type: Date,
         default: Date.now

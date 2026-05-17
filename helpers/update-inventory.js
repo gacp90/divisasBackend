@@ -96,6 +96,19 @@ const updateInventoryAmount = async(transaccion, turno) => {
                 pesos.save()
             ])
         }
+
+        // CALCULAR Y ACTUALIZAR UTILIDAD DEL TURNO (Solo en Ventas sumamos Base Liquida)
+        if (transaccion.transaccion === 'Venta') {
+            let totalBaseliq = 0;
+            for (const t of transaccion.items) {
+                if (t.baseliq > 0) {
+                    totalBaseliq += t.baseliq;
+                }
+            }
+            if (totalBaseliq > 0) {
+                turno.utilidad = (turno.utilidad || 0) + totalBaseliq;
+            }
+        }
         
         // GUARDAMOS EL TURNO ACTUALIZADO
         await turno.save();
@@ -200,6 +213,21 @@ const revertInventoryAmount = async(transaccion, turno) => {
                 inventory.save(),
                 pesos.save()
             ]);
+        }
+
+        // REVERTIR UTILIDAD DEL TURNO SI FUE UNA VENTA ANULADA
+        if (transaccion.transaccion === 'Venta') {
+            let totalBaseliq = 0;
+            for (const t of transaccion.items) {
+                if (t.baseliq > 0) {
+                    totalBaseliq += t.baseliq;
+                }
+            }
+            if (totalBaseliq > 0) {
+                turno.utilidad = (turno.utilidad || 0) - totalBaseliq;
+                // Evitar utilidades negativas por inconsistencias pasadas
+                if (turno.utilidad < 0) turno.utilidad = 0;
+            }
         }
         
         // Guardamos el Turno

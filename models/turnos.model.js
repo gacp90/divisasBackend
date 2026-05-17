@@ -54,6 +54,11 @@ const TurnosSchema = Schema({
         default: 0
     },
 
+    utilidad: {
+        type: Number,
+        default: 0
+    },
+
     saldos: [SaldosSchema],
 
     open: {

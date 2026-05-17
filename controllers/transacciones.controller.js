@@ -29,7 +29,12 @@ const getTransaccionesQuery = async(req, res = response) => {
                 }
             })
             .populate('cajero')
-            .populate('declarant')
+            .populate({
+                path: 'declarant',
+                populate: {
+                    path: 'representante'
+                }
+            })
             .populate('userCancel')
             .populate('items.moneda')
             .limit(hasta)
@@ -63,9 +68,15 @@ const getTransaccionId = async(req, res = response) => {
         const tid = req.params.id;
 
         const transaccionDB = await Transaccion.findById(tid)
-            .populate('client')
+            .populate({
+                path: 'client',
+                populate: { path: 'representante' }
+            })
             .populate('cajero')
-            .populate('declarant')
+            .populate({
+                path: 'declarant',
+                populate: { path: 'representante' }
+            })
             .populate('userCancel')
             .populate('items.moneda');
         if (!transaccionDB) {
@@ -171,9 +182,15 @@ const createTransaccion = async(req, res = response) => {
         await updateInventoryAmount(newTransaccion, user.turno);
 
         const transaccion = await Transaccion.findById(newTransaccion._id)
-            .populate('client')
+            .populate({
+                path: 'client',
+                populate: { path: 'representante' }
+            })
             .populate('cajero')
-            .populate('declarant')
+            .populate({
+                path: 'declarant',
+                populate: { path: 'representante' }
+            })
             .populate('items.moneda');
 
         // ==============================================
@@ -400,9 +417,15 @@ const resendConexus = async(req, res = response) => {
         const tid = req.params.id;  
 
         const transaccionDB = await Transaccion.findById(tid)
-            .populate('client')
+            .populate({
+                path: 'client',
+                populate: { path: 'representante' }
+            })
             .populate('cajero')
-            .populate('declarant')
+            .populate({
+                path: 'declarant',
+                populate: { path: 'representante' }
+            })
             .populate('items.moneda');
 
         if (!transaccionDB) {
@@ -478,9 +501,15 @@ const cancelTransaccion = async(req, res = response) => {
 
         const userDB = await User.findById(uid).populate('turno');
         const transaccion = await Transaccion.findById(tid)
-            .populate('client')
+            .populate({
+                path: 'client',
+                populate: { path: 'representante' }
+            })
             .populate('cajero')
-            .populate('declarant')
+            .populate({
+                path: 'declarant',
+                populate: { path: 'representante' }
+            })
             .populate('items.moneda');
 
         if (!transaccion) {
@@ -540,9 +569,15 @@ const cancelTransaccion = async(req, res = response) => {
 
         // Haces los populates necesarios para la devolución...
         const devolucionPopulated = await Transaccion.findById(devolucion._id)
-            .populate('client')
+            .populate({
+                path: 'client',
+                populate: { path: 'representante' }
+            })
             .populate('cajero')
-            .populate('declarant')
+            .populate({
+                path: 'declarant',
+                populate: { path: 'representante' }
+            })
             .populate('items.moneda');
 
         // 4. Invocas el helper pasándole AMBAS transacciones

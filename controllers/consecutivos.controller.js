@@ -6,6 +6,15 @@ const Consecutive = require('../models/concecutives.model');
 =========================================================================*/
 const getConsecutivos = async (req, res = response) => {
     try {
+        const requiredTypes = ['Compra', 'Venta', 'NC', '1099', '1100', '1121'];
+        for (const type of requiredTypes) {
+            await Consecutive.findOneAndUpdate(
+                { type }, 
+                { $setOnInsert: { type } }, 
+                { upsert: true, setDefaultsOnInsert: true }
+            );
+        }
+
         const consecutivos = await Consecutive.find();
 
         res.json({

@@ -4,7 +4,7 @@ const ConsecutiveSchema = Schema({
 
     type: {
         type: String,
-        enum: ['Compra', 'Venta', '1100', '1099', '1121']
+        enum: ['Compra', 'Venta', '1100', '1099', '1121', 'NC']
     },
     seq: {
         type: Number,

@@ -1,0 +1,47 @@
+const { Schema } = require('mongoose');
+
+module.exports = (connection) => {
+    if (connection.models['Clients']) {
+        return connection.models['Clients'];
+    }
+
+    const ClientsSchema = Schema({
+        capital: { type: Number },
+        razon: { type: String },
+        name: { type: String },
+        secondname: { type: String },
+        lastname: { type: String },
+        secondlastname: { type: String },
+        address: { type: String },
+        phone: { type: String },
+        email: { type: String },
+        resp: { type: String },
+        city: { type: String },
+        department: { type: String },
+        occupation: { type: String },
+        origin: { type: String },
+        destination: { type: String },
+        citizenship: { type: String },
+        citybirth: { type: String },
+        datebirth: { type: Date },
+        typeid: { type: String, require: true },
+        numberid: { type: String, require: true, unique: true },
+        dvb: { type: String },
+        type: { type: String, require: true, default: '2' },
+        representante: { type: Schema.Types.ObjectId, ref: 'Clients' },
+        pep: { type: Boolean, default: false },
+        dr: { type: Boolean, default: false },
+        pnc: { type: Boolean, default: false },
+        img: { type: String },
+        status: { type: Boolean, default: true },
+        fecha: { type: Date, default: Date.now }
+    });
+
+    ClientsSchema.method('toJSON', function() {
+        const { __v, _id, ...object } = this.toObject();
+        object.cid = _id;
+        return object;
+    });
+
+    return connection.model('Clients', ClientsSchema);
+};

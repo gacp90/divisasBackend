@@ -1,6 +1,8 @@
 const cron = require('node-cron');
 const axios = require('axios');
-const Inventory = require('../models/inventory.model'); // Tu modelo actual
+const Subdomain = require('../src/services/global/models/subdomain.model');
+const { getCompanyConnection } = require('../src/shared/database/connection');
+const getTrmModel = require('../src/services/company/models/trm.model');
 
 const iniciarCronTRM = () => {
     
@@ -14,30 +16,30 @@ const iniciarCronTRM = () => {
                 const trmActual = data[0];
                 const valorNuevo = Number(trmActual.valor);
 
-                // 1. Buscamos el inventario correspondiente al Dólar
-                const inventarioUSD = await Inventory.findOne({ code: 'USD' });
+                // Obtener todas las empresas registradas en Global
+                const empresas = await Subdomain.distinct('empresaId');
 
-                if (inventarioUSD) {
-                    // 2. Comparamos para no hacer guardados innecesarios en la BD si la TRM no ha cambiado
-                    // También validamos si trmUpdate está vacío para forzar la primera actualización
-                    if (inventarioUSD.trm !== valorNuevo || !inventarioUSD.trmUpdate) {
-                        
-                        inventarioUSD.trm = valorNuevo;
-                        inventarioUSD.trmUpdate = new Date(); 
-                        
-                        await inventarioUSD.save();
-                        console.log(`[CRON] TRM actualizada en el Inventario USD: $${valorNuevo}`);
+                for (const empresaId of empresas) {
+                    if (!empresaId) continue;
+                    
+                    const companyDb = getCompanyConnection(empresaId);
+                    const Trm = getTrmModel(companyDb);
+
+                    const trmDB = await Trm.findOne().sort({ _id: -1 });
+
+                    if (!trmDB || trmDB.valor !== valorNuevo) {
+                        const nuevaTrm = new Trm({ valor: valorNuevo, fecha: new Date() });
+                        await nuevaTrm.save();
+                        console.log(`[CRON] TRM actualizada para empresa ${empresaId}: $${valorNuevo}`);
                     }
-                } else {
-                    console.log('[CRON] No se encontró la moneda USD en el inventario para actualizar la TRM.');
                 }
             }
         } catch (error) {
-            console.error('[CRON] Error consultando la TRM al Banco de la República. Ignorando...');
+            console.error('[CRON] Error actualizando TRM en empresas. Ignorando...', error.message);
         }
     });
 
-    console.log('CronJob de TRM programado y vinculado al Inventario USD');
+    console.log('CronJob de TRM programado para empresas');
 };
 
 module.exports = { iniciarCronTRM };

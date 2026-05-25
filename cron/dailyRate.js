@@ -1,6 +1,8 @@
 const cron = require('node-cron');
-const Inventory = require('../models/inventory.model');
-const Rate = require('../models/rates.model');
+const Subdomain = require('../src/services/global/models/subdomain.model');
+const { getBranchConnection } = require('../src/shared/database/connection');
+const getInventoryModel = require('../src/services/branch/models/inventory.model');
+const getRateModel = require('../src/services/branch/models/rates.model');
 
 const runDailyAverageRate = () => {
 
@@ -8,7 +10,7 @@ const runDailyAverageRate = () => {
   cron.schedule('5 0 * * * ', async () => {
 
     try {
-      console.log('⏱ Ejecutando cierre de tasa diaria...');
+      console.log('⏱ Ejecutando cierre de tasa diaria en sucursales...');
 
       let yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
@@ -17,37 +19,45 @@ const runDailyAverageRate = () => {
 
       console.log('Fecha: ', yesterday);
       
+      const sucursales = await Subdomain.distinct('sucursalId');
 
-      // Buscar solo monedas con movimientos ayer
-      
-      const dailyRates = await Rate.find({ date: new Date(yesterday) }).populate('currency', 'code amount anterior tbc')
+      for (const sucursalId of sucursales) {
+          if (!sucursalId) continue;
+          
+          const branchDb = getBranchConnection(sucursalId);
+          const Rate = getRateModel(branchDb);
+          const Inventory = getInventoryModel(branchDb);
 
-      // Si no hubo transacciones, no se hace nada
-      if (!dailyRates.length) {
-        console.log('ℹ️ No hubo transacciones ayer. No se actualiza tb.');
-        return;
-      }
+          // Buscar solo monedas con movimientos ayer
+          const dailyRates = await Rate.find({ date: new Date(yesterday) }).populate('currency', 'code amount anterior tbc')
 
-      for (const rate of dailyRates) {
-
-        if (rate.avgRate <= 0 && rate.avgRatec <= 0) continue;
-
-        let saldoCopAnterior = (rate.currency.anterior * rate.currency.tbc);
-        let totalDivisa = rate.totalAmount + rate.currency.anterior;
-        let totalCop = rate.totalValue + saldoCopAnterior;
-
-        await Inventory.findByIdAndUpdate(
-          rate.currency,
-          { 
-            tb: rate.avgRate, 
-            tbc: (totalCop / totalDivisa).toFixed(2),
-            tpc: (totalCop / totalDivisa).toFixed(2),
-            anterior: rate.currency.amount
+          // Si no hubo transacciones, no se hace nada
+          if (!dailyRates.length) {
+            console.log(`ℹ️ No hubo transacciones ayer en sucursal ${sucursalId}. No se actualiza tb.`);
+            continue;
           }
-        ); 
-      }
 
-      console.log('✅ Tasas promedio del día anterior actualizadas');
+          for (const rate of dailyRates) {
+
+            if (rate.avgRate <= 0 && rate.avgRatec <= 0) continue;
+
+            let saldoCopAnterior = (rate.currency.anterior * rate.currency.tbc);
+            let totalDivisa = rate.totalAmount + rate.currency.anterior;
+            let totalCop = rate.totalValue + saldoCopAnterior;
+
+            await Inventory.findByIdAndUpdate(
+              rate.currency,
+              { 
+                tb: rate.avgRate, 
+                tbc: (totalCop / totalDivisa).toFixed(2),
+                tpc: (totalCop / totalDivisa).toFixed(2),
+                anterior: rate.currency.amount
+              }
+            ); 
+          }
+
+          console.log(`✅ Tasas promedio del día anterior actualizadas para sucursal ${sucursalId}`);
+      }
 
     } catch (error) {
       console.error('❌ Error en cron de tasa diaria:', error);

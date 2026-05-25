@@ -1,0 +1,50 @@
+/** =====================================================================
+ *  MOVIMIENTOS ROUTER 
+=========================================================================*/
+const { Router } = require('express');
+const { check } = require('express-validator');
+
+// MIDDLEWARES
+const { validarCampos } = require('../../../shared/middlewares/validar-campos');
+const { validarJWT } = require('../../../shared/middlewares/validar-jwt');
+
+// CONTROLLERS
+const { getMovimientosQuery, getMovimientoId, createMovimiento, updateMovimiento, deleteMovimiento } = require('../controllers/movimientos.controller');
+
+const router = Router();
+
+/** =====================================================================
+ *  GET QUERY
+=========================================================================*/
+router.post('/query', validarJWT, getMovimientosQuery);
+
+/** =====================================================================
+ *  GET ID
+=========================================================================*/
+router.get('/:id', validarJWT, getMovimientoId);
+
+/** =====================================================================
+ *  POST CREATE
+=========================================================================*/
+router.post('/', [
+        validarJWT,
+        check('type', 'El tipo de movimiento es obligatorio').not().isEmpty(),
+        check('amount', 'El monto es obligatorio').not().isEmpty(),
+        validarCampos
+    ],
+    createMovimiento
+);
+
+/** =====================================================================
+ *  PUT
+=========================================================================*/
+router.put('/:id', validarJWT, updateMovimiento);
+
+/** =====================================================================
+ *  DELETE
+=========================================================================*/
+router.delete('/:id', validarJWT, deleteMovimiento);
+
+
+// EXPORT
+module.exports = router;

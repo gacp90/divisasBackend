@@ -25,18 +25,14 @@ const checkClient = async (req, res) => {
       if (cleanDoc.length > 0) {
         // Escapamos los caracteres para evitar inyecciones en regex
         const escapedDoc = cleanDoc.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-        // En lugar de inyectar [-_.\s]* entre cada letra, buscamos el documento limpio
-        // o permitimos guiones/espacios de manera más sencilla. 
-        // Para evitar Timeouts, usamos una expresión regular más simple.
         
-        // Expresión regular que permite espacios/guiones opcionales solo al medio,
-        // pero la forma más segura para performance es simplemente buscar la cadena
+        // Expresión regular que permite espacios/guiones opcionales solo al medio
         const regexPattern = escapedDoc.split('').join('[-_.\\s]?');
         
+        // IMPORTANTE: Solo buscamos en documents.number. Buscar en remarks o aliases
+        // con regex (sin índice texto completo) causa un escaneo completo de colección (Full Collection Scan)
+        // lo que provoca que la BD se cuelgue y devuelva 504 / 502 Timeout.
         query.$or.push({ 'documents.number': { $regex: regexPattern, $options: 'i' } });
-        // Ampliar búsqueda a remarks y aliases
-        query.$or.push({ 'remarks': { $regex: regexPattern, $options: 'i' } });
-        query.$or.push({ 'aliases': { $regex: regexPattern, $options: 'i' } });
       } else {
         query.$or.push({ 'documents.number': document });
       }

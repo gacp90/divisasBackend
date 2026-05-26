@@ -24,11 +24,17 @@ const checkClient = async (req, res) => {
       
       if (cleanDoc.length > 0) {
         // Escapamos los caracteres para evitar inyecciones en regex
-        const escapedChars = cleanDoc.split('').map(c => c.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'));
-        // Creamos un patrón donde entre cada caracter puede haber opcionalmente guiones, puntos o espacios
-        const regexPattern = escapedChars.join('[-_.\\s]*');
+        const escapedDoc = cleanDoc.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        // En lugar de inyectar [-_.\s]* entre cada letra, buscamos el documento limpio
+        // o permitimos guiones/espacios de manera más sencilla. 
+        // Para evitar Timeouts, usamos una expresión regular más simple.
+        
+        // Expresión regular que permite espacios/guiones opcionales solo al medio,
+        // pero la forma más segura para performance es simplemente buscar la cadena
+        const regexPattern = escapedDoc.split('').join('[-_.\\s]?');
+        
         query.$or.push({ 'documents.number': { $regex: regexPattern, $options: 'i' } });
-        // Ampliar búsqueda a remarks y aliases porque a veces la OFAC no clasifica bien la cédula
+        // Ampliar búsqueda a remarks y aliases
         query.$or.push({ 'remarks': { $regex: regexPattern, $options: 'i' } });
         query.$or.push({ 'aliases': { $regex: regexPattern, $options: 'i' } });
       } else {

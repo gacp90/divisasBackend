@@ -9,6 +9,19 @@ const SubdomainSchema = Schema({
         lowercase: true,
         trim: true
     },
+    nombreEmpresa: {
+        type: String,
+        default: 'Nueva Empresa'
+    },
+    fechaVencimiento: {
+        type: Date,
+        default: () => {
+            // Por defecto, 7 días de gracia al crear la empresa
+            const fecha = new Date();
+            fecha.setDate(fecha.getDate() + 7);
+            return fecha;
+        }
+    },
     isActive: {
         type: Boolean,
         default: true

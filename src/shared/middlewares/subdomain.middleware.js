@@ -38,6 +38,15 @@ const injectDynamicConnections = async (req, res, next) => {
             });
         }
 
+        // Validación de Pagos (Vencimiento)
+        if (subdomainData.fechaVencimiento && new Date() > new Date(subdomainData.fechaVencimiento)) {
+            // El interceptor atrapará el 403 y enviará al usuario a la pantalla de Suscripciones
+            return res.status(403).json({
+                ok: false,
+                msg: `La suscripción de la empresa ha vencido. Por favor realice el pago para continuar operando.`
+            });
+        }
+
         // 3. Inyectar conexión Company
         req.companyDb = getCompanyConnection(subdomainData.subdominio);
         

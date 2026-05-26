@@ -4,7 +4,7 @@ const { validarCampos } = require('../../../shared/middlewares/validar-campos');
 const { validarJWT } = require('../../../shared/middlewares/validar-jwt');
 const { validarRoleGlobal } = require('../../../shared/middlewares/validar-role-global');
 
-const { getSubdomains, createSubdomain, toggleSubdomain } = require('../controllers/subdomains.controller');
+const { getSubdomains, createSubdomain, toggleSubdomain, editSubdomainName } = require('../controllers/subdomains.controller');
 
 const router = Router();
 
@@ -26,5 +26,10 @@ router.put('/:id', [
     check('isActive', 'El estado isActive es obligatorio').isBoolean(),
     validarCampos
 ], toggleSubdomain);
+
+// Editar nombre de empresa
+router.put('/:id/name', [
+    validarCampos
+], editSubdomainName);
 
 module.exports = router;

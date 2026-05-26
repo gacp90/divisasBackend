@@ -25,7 +25,7 @@ const getSubdomains = async (req, res = response) => {
  * Crear un nuevo subdominio (Empresa)
  */
 const createSubdomain = async (req, res = response) => {
-    const { subdominio } = req.body;
+    const { subdominio, nombreEmpresa } = req.body;
 
     try {
         const subdomainName = subdominio.toLowerCase().trim();
@@ -40,6 +40,7 @@ const createSubdomain = async (req, res = response) => {
 
         const nuevoSubdomain = new Subdomain({
             subdominio: subdomainName,
+            nombreEmpresa: nombreEmpresa || subdomainName,
             isActive: true
         });
 
@@ -71,6 +72,43 @@ const createSubdomain = async (req, res = response) => {
             ok: true,
             subdomain: nuevoSubdomain,
             msg: 'Empresa creada exitosamente y usuario MASTERPEZ inyectado.'
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Hable con el administrador'
+        });
+    }
+};
+
+/**
+ * Editar el nombre de la empresa
+ */
+const editSubdomainName = async (req, res = response) => {
+    const { id } = req.params;
+    const { nombreEmpresa, fechaVencimiento } = req.body;
+
+    try {
+        const subdomainDB = await Subdomain.findById(id);
+
+        if (!subdomainDB) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'Subdominio no encontrado por ID'
+            });
+        }
+
+        if (nombreEmpresa) subdomainDB.nombreEmpresa = nombreEmpresa;
+        if (fechaVencimiento) subdomainDB.fechaVencimiento = fechaVencimiento;
+        
+        await subdomainDB.save();
+
+        res.json({
+            ok: true,
+            subdomain: subdomainDB,
+            msg: 'Datos de la empresa actualizados'
         });
 
     } catch (error) {
@@ -120,5 +158,6 @@ const toggleSubdomain = async (req, res = response) => {
 module.exports = {
     getSubdomains,
     createSubdomain,
+    editSubdomainName,
     toggleSubdomain
 };

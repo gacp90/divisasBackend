@@ -116,6 +116,21 @@ const aprobarPago = async (req, res = response) => {
         pago.estado = 'ACTIVO';
         await pago.save();
 
+        // SUMAR 30 DÍAS AL VENCIMIENTO DE LA EMPRESA EN LA BD GLOBAL
+        const Subdomain = require('../../global/models/subdomain.model');
+        const subdomainDB = await Subdomain.findOne({ subdominio: pago.tenant });
+        
+        if (subdomainDB) {
+            let fechaActual = subdomainDB.fechaVencimiento ? new Date(subdomainDB.fechaVencimiento) : new Date();
+            // Si ya estaba vencida, se cuenta desde hoy
+            if (fechaActual < new Date()) {
+                fechaActual = new Date();
+            }
+            fechaActual.setDate(fechaActual.getDate() + 30);
+            subdomainDB.fechaVencimiento = fechaActual;
+            await subdomainDB.save();
+        }
+
         // Si el pago tiene un branchPath, actualizar la suscripción en la DB de esa sucursal
         if (pago.branchPath) {
             const tempBranchDb = getBranchConnection(pago.branchPath);
@@ -138,7 +153,8 @@ const aprobarPago = async (req, res = response) => {
 
         res.json({
             ok: true,
-            pago
+            pago,
+            subdomainDB
         });
 
     } catch (error) {

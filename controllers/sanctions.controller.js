@@ -19,7 +19,8 @@ const checkClient = async (req, res) => {
       const cleanDoc = document.toString().replace(/[-_.\s]/g, '').trim();
       if (cleanDoc.length > 0) {
         const escapedDoc = cleanDoc.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-        const regexPattern = '^' + escapedDoc.split('').join('[-_.\\s]?');
+        // Un regex simple de prefijo permite a MongoDB usar el índice eficientemente (milisegundos)
+        const regexPattern = '^' + escapedDoc;
         
         searchPromises.push(
           SanctionsEntry.find({ 

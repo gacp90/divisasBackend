@@ -7,8 +7,8 @@ const { downloadAndProcessOFAC } = require('../helpers/ofac.helper');
 =========================================================================*/
 // */5 * * * *
 const startSanctionsCron = () => {
-  cron.schedule('*/5 * * * *', async () => {
-    console.log('Ejecutando cron sanciones ONU y OFAC (cada 5 minutos)');
+  cron.schedule('30 2 * * *', async () => {
+    console.log('Ejecutando cron sanciones ONU y OFAC (a las 2:30 AM)');
 
     try {
       await downloadAndProcessONU();

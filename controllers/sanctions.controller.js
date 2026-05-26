@@ -19,7 +19,7 @@ const checkClient = async (req, res) => {
       const cleanDoc = document.toString().replace(/[-_.\s]/g, '').trim();
       if (cleanDoc.length > 0) {
         const escapedDoc = cleanDoc.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-        const regexPattern = escapedDoc.split('').join('[-_.\\s]?');
+        const regexPattern = '^' + escapedDoc.split('').join('[-_.\\s]?');
         
         searchPromises.push(
           SanctionsEntry.find({ 

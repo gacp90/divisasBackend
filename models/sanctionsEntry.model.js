@@ -48,5 +48,6 @@ SanctionsEntrySchema.method("toJSON", function () {
 });
 
 SanctionsEntrySchema.index({ fullName: 1, source: 1 });
+SanctionsEntrySchema.index({ 'documents.number': 1 }); // Indice critico para evitar 504 Timeout
 
 module.exports = model('SanctionsEntrys', SanctionsEntrySchema);

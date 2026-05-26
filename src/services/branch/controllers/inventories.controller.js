@@ -219,6 +219,20 @@ const updateInventory = async(req, res = response) => {
         }
 
         if (campos.trm !== undefined) {
+            // VERIFICAR ROL PARA TRM
+            const getUserModel = require('../../company/models/users.model');
+            const UserCompany = getUserModel(req.companyDb);
+            const UserBranch = getUserModel(req.branchDb);
+            let reqUser = await UserCompany.findById(req.uid);
+            if (!reqUser) reqUser = await UserBranch.findById(req.uid);
+
+            if (!reqUser || (reqUser.role !== 'ADMIN' && reqUser.role !== 'OWNER')) {
+                return res.status(403).json({
+                    ok: false,
+                    msg: 'No tienes privilegios para modificar la TRM global de la empresa.'
+                });
+            }
+
             const newTrm = new Trm({ valor: campos.trm, fecha: new Date() });
             await newTrm.save();
         }

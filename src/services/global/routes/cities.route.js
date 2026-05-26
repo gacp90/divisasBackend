@@ -7,6 +7,7 @@ const { check } = require('express-validator');
 // MIDDLEWARES
 const { validarCampos } = require('../../../shared/middlewares/validar-campos');
 const { validarJWT } = require('../../../shared/middlewares/validar-jwt');
+const { validarRoleGlobal } = require('../../../shared/middlewares/validar-role-global');
 
 // CONTROLLERS
 const { getCitiesQuery, getCityId, createCity, updateCity, createCitiesExcel } = require('../controllers/cities.controller');
@@ -27,6 +28,8 @@ router.get('/user/:id', validarJWT, getCityId);
  *  POST CREATE
 =========================================================================*/
 router.post('/', [
+        validarJWT,
+        validarRoleGlobal,
         check('code', 'El codigo es obligatorio').not().isEmpty(),
         validarCampos
     ],
@@ -36,12 +39,12 @@ router.post('/', [
 /** =====================================================================
  *  POST CREATE EXCEL
 =========================================================================*/
-router.post('/create/excel', validarJWT, createCitiesExcel);
+router.post('/create/excel', [validarJWT, validarRoleGlobal], createCitiesExcel);
 
 /** =====================================================================
  *  PUT
 =========================================================================*/
-router.put('/:id', validarJWT, updateCity);
+router.put('/:id', [validarJWT, validarRoleGlobal], updateCity);
 
 
 

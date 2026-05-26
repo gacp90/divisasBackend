@@ -1,7 +1,7 @@
 const { response } = require('express');
 
 const getTrasladoModel = require('../models/traslados.model');
-const getUserModel = require('../models/users.model');
+const getUserModel = require('../../company/models/users.model');
 const { actualizarSaldosTraslado } = require('../../../shared/helpers/updateSaldosTurnos');
 
 /** ======================================================================
@@ -10,9 +10,9 @@ const { actualizarSaldosTraslado } = require('../../../shared/helpers/updateSald
 const getTrasladosQuery = async(req, res) => {
 
     try {
-        if (!req.companyDb) return res.status(400).json({ ok: false, msg: 'No se detectó el contexto de la empresa' });
-        const Traslado = getTrasladoModel(req.companyDb);
-        const User = getUserModel(req.companyDb);
+        if (!req.branchDb) return res.status(400).json({ ok: false, msg: 'No se detectó el contexto de la sucursal' });
+        const Traslado = getTrasladoModel(req.branchDb);
+        const User = getUserModel(req.branchDb);
 
         const { desde, hasta, sort, ...query } = req.body;
 
@@ -49,9 +49,9 @@ const getTrasladosQuery = async(req, res) => {
 const getTrasladosCierre = async(req, res) => {
 
     try {
-        if (!req.companyDb) return res.status(400).json({ ok: false, msg: 'No se detectó el contexto de la empresa' });
-        const Traslado = getTrasladoModel(req.companyDb);
-        const User = getUserModel(req.companyDb);
+        if (!req.branchDb) return res.status(400).json({ ok: false, msg: 'No se detectó el contexto de la sucursal' });
+        const Traslado = getTrasladoModel(req.branchDb);
+        const User = getUserModel(req.branchDb);
 
         const { turno } = req.body;
 
@@ -92,9 +92,9 @@ const getTrasladosCierre = async(req, res) => {
 const getTrasladoId = async(req, res = response) => {
 
     try {
-        if (!req.companyDb) return res.status(400).json({ ok: false, msg: 'No se detectó el contexto de la empresa' });
-        const Traslado = getTrasladoModel(req.companyDb);
-        const User = getUserModel(req.companyDb);
+        if (!req.branchDb) return res.status(400).json({ ok: false, msg: 'No se detectó el contexto de la sucursal' });
+        const Traslado = getTrasladoModel(req.branchDb);
+        const User = getUserModel(req.branchDb);
         const trasladoID = req.params.id;
 
         const trasladoDB = await Traslado.findById(trasladoID)
@@ -129,8 +129,8 @@ const createTraslado = async (req, res = response) => {
     const uid = req.uid;
 
     try {
-        if (!req.companyDb || !req.branchDb) return res.status(400).json({ ok: false, msg: 'Faltan contextos DB' });
-        const Traslado = getTrasladoModel(req.companyDb);
+        if (!req.branchDb) return res.status(400).json({ ok: false, msg: 'Faltan contextos DB' });
+        const Traslado = getTrasladoModel(req.branchDb);
         const UserBranch = getUserModel(req.branchDb);
         
         const userDB = await UserBranch.findById(uid).populate('turno');
@@ -151,6 +151,7 @@ const createTraslado = async (req, res = response) => {
 
         traslado.receptor = resultadoSaldos.tReceptor.user;
 
+        const Turno = require('../models/turnos.model')(req.branchDb);
         const [trasladoNew, turno] = await Promise.all([
             traslado.save(),
             Turno.findById(resultadoSaldos.tEmisor._id || resultadoSaldos.tEmisor.turid)
@@ -188,8 +189,8 @@ const updateTraslado = async(req, res = response) => {
     const trasladoID = req.params.id;
 
     try {
-        if (!req.companyDb) return res.status(400).json({ ok: false, msg: 'No se detectó el contexto de la empresa' });
-        const Traslado = getTrasladoModel(req.companyDb);
+        if (!req.branchDb) return res.status(400).json({ ok: false, msg: 'No se detectó el contexto de la sucursal' });
+        const Traslado = getTrasladoModel(req.branchDb);
 
         // SEARCH
         const trasladoDB = await Traslado.findById(trasladoID);

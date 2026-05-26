@@ -43,6 +43,7 @@ app.use('/api/v1/clients', require('./src/services/company/routes/clients.route'
 app.use('/api/v1/pais', require('./src/services/global/routes/pais.route'));
 app.use('/api/v1/departments', require('./src/services/global/routes/departments.route'));
 app.use('/api/v1/funds', require('./src/services/company/routes/funds.route'));
+app.use('/api/v1/company-profile', require('./src/services/company/routes/companyProfile.route'));
 app.use('/api/v1/empresa', require('./src/services/branch/routes/empresa.route'));
 app.use('/api/v1/inventory', require('./src/services/branch/routes/inventory.route'));
 app.use('/api/v1/login', require('./src/services/company/routes/auth.route'));
@@ -53,7 +54,8 @@ app.use('/api/v1/users', require('./src/services/company/routes/users.route'));
 app.use('/api/v1/transacciones', require('./src/services/branch/routes/transacciones.route'));
 app.use('/api/v1/sanctions', require('./src/services/global/routes/sanctions.routes'));
 app.use('/api/v1/sources', require('./src/shared/routes/sources.route'));
-app.use('/api/v1/traslados', require('./src/services/company/routes/traslados.route'));
+app.use('/api/v1/traslados', require('./src/services/branch/routes/traslados.route'));
+app.use('/api/v1/traslados-sucursales', require('./src/services/company/routes/trasladosSucursales.route'));
 app.use('/api/v1/turnos', require('./src/services/branch/routes/turnos.route'));
 app.use('/api/v1/uploads', require('./src/shared/routes/uploads.route'));
 app.use('/api/v1/pagos', require('./src/services/branch/routes/pagos.route'));

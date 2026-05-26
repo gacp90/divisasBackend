@@ -19,11 +19,11 @@ const validarJWT = (req, res = response, next) => {
 
     try {
 
-        const { uid, empresaId, sucursalId } = jwt.verify(token, process.env.SECRET_SEED_JWT);
+        const { uid, tenant, branchPath } = jwt.verify(token, process.env.SECRET_SEED_JWT);
 
         req.uid = uid;
-        req.empresaIdToken = empresaId;
-        req.sucursalIdToken = sucursalId;
+        req.tenantToken = tenant;
+        req.branchPathToken = branchPath;
         next();
 
     } catch (error) {

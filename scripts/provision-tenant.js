@@ -7,9 +7,14 @@ const { globalConnection, getCompanyConnection, getBranchConnection } = require(
 
 // Importar Modelos
 const Subdomain = require('../src/services/global/models/subdomain.model');
+const Pais = require('../src/services/global/models/pais.model');
+const Department = require('../src/services/global/models/departments.model');
+const City = require('../src/services/global/models/cities.model');
+
 const getUserModel = require('../src/services/company/models/users.model');
 const getFundsModel = require('../src/services/company/models/funds.model');
 const getTrmModel = require('../src/services/company/models/trm.model');
+const getBranchModel = require('../src/services/company/models/branch.model');
 
 const getEmpresaModel = require('../src/services/branch/models/empresa.model');
 const getConsecutiveModel = require('../src/services/branch/models/concecutives.model');
@@ -27,9 +32,8 @@ for (let i = 0; i < args.length; i += 2) {
 }
 
 const requiredParams = [
-    'subdomain', 
-    'empresa_id', 
-    'sucursal_id', 
+    'subdomain',
+    'branch_path',
     'empresa_nombre', 
     'admin_user', 
     'admin_pass', 
@@ -40,13 +44,13 @@ const validateParams = () => {
     for (const req of requiredParams) {
         if (!params[req]) {
             console.error(`❌ Faltó el parámetro obligatorio: --${req}`);
-            console.log('Uso correcto: node scripts/provision-tenant.js --subdomain <x> --empresa_id <y> --sucursal_id <z> --empresa_nombre <w> --admin_user <u> --admin_pass <p> --admin_name <n>');
+            console.log('Uso correcto: node scripts/provision-tenant.js --subdomain <x> --branch_path <y> --empresa_nombre <w> --admin_user <u> --admin_pass <p> --admin_name <n>');
             process.exit(1);
         }
     }
-    // Validar formato de subdominio (no caracteres especiales)
-    if (!/^[a-z0-9-]+$/.test(params.subdomain)) {
-        console.error(`❌ El subdominio solo puede contener letras minúsculas, números y guiones.`);
+    // Validar formato
+    if (!/^[a-z0-9-]+$/.test(params.subdomain) || !/^[a-z0-9-]+$/.test(params.branch_path)) {
+        console.error(`❌ Subdominio y branch_path solo pueden contener letras minúsculas, números y guiones.`);
         process.exit(1);
     }
 };
@@ -76,8 +80,8 @@ const runProvisioner = async () => {
         }
 
         // Preparar conexiones
-        const companyConnection = getCompanyConnection(params.empresa_id);
-        const branchConnection = getBranchConnection(params.sucursal_id);
+        const companyConnection = getCompanyConnection(params.subdomain);
+        const branchConnection = getBranchConnection(params.branch_path);
 
         await Promise.all([
             companyConnection.asPromise(),
@@ -89,16 +93,34 @@ const runProvisioner = async () => {
         console.log(`📝 Registrando inquilino en Global DB...`);
         const newSubdomain = new Subdomain({
             subdominio: params.subdomain.toLowerCase(),
-            empresaId: params.empresa_id,
-            sucursalId: params.sucursal_id,
             isActive: true
         });
         await newSubdomain.save();
 
-        // --- B. COMPANY DB (Usuarios, Cajas, TRM) ---
-        console.log(`👤 Configurando Company DB (Usuarios, TRM, Fondos)...`);
+        // Inicializar un país, depto y ciudad por defecto en Global si no existen
+        const paisCount = await Pais.countDocuments();
+        if (paisCount === 0) {
+            console.log(`🌍 Creando catálogo base en Global DB (Colombia)...`);
+            const nuevoPais = await new Pais({ name: 'Colombia', status: true }).save();
+            const nuevoDepto = await new Department({ name: 'Bogotá D.C.', pais: nuevoPais._id, status: true }).save();
+            await new City({ name: 'Bogotá', departament: nuevoDepto._id, status: true }).save();
+        }
+
+        // --- B. COMPANY DB (Usuarios, Cajas, TRM, Branches) ---
+        console.log(`👤 Configurando Company DB (Usuarios, TRM, Fondos, Sucursales)...`);
         
-        // 1. Usuario Admin (OWNER)
+        // 1. Branch en Company DB
+        const Branch = getBranchModel(companyConnection);
+        const existingBranch = await Branch.findOne({ path: params.branch_path });
+        if (!existingBranch) {
+            await new Branch({
+                name: 'Sucursal Principal',
+                path: params.branch_path.toLowerCase(),
+                isActive: true
+            }).save();
+        }
+
+        // 2. Usuario Admin (OWNER)
         const User = getUserModel(companyConnection);
         const existingUser = await User.findOne({ user: params.admin_user });
         if (!existingUser) {
@@ -118,14 +140,14 @@ const runProvisioner = async () => {
             console.log(`⚠️  El usuario ${params.admin_user} ya existe en esta Company DB. Se omitirá su creación.`);
         }
 
-        // 2. TRM Base
+        // 3. TRM Base
         const Trm = getTrmModel(companyConnection);
         const trmCount = await Trm.countDocuments();
         if (trmCount === 0) {
             await new Trm({ valor: 3900 }).save();
         }
 
-        // 3. Fondos Base (Cajas)
+        // 4. Fondos Base (Cajas)
         const Funds = getFundsModel(companyConnection);
         const fundsCount = await Funds.countDocuments();
         if (fundsCount === 0) {
@@ -184,8 +206,7 @@ const runProvisioner = async () => {
         console.log(`\n🎉 Aprovisionamiento completado con éxito!`);
         console.log(`=========================================`);
         console.log(`🌐 Subdominio Registrado: ${params.subdomain}`);
-        console.log(`🔗 Empresa ID: ${params.empresa_id}`);
-        console.log(`🔗 Sucursal ID: ${params.sucursal_id}`);
+        console.log(`🔗 Branch Path Registrada: /${params.branch_path}`);
         console.log(`👤 Usuario Admin: ${params.admin_user}`);
         console.log(`=========================================\n`);
 

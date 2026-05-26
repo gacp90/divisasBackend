@@ -17,21 +17,31 @@ const login = async (req, res = response) => {
             return res.status(400).json({ ok: false, msg: 'No se detectó el contexto de la empresa' });
         }
 
-        console.log('EMPRESA DB:', req.companyDb.name);
-        console.log('EMPRESA ID:', req.empresaId);
-        console.log('SUCURSAL ID:', req.sucursalId);
-
         const UserCompany = getUserModel(req.companyDb);
-        const UserBranch = getUserModel(req.branchDb);
+        const getBranchModel = require('../models/branch.model');
+        const { getBranchConnection } = require('../../../shared/database/connection');
 
-        // VALIDATE USER (primero en empresa, luego en sucursal si no existe)
+        // 1. Buscar en Company DB (OWNER, ADMIN, SUPERVISOR)
         let userDB = await UserCompany.findOne({ user });
+        let activeBranchPath = null;
         
+        // 2. Si no está en Company, iterar por las sucursales (CAJEROS)
         if (!userDB) {
-            userDB = await UserBranch.findOne({ user });
+            const Branch = getBranchModel(req.companyDb);
+            const branches = await Branch.find({ isActive: true });
+            
+            for (const branch of branches) {
+                const tempBranchDb = getBranchConnection(branch.path);
+                const UserBranch = getUserModel(tempBranchDb);
+                
+                const foundUser = await UserBranch.findOne({ user });
+                if (foundUser) {
+                    userDB = foundUser;
+                    activeBranchPath = branch.path;
+                    break; // Cortar el ciclo si lo encuentra
+                }
+            }
         }
-
-        console.log('USER ENCONTRADO:', userDB ? userDB.user : 'No encontrado');
 
         if (!userDB) {
             return res.status(404).json({
@@ -47,23 +57,28 @@ const login = async (req, res = response) => {
                 ok: false,
                 msg: 'El usuario o la contraseña es incorrecta'
             });
-        } else {
-
-            if (userDB.status) {
-                // Pass empresaId and sucursalId to JWT
-                const token = await generarJWT(userDB.id, req.empresaId, req.sucursalId);
-                res.json({
-                    ok: true,
-                    token,
-                    usuario: userDB
-                });
-            } else {
-                return res.status(401).json({
-                    ok: false,
-                    msg: 'Tu cuenta a sido desactivada por un administrador'
-                });
-            }
         }
+
+        if (!userDB.status) {
+            return res.status(401).json({
+                ok: false,
+                msg: 'Tu cuenta ha sido desactivada por un administrador'
+            });
+        }
+
+        // Subdominio se asume que viene desde req.headers['x-subdomain'] pero es mejor pasarlo al JWT
+        const subdomain = req.headers['x-subdomain'] || '';
+        
+        // Token inyecta: uid, tenant(subdomain), branchPath(si aplica)
+        const token = await generarJWT(userDB.id, subdomain, activeBranchPath);
+        
+        res.json({
+            ok: true,
+            token,
+            usuario: userDB,
+            tenant: subdomain,
+            branch: activeBranchPath // Retornarlo explícito para facilitar el enrutamiento Angular
+        });
 
     } catch (error) {
         console.log(error);

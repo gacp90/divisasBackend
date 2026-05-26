@@ -14,11 +14,23 @@ const getUsers = async(req, res) => {
         const UserCompany = getUserModel(req.companyDb);
         const UserBranch = getUserModel(req.branchDb);
 
+        let reqUser = await UserCompany.findById(req.uid);
+        if (!reqUser) reqUser = await UserBranch.findById(req.uid);
+
+        let queryC = {};
+        let queryB = {};
+
+        // Si el que pide no es OWNER, ocultar a todos los OWNERs de la respuesta
+        if (reqUser && reqUser.role !== 'OWNER') {
+            queryC.role = { $ne: 'OWNER' };
+            queryB.role = { $ne: 'OWNER' };
+        }
+
         const [usersC, totalC, usersB, totalB] = await Promise.all([
-            UserCompany.find(),
-            UserCompany.countDocuments(),
-            UserBranch.find(),
-            UserBranch.countDocuments()
+            UserCompany.find(queryC),
+            UserCompany.countDocuments(queryC),
+            UserBranch.find(queryB),
+            UserBranch.countDocuments(queryB)
         ]);
 
         res.json({

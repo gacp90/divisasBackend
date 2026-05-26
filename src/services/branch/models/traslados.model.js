@@ -71,6 +71,6 @@ TrasladosSchema.method('toJSON', function() {
     return object;
 });
 
-module.exports = (companyDb) => {
-    return companyDb.models.Traslados || companyDb.model('Traslados', TrasladosSchema);
+module.exports = (branchDb) => {
+    return branchDb.models.Traslados || branchDb.model('Traslados', TrasladosSchema);
 };

@@ -31,14 +31,14 @@ const injectDynamicConnections = async (req, res, next) => {
             });
         }
 
-        // 3. Inyectar datos en el request
-        req.empresaId = subdomainData.empresaId;
-        req.sucursalId = subdomainData.sucursalId;
-
-        // 4. Inyectar conexiones pre-establecidas
-        req.companyDb = getCompanyConnection(req.empresaId);
-        req.branchDb = getBranchConnection(req.sucursalId);
-
+        // 3. Inyectar conexión Company
+        req.companyDb = getCompanyConnection(subdomainData.subdominio);
+        
+        // 4. Intentar detectar branch desde header x-branch
+        let branchPath = req.headers['x-branch'];
+        if (branchPath) {
+            req.branchDb = getBranchConnection(branchPath.toLowerCase());
+        }
 
         next();
     } catch (error) {

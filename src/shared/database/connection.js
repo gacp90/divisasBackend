@@ -46,14 +46,14 @@ const getDynamicConnection = (dbName) => {
     return connection;
 };
 
-const getCompanyConnection = (empresaId) => {
-    if (!empresaId) throw new Error('empresaId es requerido para obtener la conexión');
-    return getDynamicConnection(`simid_empresa_${empresaId}_db`);
+const getCompanyConnection = (subdomain) => {
+    if (!subdomain) throw new Error('subdomain es requerido para obtener la conexión');
+    return getDynamicConnection(`company_${subdomain.toLowerCase()}`);
 };
 
-const getBranchConnection = (sucursalId) => {
-    if (!sucursalId) throw new Error('sucursalId es requerido para obtener la conexión');
-    return getDynamicConnection(`simid_sucursal_${sucursalId}_db`);
+const getBranchConnection = (branchPath) => {
+    if (!branchPath) throw new Error('branchPath es requerido para obtener la conexión');
+    return getDynamicConnection(`branch_${branchPath.toLowerCase()}`);
 };
 
 module.exports = {

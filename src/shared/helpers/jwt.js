@@ -5,14 +5,14 @@
 const jwt = require('jsonwebtoken');
 
 
-const generarJWT = (uid, empresaId, sucursalId) => {
+const generarJWT = (uid, tenant, branchPath) => {
 
     return new Promise((resolve, reject) => {
 
         const payload = {
             uid,
-            empresaId,
-            sucursalId
+            tenant,
+            branchPath
         };
 
         jwt.sign(payload, process.env.SECRET_SEED_JWT, {

@@ -9,14 +9,6 @@ const SubdomainSchema = Schema({
         lowercase: true,
         trim: true
     },
-    empresaId: {
-        type: String,
-        required: true
-    },
-    sucursalId: {
-        type: String,
-        required: true
-    },
     isActive: {
         type: Boolean,
         default: true

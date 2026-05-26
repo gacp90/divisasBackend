@@ -24,7 +24,7 @@ const checkClient = async (req, res) => {
         searchPromises.push(
           SanctionsEntry.find({ 
             active: true, 
-            'documents.number': { $regex: regexPattern, $options: 'i' } 
+            'documents.number': { $regex: regexPattern } 
           }).limit(10)
         );
       } else {

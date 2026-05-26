@@ -126,15 +126,21 @@ const downloadAndProcessOFAC = async () => {
       }
     }
 
-    // 5. Operaciones de Base de Datos Atómicas    
-    // A. Desactivar anteriores
-    await SanctionsEntry.updateMany({ source: 'OFAC', active: true }, { active: false });
-
-    // B. Inserción masiva (Rendimiento optimizado)
+    // 5. Operaciones de Base de Datos Seguras (Prevenir que la base quede vacía si falla)
+    
+    let insertedIds = [];
     if (bulkEntries.length > 0) {
-      // Usamos insertMany con lean para mayor velocidad
-      await SanctionsEntry.insertMany(bulkEntries);
+      // A. Inserción masiva PRIMERO
+      // Si esto falla (ej. por memoria), se lanza un error y NO se borra lo anterior
+      const inserted = await SanctionsEntry.insertMany(bulkEntries);
+      insertedIds = inserted.map(doc => doc._id);
     }
+
+    // B. Solo si la inserción fue exitosa, desactivamos los registros viejos
+    await SanctionsEntry.updateMany(
+      { source: 'OFAC', active: true, _id: { $nin: insertedIds } }, 
+      { active: false }
+    );
 
     // C. Guardar registro de Auditoría
     await SanctionsSource.create({

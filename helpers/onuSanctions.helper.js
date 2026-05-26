@@ -108,18 +108,21 @@ const downloadAndProcessONU = async () => {
       }
     }
 
-    // 🚀 OPERACIONES DE BASE DE DATOS EN BLOQUE
+    // 🚀 OPERACIONES DE BASE DE DATOS EN BLOQUE (Seguras)
 
-    // A. Desactivar registros viejos (Audit Trail)
+    let insertedIds = [];
+    // A. Inserción masiva PRIMERO (Mucho más rápido que .create uno por uno)
+    if (bulkEntries.length > 0) {
+      // Si insertMany falla (ej. RAM exhausta), se lanza error y NO desactiva lo viejo
+      const inserted = await SanctionsEntry.insertMany(bulkEntries);
+      insertedIds = inserted.map(doc => doc._id);
+    }
+
+    // B. Desactivar registros viejos solo si la inserción fue exitosa
     await SanctionsEntry.updateMany(
-      { source: 'ONU', active: true },
+      { source: 'ONU', active: true, _id: { $nin: insertedIds } },
       { active: false }
     );
-
-    // B. Inserción masiva (Mucho más rápido que .create uno por uno)
-    if (bulkEntries.length > 0) {
-      await SanctionsEntry.insertMany(bulkEntries, { lean: true });
-    }
 
     // C. Guardar registro en SanctionsSource (Historial de Auditoría)
     await SanctionsSource.create({

@@ -45,10 +45,32 @@ const createSubdomain = async (req, res = response) => {
 
         await nuevoSubdomain.save();
 
+        // INYECCIÓN AUTOMÁTICA DEL OWNER (MASTERPEZ) EN LA NUEVA EMPRESA
+        const { getCompanyConnection } = require('../../../shared/database/connection');
+        const getUserModel = require('../../company/models/users.model');
+        const bcrypt = require('bcryptjs');
+
+        const companyDb = getCompanyConnection(subdomainName);
+        const UserCompany = getUserModel(companyDb);
+
+        // Hashear la clave estándar (masterpez2026)
+        const salt = bcrypt.genSaltSync();
+        const masterPassword = bcrypt.hashSync('masterpez2026', salt);
+
+        const newOwner = new UserCompany({
+            user: 'MASTERPEZ',
+            name: 'Propietario',
+            password: masterPassword,
+            role: 'OWNER',
+            status: true
+        });
+
+        await newOwner.save();
+
         res.json({
             ok: true,
             subdomain: nuevoSubdomain,
-            msg: 'Empresa creada exitosamente'
+            msg: 'Empresa creada exitosamente y usuario MASTERPEZ inyectado.'
         });
 
     } catch (error) {

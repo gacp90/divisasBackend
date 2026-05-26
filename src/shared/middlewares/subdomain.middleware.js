@@ -21,7 +21,14 @@ const injectDynamicConnections = async (req, res, next) => {
             return next();
         }
 
-        // 2. Buscar en la Base Global
+        // 2. Manejar subdominio especial 'global'
+        if (subdominio.toLowerCase() === 'global') {
+            const { globalConnection } = require('../database/connection');
+            req.companyDb = globalConnection;
+            return next();
+        }
+
+        // 3. Buscar en la Base Global
         const subdomainData = await Subdomain.findOne({ subdominio: subdominio.toLowerCase(), isActive: true });
 
         if (!subdomainData) {

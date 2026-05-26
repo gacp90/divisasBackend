@@ -54,6 +54,7 @@ app.use('/api/v1/users', require('./src/services/company/routes/users.route'));
 app.use('/api/v1/transacciones', require('./src/services/branch/routes/transacciones.route'));
 app.use('/api/v1/sanctions', require('./src/services/global/routes/sanctions.routes'));
 app.use('/api/v1/sources', require('./src/shared/routes/sources.route'));
+app.use('/api/v1/subdomains', require('./src/services/global/routes/subdomains.route'));
 app.use('/api/v1/traslados', require('./src/services/branch/routes/traslados.route'));
 app.use('/api/v1/traslados-sucursales', require('./src/services/company/routes/trasladosSucursales.route'));
 app.use('/api/v1/turnos', require('./src/services/branch/routes/turnos.route'));

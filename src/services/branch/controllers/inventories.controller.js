@@ -2,7 +2,7 @@ const { response } = require('express');
 
 const getInventoryModel = require('../models/inventory.model');
 const getTransaccionModel = require('../models/transacciones.model');
-const getTrasladoModel = require('../../company/models/traslados.model');
+const getTrasladoModel = require('../models/traslados.model');
 const getTrmModel = require('../../company/models/trm.model');
 
 /** ======================================================================
@@ -15,7 +15,7 @@ const getInventoriesQuery = async(req, res) => {
 
         const Inventory = getInventoryModel(req.branchDb);
         const Transaccion = getTransaccionModel(req.branchDb);
-        const Traslado = getTrasladoModel(req.companyDb); // Traslados se unificaron en Company DB
+        const Traslado = getTrasladoModel(req.branchDb); // Traslados internos en la misma sucursal
         const Trm = getTrmModel(req.companyDb);
 
         const { desde, hasta, sort, ...query } = req.body;

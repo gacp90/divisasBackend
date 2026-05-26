@@ -5,7 +5,13 @@ const validarAccesoPagos = async (req, res, next) => {
     try {
 
         if (!req.companyDb) return res.status(400).json({ ok: false, msg: 'Falta contexto empresa' });
-        const User = getUserModel(req.companyDb);
+        
+        let User;
+        if (req.tenantToken === 'global') {
+            User = require('../../services/global/models/users.model');
+        } else {
+            User = getUserModel(req.companyDb);
+        }
 
         const uid = req.uid;
 

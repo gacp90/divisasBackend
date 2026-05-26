@@ -1,24 +1,21 @@
 const { response } = require('express');
-const getPagoModel = require('../models/pagos.model');
-const getUserModel = require('../../company/models/users.model');
+const Pago = require('../../global/models/pagos.model');
 const getEmpresaModel = require('../models/empresa.model');
+const { getBranchConnection } = require('../../../shared/database/connection');
 
 /** =========================================
  *  OBTENER PAGOS (SOLO OWNER)
+ *  Ahora consulta simid_global_db
 =========================================*/
 const getPagos = async (req, res = response) => {
-
     try {
-        if (!req.branchDb) return res.status(400).json({ ok: false, msg: 'Falta contexto sucursal' });
-        const Pago = getPagoModel(req.branchDb);
-
-       const pagos = await Pago.find().sort({ fecha: -1 });
+        // En Global Dashboard, el token ya tiene los permisos
+        const pagos = await Pago.find().sort({ fecha: -1 });
 
         res.json({
             ok: true,
             pagos
         });
-
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -26,20 +23,23 @@ const getPagos = async (req, res = response) => {
             msg: 'Error al obtener pagos'
         });
     }
-
 };
-
 
 /** =========================================
  *  CREAR PAGO (USUARIO NORMAL - YA PAGUÉ)
+ *  Se guarda en simid_global_db
 =========================================*/
 const crearPago = async (req, res = response) => {
-
     try {
-        if (!req.branchDb) return res.status(400).json({ ok: false, msg: 'Falta contexto sucursal' });
-        const Pago = getPagoModel(req.branchDb);
-
         const { empresa, usuario, monto, referencia } = req.body;
+        
+        // El tenant y branch deben venir del token del usuario que hace la solicitud
+        const tenant = req.tenantToken;
+        const branchPath = req.branchPathToken;
+
+        if (!tenant) {
+            return res.status(400).json({ ok: false, msg: 'No se pudo identificar el tenant del usuario' });
+        }
 
         // Verificar si ya existe un pago para esta empresa en el mes actual
         const startOfMonth = new Date();
@@ -52,7 +52,7 @@ const crearPago = async (req, res = response) => {
         endOfMonth.setHours(23, 59, 59, 999);
 
         const pagoExistente = await Pago.findOne({
-            empresa,
+            tenant,
             fecha: { $gte: startOfMonth, $lte: endOfMonth }
         });
 
@@ -73,6 +73,8 @@ const crearPago = async (req, res = response) => {
 
         const pago = new Pago({
             empresa,
+            tenant,
+            branchPath,
             usuario,
             monto,
             referencia,
@@ -93,24 +95,13 @@ const crearPago = async (req, res = response) => {
             msg: 'Error al crear pago'
         });
     }
-
 };
-
 
 /** =========================================
  *  APROBAR PAGO (SOLO OWNER)
 =========================================*/
 const aprobarPago = async (req, res = response) => {
-
     try {
-        if (!req.branchDb || !req.companyDb) return res.status(400).json({ ok: false, msg: 'Faltan contextos de base de datos' });
-        const Pago = getPagoModel(req.branchDb);
-        const User = getUserModel(req.companyDb); // Pagos solo aprobados por OWNER (Company DB)
-        const Empresa = getEmpresaModel(req.branchDb);
-
-        const uid = req.uid;
-        const user = await User.findById(uid);
-
         const { id } = req.params;
 
         const pago = await Pago.findById(id);
@@ -123,18 +114,26 @@ const aprobarPago = async (req, res = response) => {
         }
 
         pago.estado = 'ACTIVO';
-
         await pago.save();
 
-        const empresa = await Empresa.findOne();
+        // Si el pago tiene un branchPath, actualizar la suscripción en la DB de esa sucursal
+        if (pago.branchPath) {
+            const tempBranchDb = getBranchConnection(pago.branchPath);
+            // Esperar conexión
+            if (tempBranchDb.readyState !== 1) {
+                await tempBranchDb.asPromise();
+            }
 
-        if (empresa) {
-            empresa.suscripcion = {
-                estado: 'ACTIVA',
-                ultimoPago: new Date()
-            };
+            const Empresa = getEmpresaModel(tempBranchDb);
+            const empresaBranch = await Empresa.findOne();
 
-            await empresa.save();
+            if (empresaBranch) {
+                empresaBranch.suscripcion = {
+                    estado: 'ACTIVA',
+                    ultimoPago: new Date()
+                };
+                await empresaBranch.save();
+            }
         }
 
         res.json({
@@ -149,7 +148,6 @@ const aprobarPago = async (req, res = response) => {
             msg: 'Error al aprobar pago'
         });
     }
-
 };
 
 module.exports = {
@@ -157,3 +155,4 @@ module.exports = {
     crearPago,
     aprobarPago
 };
+

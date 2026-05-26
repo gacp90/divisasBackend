@@ -7,6 +7,15 @@ const PagoSchema = Schema({
         required: true
     },
 
+    tenant: {
+        type: String,
+        required: true
+    },
+
+    branchPath: {
+        type: String
+    },
+
     usuario: {
         type: String,
         required: true
@@ -45,8 +54,7 @@ PagoSchema.method('toJSON', function () {
     return object;
 });
 
-const getPagoModel = (connection) => {
-    return connection.model('Pagos', PagoSchema);
-};
-module.exports = getPagoModel;
+const { globalConnection } = require('../../../shared/database/connection');
+
+module.exports = globalConnection.model('Pagos', PagoSchema);
 

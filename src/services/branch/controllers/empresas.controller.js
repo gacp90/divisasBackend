@@ -16,8 +16,9 @@ const getEmpresaModel = require('../models/empresa.model');
 const getEmpresa = async(req, res) => {
 
     try {
-        if (!req.branchDb) return res.status(400).json({ ok: false, msg: 'Falta contexto sucursal' });
-        const Empresa = getEmpresaModel(req.branchDb);
+        const dbConnection = req.companyDb || req.branchDb;
+        if (!dbConnection) return res.status(400).json({ ok: false, msg: 'Falta contexto de base de datos' });
+        const Empresa = getEmpresaModel(dbConnection);
 
         const {...query } = req.body;
 
@@ -46,8 +47,9 @@ const getEmpresa = async(req, res) => {
 const createEmpresa = async(req, res = response) => {
 
     try {
-        if (!req.branchDb) return res.status(400).json({ ok: false, msg: 'Falta contexto sucursal' });
-        const Empresa = getEmpresaModel(req.branchDb);
+        const dbConnection = req.companyDb || req.branchDb;
+        if (!dbConnection) return res.status(400).json({ ok: false, msg: 'Falta contexto de base de datos' });
+        const Empresa = getEmpresaModel(dbConnection);
 
         const validarDatos = await Empresa.find();
 
@@ -84,8 +86,9 @@ const updateEmpresa = async(req, res = response) => {
 
 
     try {
-        if (!req.branchDb) return res.status(400).json({ ok: false, msg: 'Falta contexto sucursal' });
-        const Empresa = getEmpresaModel(req.branchDb);
+        const dbConnection = req.companyDb || req.branchDb;
+        if (!dbConnection) return res.status(400).json({ ok: false, msg: 'Falta contexto de base de datos' });
+        const Empresa = getEmpresaModel(dbConnection);
         const eid = req.params.id;
 
         // SEARCH EMPRESA
@@ -125,8 +128,9 @@ const updateEmpresa = async(req, res = response) => {
 const updateLogo = async(req, res = response) => {
 
     try {
-        if (!req.branchDb) return res.status(400).json({ ok: false, msg: 'Falta contexto sucursal' });
-        const Empresa = getEmpresaModel(req.branchDb);
+        const dbConnection = req.companyDb || req.branchDb;
+        if (!dbConnection) return res.status(400).json({ ok: false, msg: 'Falta contexto de base de datos' });
+        const Empresa = getEmpresaModel(dbConnection);
 
         const eid = req.params.id;
 
@@ -210,8 +214,11 @@ const updateLogo = async(req, res = response) => {
 
 const getEstadoSuscripcion = async (req, res) => {
     
-    if (!req.branchDb) return res.status(400).json({ ok: false, msg: 'Falta contexto sucursal' });
-    const Empresa = getEmpresaModel(req.branchDb);
+    // Si no hay branchDb, intentamos usar companyDb porque la empresa/suscripción debería ser global para la compañía.
+    const dbConnection = req.companyDb || req.branchDb;
+    if (!dbConnection) return res.status(500).json({ ok: false, msg: 'Falta contexto de base de datos' });
+    
+    const Empresa = getEmpresaModel(dbConnection);
 
     const empresa = await Empresa.findOne();
 

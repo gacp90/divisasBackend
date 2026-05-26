@@ -6,7 +6,7 @@ const validarRoleGlobal = async (req, res = response, next) => {
     
     try {
         const uid = req.uid;
-        const empresaId = req.empresaIdToken;
+        const empresaId = req.tenantToken;
 
         if (!uid || !empresaId) {
             return res.status(401).json({
@@ -15,16 +15,25 @@ const validarRoleGlobal = async (req, res = response, next) => {
             });
         }
 
-        // Obtener conexión dinámica a la Company DB
-        const companyConnection = getCompanyConnection(empresaId);
-        
-        // Esperar conexión si no está lista (por seguridad aunque suele estarlo)
-        if (companyConnection.readyState !== 1) {
-            await companyConnection.asPromise();
+        // Obtener conexión a la DB correspondiente
+        let connection;
+        if (empresaId.toLowerCase() === 'global') {
+            const { globalConnection } = require('../database/connection');
+            connection = globalConnection;
+        } else {
+            connection = getCompanyConnection(empresaId);
+            if (connection.readyState !== 1) {
+                await connection.asPromise();
+            }
         }
 
         // Obtener modelo de usuario inyectando la conexión
-        const User = getUserModel(companyConnection);
+        let User;
+        if (empresaId.toLowerCase() === 'global') {
+            User = require('../../services/global/models/users.model');
+        } else {
+            User = require('../../services/company/models/users.model')(connection);
+        }
 
         // Buscar usuario
         const userDB = await User.findById(uid);

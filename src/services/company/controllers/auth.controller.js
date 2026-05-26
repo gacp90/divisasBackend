@@ -24,22 +24,31 @@ const login = async (req, res = response) => {
         // 1. Buscar en Company DB (OWNER, ADMIN, SUPERVISOR)
         let userDB = await UserCompany.findOne({ user });
         let activeBranchPath = null;
-        
+
         // 2. Si no está en Company, iterar por las sucursales (CAJEROS)
         if (!userDB) {
             const Branch = getBranchModel(req.companyDb);
             const branches = await Branch.find({ isActive: true });
-            
+
             for (const branch of branches) {
                 const tempBranchDb = getBranchConnection(branch.path);
                 const UserBranch = getUserModel(tempBranchDb);
-                
+
                 const foundUser = await UserBranch.findOne({ user });
                 if (foundUser) {
                     userDB = foundUser;
                     activeBranchPath = branch.path;
                     break; // Cortar el ciclo si lo encuentra
                 }
+            }
+        }
+
+        // 3. Si no está ni en Company ni en Branch, buscar en Global
+        if (!userDB) {
+            const UserGlobal = require('../../global/models/users.model');
+            const foundUser = await UserGlobal.findOne({ user });
+            if (foundUser) {
+                userDB = foundUser;
             }
         }
 
@@ -68,10 +77,10 @@ const login = async (req, res = response) => {
 
         // Subdominio se asume que viene desde req.headers['x-subdomain'] pero es mejor pasarlo al JWT
         const subdomain = req.headers['x-subdomain'] || '';
-        
+
         // Token inyecta: uid, tenant(subdomain), branchPath(si aplica)
         const token = await generarJWT(userDB.id, subdomain, activeBranchPath);
-        
+
         res.json({
             ok: true,
             token,
@@ -98,34 +107,63 @@ const login = async (req, res = response) => {
 ======================================================================*/
 const renewJWT = async (req, res = response) => {
 
-    const uid = req.uid;
-    const empresaId = req.empresaIdToken || req.empresaId;
-    const sucursalId = req.sucursalIdToken || req.sucursalId;
-
-    // GENERAR TOKEN - JWT
-    const token = await generarJWT(uid, empresaId, sucursalId);
-
     try {
-        const UserCompany = getUserModel(req.companyDb);
-        const UserBranch = getUserModel(req.branchDb);
 
-        // SEARCH USER
+        const uid = req.uid;
+        const tenant = req.tenantToken;
+        const branchPath = req.branchPathToken;
+
+        if (!uid) {
+            return res.status(401).json({
+                ok: false,
+                msg: 'Token inválido (sin uid)'
+            });
+        }
+
+        if (!req.companyDb && !req.branchDb) {
+            return res.status(500).json({
+                ok: false,
+                msg: 'DB no configurada'
+            });
+        }
+
+        const UserCompany = getUserModel(req.companyDb);
+
         let usuario = await UserCompany.findById(uid, 'user name role img address uid valid turno fecha status');
-        
-        if (!usuario) {
+
+        if (!usuario && req.branchDb) {
+            const UserBranch = getUserModel(req.branchDb);
             usuario = await UserBranch.findById(uid, 'user name role img address uid valid turno fecha status');
         }
 
-        res.status(200).json({
+        if (!usuario) {
+            const UserGlobal = require('../../global/models/users.model');
+            usuario = await UserGlobal.findById(uid, 'user name role img address uid valid turno fecha status');
+        }
+
+        if (!usuario) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'Usuario no encontrado'
+            });
+        }
+
+        const token = await generarJWT(uid, tenant, branchPath);
+
+        return res.status(200).json({
             ok: true,
             token,
             usuario
         });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ ok: false, msg: 'Error al renovar token' });
-    }
 
+    } catch (error) {
+        console.error('ERROR RENEW:', error);
+
+        return res.status(401).json({
+            ok: false,
+            msg: 'Error al renovar token'
+        });
+    }
 };
 /** =====================================================================
  *  RENEW TOKEN

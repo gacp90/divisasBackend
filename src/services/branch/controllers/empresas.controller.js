@@ -16,7 +16,7 @@ const getEmpresaModel = require('../models/empresa.model');
 const getEmpresa = async(req, res) => {
 
     try {
-        const dbConnection = req.companyDb || req.branchDb;
+        const dbConnection = req.branchDb || req.companyDb;
         if (!dbConnection) return res.status(400).json({ ok: false, msg: 'Falta contexto de base de datos' });
         const Empresa = getEmpresaModel(dbConnection);
 
@@ -65,7 +65,7 @@ const getEmpresa = async(req, res) => {
 const createEmpresa = async(req, res = response) => {
 
     try {
-        const dbConnection = req.companyDb || req.branchDb;
+        const dbConnection = req.branchDb || req.companyDb;
         if (!dbConnection) return res.status(400).json({ ok: false, msg: 'Falta contexto de base de datos' });
         const Empresa = getEmpresaModel(dbConnection);
 
@@ -104,7 +104,7 @@ const updateEmpresa = async(req, res = response) => {
 
 
     try {
-        const dbConnection = req.companyDb || req.branchDb;
+        const dbConnection = req.branchDb || req.companyDb;
         if (!dbConnection) return res.status(400).json({ ok: false, msg: 'Falta contexto de base de datos' });
         const Empresa = getEmpresaModel(dbConnection);
         const eid = req.params.id;
@@ -175,7 +175,7 @@ const updateEmpresa = async(req, res = response) => {
 const updateLogo = async(req, res = response) => {
 
     try {
-        const dbConnection = req.companyDb || req.branchDb;
+        const dbConnection = req.branchDb || req.companyDb;
         if (!dbConnection) return res.status(400).json({ ok: false, msg: 'Falta contexto de base de datos' });
         const Empresa = getEmpresaModel(dbConnection);
 

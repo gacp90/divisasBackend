@@ -63,6 +63,11 @@ const TurnosSchema = Schema({
 
     close: {
         type: Date
+    },
+
+    cierreAutomatico: {
+        type: Boolean,
+        default: false
     }
 
 });

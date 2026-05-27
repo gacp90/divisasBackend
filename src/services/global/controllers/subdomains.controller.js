@@ -25,7 +25,7 @@ const getSubdomains = async (req, res = response) => {
  * Crear un nuevo subdominio (Empresa)
  */
 const createSubdomain = async (req, res = response) => {
-    const { subdominio, nombreEmpresa } = req.body;
+    const { subdominio, nombreEmpresa, type, nit, representanteLegal } = req.body;
 
     try {
         const subdomainName = subdominio.toLowerCase().trim();
@@ -68,10 +68,22 @@ const createSubdomain = async (req, res = response) => {
 
         await newOwner.save();
 
+        // INYECCIÓN DE DATOS DEL REPRESENTANTE LEGAL
+        const getCompanyProfileModel = require('../../company/models/companyProfile.model');
+        const CompanyProfile = getCompanyProfileModel(companyDb);
+        
+        const newProfile = new CompanyProfile({
+            type: type ?? true, // true = Jurídica por defecto
+            nit: nit || '000000000',
+            representanteLegal: representanteLegal || 'Representante'
+        });
+
+        await newProfile.save();
+
         res.json({
             ok: true,
             subdomain: nuevoSubdomain,
-            msg: 'Empresa creada exitosamente y usuario MASTERPEZ inyectado.'
+            msg: 'Empresa creada exitosamente con Representante Legal y usuario MASTERPEZ inyectado.'
         });
 
     } catch (error) {

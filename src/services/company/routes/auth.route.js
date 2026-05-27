@@ -9,7 +9,7 @@ const { validarCampos } = require('../../../shared/middlewares/validar-campos');
 const { validarJWT, validarJWTClient } = require('../../../shared/middlewares/validar-jwt');
 
 // CONTROLLERS
-const { login, renewJWT } = require('../controllers/auth.controller');
+const { login, renewJWT, logout } = require('../controllers/auth.controller');
 
 const router = Router();
 
@@ -28,6 +28,10 @@ router.post('/', [
  *  RENEW TOKEN
 =========================================================================*/
 router.get('/renew', validarJWT, renewJWT);
+/** =====================================================================
+ *  LOGOUT
+=========================================================================*/
+router.post('/logout', validarJWT, logout);
 
 
 // EXPORT

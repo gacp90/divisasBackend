@@ -22,7 +22,25 @@ const getEmpresa = async(req, res) => {
 
         const {...query } = req.body;
 
-        const empresa = await Empresa.findOne(query)
+        let empresa = await Empresa.findOne(query);
+
+        if (empresa && req.companyDb) {
+            // Obtener el perfil global (CompanyProfile)
+            const getCompanyProfileModel = require('../../company/models/companyProfile.model');
+            const CompanyProfile = getCompanyProfileModel(req.companyDb);
+            const profile = await CompanyProfile.findOne();
+
+            if (profile) {
+                // Combinar los datos globales del representante con los locales
+                empresa = {
+                    ...empresa.toObject(),
+                    type: profile.type,
+                    nit: profile.nit,
+                    representanteLegal: profile.representanteLegal,
+                    represent: profile.representanteLegal // alias para compatibilidad
+                };
+            }
+        }
 
         res.json({
             ok: true,
@@ -104,8 +122,37 @@ const updateEmpresa = async(req, res = response) => {
         // VALIDATE EMPRESA
         const campos = req.body;
 
+        // Extraer los campos globales antes de actualizar la sucursal local
+        const globalFields = {
+            type: campos.type,
+            nit: campos.nit,
+            representanteLegal: campos.representanteLegal || campos.represent
+        };
+
+        // Eliminar campos globales del objeto que se guardará en la sucursal
+        delete campos.type;
+        delete campos.nit;
+        delete campos.representanteLegal;
+        delete campos.represent;
+
         // UPDATE
         const empresaUpdate = await Empresa.findByIdAndUpdate(eid, campos, { new: true, useFindAndModify: false });
+
+        // UPDATE GLOBAL (CompanyProfile)
+        if (req.companyDb) {
+            const getCompanyProfileModel = require('../../company/models/companyProfile.model');
+            const CompanyProfile = getCompanyProfileModel(req.companyDb);
+            let profile = await CompanyProfile.findOne();
+            if (profile) {
+                if (globalFields.type !== undefined) profile.type = globalFields.type;
+                if (globalFields.nit) profile.nit = globalFields.nit;
+                if (globalFields.representanteLegal) profile.representanteLegal = globalFields.representanteLegal;
+                await profile.save();
+            } else {
+                profile = new CompanyProfile(globalFields);
+                await profile.save();
+            }
+        }
 
         res.json({
             ok: true,

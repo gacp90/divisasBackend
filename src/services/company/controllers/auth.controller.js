@@ -18,32 +18,11 @@ const login = async (req, res = response) => {
         }
 
         const UserCompany = getUserModel(req.companyDb);
-        const getBranchModel = require('../models/branch.model');
-        const { getBranchConnection } = require('../../../shared/database/connection');
 
-        // 1. Buscar en Company DB (OWNER, ADMIN, SUPERVISOR)
+        // 1. Buscar en Company DB (OWNER, ADMIN, SUPERVISOR, CAJERO)
         let userDB = await UserCompany.findOne({ user });
-        let activeBranchPath = null;
 
-        // 2. Si no está en Company, iterar por las sucursales (CAJEROS)
-        if (!userDB) {
-            const Branch = getBranchModel(req.companyDb);
-            const branches = await Branch.find({ isActive: true });
-
-            for (const branch of branches) {
-                const tempBranchDb = getBranchConnection(branch.path);
-                const UserBranch = getUserModel(tempBranchDb);
-
-                const foundUser = await UserBranch.findOne({ user });
-                if (foundUser) {
-                    userDB = foundUser;
-                    activeBranchPath = branch.path;
-                    break; // Cortar el ciclo si lo encuentra
-                }
-            }
-        }
-
-        // 3. Si no está ni en Company ni en Branch, buscar en Global
+        // 2. Si no está en Company, buscar en Global
         if (!userDB) {
             const UserGlobal = require('../../global/models/users.model');
             const foundUser = await UserGlobal.findOne({ user });
@@ -75,18 +54,32 @@ const login = async (req, res = response) => {
             });
         }
 
-        // Subdominio se asume que viene desde req.headers['x-subdomain'] pero es mejor pasarlo al JWT
+        // PREVENCIÓN DE SESIÓN CONCURRENTE (Solo para CAJEROS)
+        if (userDB.role === 'CAJERO') {
+            if (userDB.isLoggedIn) {
+                console.log('Login failed: user already logged in', userDB);
+                return res.status(403).json({
+                    ok: false,
+                    msg: 'Ya tienes una sesión activa en otro dispositivo. Pide a un administrador que la cierre si es un error.'
+                });
+            }
+            // Marcar como logueado
+            userDB.isLoggedIn = true;
+            await userDB.save();
+        }
+
+        // Subdominio se asume que viene desde req.headers['x-subdomain']
         const subdomain = req.headers['x-subdomain'] || '';
 
-        // Token inyecta: uid, tenant(subdomain), branchPath(si aplica)
-        const token = await generarJWT(userDB.id, subdomain, activeBranchPath);
+        // Token inyecta: uid, tenant(subdomain). No necesitamos inyectar activeBranchPath para cajeros aquí, ya que pueden seleccionar la sucursal.
+        const token = await generarJWT(userDB.id, subdomain, null);
 
         res.json({
             ok: true,
             token,
             usuario: userDB,
             tenant: subdomain,
-            branch: activeBranchPath // Retornarlo explícito para facilitar el enrutamiento Angular
+            branch: null // Ya no se autoconecta a una sucursal, el usuario debe elegirla.
         });
 
     } catch (error) {
@@ -120,7 +113,7 @@ const renewJWT = async (req, res = response) => {
             });
         }
 
-        if (!req.companyDb && !req.branchDb) {
+        if (!req.companyDb) {
             return res.status(500).json({
                 ok: false,
                 msg: 'DB no configurada'
@@ -130,11 +123,6 @@ const renewJWT = async (req, res = response) => {
         const UserCompany = getUserModel(req.companyDb);
 
         let usuario = await UserCompany.findById(uid, 'user name role img address uid valid turno fecha status');
-
-        if (!usuario && req.branchDb) {
-            const UserBranch = getUserModel(req.branchDb);
-            usuario = await UserBranch.findById(uid, 'user name role img address uid valid turno fecha status');
-        }
 
         if (!usuario) {
             const UserGlobal = require('../../global/models/users.model');
@@ -170,7 +158,39 @@ const renewJWT = async (req, res = response) => {
 =========================================================================*/
 
 
+/** =====================================================================
+ *  LOGOUT
+=========================================================================*/
+const logout = async (req, res = response) => {
+    try {
+        const uid = req.uid;
+        if (!uid) return res.status(401).json({ ok: false, msg: 'Sin uid' });
+
+        let userDB = null;
+        if (req.companyDb) {
+            const UserCompany = getUserModel(req.companyDb);
+            userDB = await UserCompany.findById(uid);
+        }
+
+        if (!userDB) {
+            const UserGlobal = require('../../global/models/users.model');
+            userDB = await UserGlobal.findById(uid);
+        }
+
+        if (userDB) {
+            userDB.isLoggedIn = false;
+            await userDB.save();
+        }
+
+        res.json({ ok: true, msg: 'Sesión cerrada exitosamente' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ ok: false, msg: 'Error inesperado al cerrar sesión' });
+    }
+};
+
 module.exports = {
     login,
-    renewJWT
+    renewJWT,
+    logout
 };

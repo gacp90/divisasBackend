@@ -98,7 +98,80 @@ const editGlobalBranchName = async (req, res = response) => {
     }
 };
 
+/**
+ * Crear una nueva sucursal (SaaS Provisioning Wizard)
+ */
+const createGlobalBranch = async (req, res = response) => {
+    const { subdominio } = req.params;
+    const { name, path, oficial } = req.body;
+
+    try {
+        const { getCompanyConnection, getBranchConnection } = require('../../../shared/database/connection');
+        const companyDb = getCompanyConnection(subdominio);
+
+        // 1. Crear el Branch en Company DB
+        let BranchModel;
+        try {
+            BranchModel = companyDb.model('Branch');
+        } catch (err) {
+            const branchSchema = require('../../company/models/branch.model');
+            BranchModel = branchSchema(companyDb);
+        }
+
+        const existePath = await BranchModel.findOne({ path });
+        if (existePath) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'La ruta de la sucursal ya existe'
+            });
+        }
+
+        const nuevaSucursal = new BranchModel({
+            name,
+            path,
+            isActive: true
+        });
+
+        await nuevaSucursal.save();
+
+        // 2. Crear el documento Empresa en la nueva Branch DB
+        const branchDb = getBranchConnection(subdominio, path);
+        const getEmpresaModel = require('../../branch/models/empresa.model');
+        const EmpresaModel = getEmpresaModel(branchDb);
+
+        // Fecha en +30 días para la suscripción
+        const fechaExpiracion = new Date();
+        fechaExpiracion.setDate(fechaExpiracion.getDate() + 30);
+
+        const nuevaEmpresaInfo = new EmpresaModel({
+            name, // Razón Social local de la sucursal
+            oficial: oficial || {},
+            status: true,
+            suscripcion: {
+                estado: 'ACTIVA',
+                ultimoPago: fechaExpiracion
+            }
+        });
+
+        await nuevaEmpresaInfo.save();
+
+        res.json({
+            ok: true,
+            branch: nuevaSucursal,
+            msg: 'Sucursal creada y activada exitosamente'
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Hable con el administrador'
+        });
+    }
+};
+
 module.exports = {
     getGlobalBranches,
-    editGlobalBranchName
+    editGlobalBranchName,
+    createGlobalBranch
 };

@@ -9,7 +9,7 @@ const { validarCampos } = require('../../../shared/middlewares/validar-campos');
 const { validarJWT } = require('../../../shared/middlewares/validar-jwt');
 
 // CONTROLLERS
-const { getUsers, createUsers, updateUser, deleteUser, getUserId } = require('../controllers/users.controller');
+const { getUsers, createUsers, updateUser, deleteUser, getUserId, forceLogout } = require('../controllers/users.controller');
 
 const router = Router();
 
@@ -65,6 +65,10 @@ router.delete('/:id', validarJWT, deleteUser);
 =========================================================================*/
 
 
+/** =====================================================================
+ *  FORCE LOGOUT
+=========================================================================*/
+router.post('/force-logout/:id', validarJWT, forceLogout);
 
 // EXPORT
 module.exports = router;

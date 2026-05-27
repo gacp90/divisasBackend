@@ -9,6 +9,7 @@ module.exports = (connection) => {
         code: { type: String, require: true },
         name: { type: String, require: true },
         status: { type: Boolean, default: true },
+        predeterminado: { type: Boolean, default: false },
         fecha: { type: Date, default: Date.now }
     });
 

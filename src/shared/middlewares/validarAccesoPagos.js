@@ -6,16 +6,24 @@ const validarAccesoPagos = async (req, res, next) => {
 
         if (!req.companyDb) return res.status(400).json({ ok: false, msg: 'Falta contexto empresa' });
         
-        let User;
+        let UserCompany;
         if (req.tenantToken === 'global') {
-            User = require('../../services/global/models/users.model');
+            UserCompany = require('../../services/global/models/users.model');
         } else {
-            User = getUserModel(req.companyDb);
+            const { getCompanyConnection } = require('../database/connection');
+            const companyDb = getCompanyConnection(req.tenantToken);
+            UserCompany = getUserModel(companyDb);
         }
 
         const uid = req.uid;
 
-        const user = await User.findById(uid);
+        let user = await UserCompany.findById(uid).catch(()=>null);
+
+        // Fallback: Si no está en Company, buscar en Global (Modo Dios - OWNER global)
+        if (!user) {
+            const UserGlobal = require('../../services/global/models/users.model');
+            user = await UserGlobal.findById(uid).catch(()=>null);
+        }
 
         if (!user) {
             return res.status(401).json({

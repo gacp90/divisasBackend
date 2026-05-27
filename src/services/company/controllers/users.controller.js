@@ -1,42 +1,36 @@
 const { response } = require('express');
 const bcrypt = require('bcryptjs');
 
-const getUserModel = require('../models/users.model');
+const getUserModel = (connection) => {
+    return require('../models/users.model')(connection);
+};
 
-/** ======================================================================
+/** =====================================================================
  *  GET USERS
 =========================================================================*/
 const getUsers = async(req, res) => {
-
     try {
-        if (!req.companyDb || !req.branchDb) return res.status(400).json({ ok: false, msg: 'Faltan contextos de base de datos' });
+        if (!req.companyDb) return res.status(400).json({ ok: false, msg: 'Falta contexto de base de datos de empresa' });
         
         const UserCompany = getUserModel(req.companyDb);
-        const UserBranch = getUserModel(req.branchDb);
-
-        let reqUser = await UserCompany.findById(req.uid);
-        if (!reqUser) reqUser = await UserBranch.findById(req.uid);
+        const reqUser = await UserCompany.findById(req.uid);
 
         let queryC = {};
-        let queryB = {};
 
         // Si el que pide no es OWNER, ocultar a todos los OWNERs de la respuesta
         if (reqUser && reqUser.role !== 'OWNER') {
             queryC.role = { $ne: 'OWNER' };
-            queryB.role = { $ne: 'OWNER' };
         }
 
-        const [usersC, totalC, usersB, totalB] = await Promise.all([
+        const [usersC, totalC] = await Promise.all([
             UserCompany.find(queryC),
-            UserCompany.countDocuments(queryC),
-            UserBranch.find(queryB),
-            UserBranch.countDocuments(queryB)
+            UserCompany.countDocuments(queryC)
         ]);
 
         res.json({
             ok: true,
-            users: [...usersC, ...usersB],
-            total: totalC + totalB
+            users: usersC,
+            total: totalC
         });
 
     } catch (error) {
@@ -45,30 +39,21 @@ const getUsers = async(req, res) => {
             ok: false,
             msg: 'Error inesperado, porfavor intente nuevamente'
         });
-
     }
-
-
 };
-/** =====================================================================
- *  GET USERS
-=========================================================================*/
 
 /** =====================================================================
  *  GET USERS ID
 =========================================================================*/
 const getUserId = async(req, res = response) => {
-
     try {
-        if (!req.companyDb || !req.branchDb) return res.status(400).json({ ok: false, msg: 'Faltan contextos de base de datos' });
-        
-        const UserCompany = getUserModel(req.companyDb);
-        const UserBranch = getUserModel(req.branchDb);
+        if (!req.companyDb) return res.status(400).json({ ok: false, msg: 'Falta contexto de base de datos de empresa' });
         
         const id = req.params.id;
+        const UserCompany = getUserModel(req.companyDb);
 
         let userDB = await UserCompany.findById(id);
-        if (!userDB) userDB = await UserBranch.findById(id);
+
         if (!userDB) {
             return res.status(400).json({
                 ok: false,
@@ -81,7 +66,6 @@ const getUserId = async(req, res = response) => {
             user: userDB
         });
 
-
     } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -89,11 +73,7 @@ const getUserId = async(req, res = response) => {
             msg: 'Error inesperado, porfavor intente nuevamente'
         });
     }
-
 };
-/** =====================================================================
- *  GET USERS ID
-=========================================================================*/
 
 /** =====================================================================
  *  CREATE USERS
@@ -104,15 +84,12 @@ const createUsers = async(req, res = response) => {
     user = user.trim();
 
     try {
-        if (!req.companyDb || !req.branchDb) return res.status(400).json({ ok: false, msg: 'Faltan contextos de base de datos' });
+        if (!req.companyDb) return res.status(400).json({ ok: false, msg: 'Falta contexto de base de datos de empresa' });
         
         const UserCompany = getUserModel(req.companyDb);
-        const UserBranch = getUserModel(req.branchDb);
 
         // Validar permisos según el rol del usuario que solicita
         let reqUser = await UserCompany.findById(req.uid);
-        if (!reqUser) reqUser = await UserBranch.findById(req.uid);
-        
         if (!reqUser) return res.status(404).json({ok: false, msg: 'Usuario no encontrado'});
 
         if (req.body.role === 'OWNER' && reqUser.role !== 'OWNER') {
@@ -127,19 +104,16 @@ const createUsers = async(req, res = response) => {
             return res.status(403).json({ok: false, msg: 'El CAJERO no puede crear usuarios.'});
         }
 
-        const TargetUser = req.body.role === 'CAJERO' ? UserBranch : UserCompany;
-
         let validarUsuario = await UserCompany.findOne({ user });
-        if (!validarUsuario) validarUsuario = await UserBranch.findOne({ user });
 
         if (validarUsuario) {
             return res.status(400).json({
                 ok: false,
-                msg: 'Ya existen alguien con este nombre de usuario'
+                msg: 'Ya existe alguien con este nombre de usuario'
             });
         }
 
-        const userNew = new TargetUser(req.body);
+        const userNew = new UserCompany(req.body);
 
         // ENCRYPTAR PASSWORD
         const salt = bcrypt.genSaltSync();
@@ -162,32 +136,20 @@ const createUsers = async(req, res = response) => {
         });
     }
 };
-/** =====================================================================
- *  CREATE USERS
-=========================================================================*/
 
 /** =====================================================================
  *  UPDATE USER
 =========================================================================*/
 const updateUser = async(req, res = response) => {
-
     const uid = req.params.id;
-   
 
     try {
-        if (!req.companyDb || !req.branchDb) return res.status(400).json({ ok: false, msg: 'Faltan contextos de base de datos' });
+        if (!req.companyDb) return res.status(400).json({ ok: false, msg: 'Falta contexto de base de datos de empresa' });
+        
         const UserCompany = getUserModel(req.companyDb);
-        const UserBranch = getUserModel(req.branchDb);
 
         // SEARCH USER
         let userDB = await UserCompany.findById(uid);
-        let TargetUser = UserCompany;
-        
-        if (!userDB) {
-            userDB = await UserBranch.findById(uid);
-            TargetUser = UserBranch;
-        }
-
         if (!userDB) {
             return res.status(404).json({
                 ok: false,
@@ -197,8 +159,6 @@ const updateUser = async(req, res = response) => {
         
         // Validar permisos para editar usuarios
         let reqUser = await UserCompany.findById(req.uid);
-        if (!reqUser) reqUser = await UserBranch.findById(req.uid);
-        
         if (!reqUser) return res.status(404).json({ok: false, msg: 'Usuario no encontrado'});
 
         if (userDB.role === 'OWNER' && reqUser.role !== 'OWNER') {
@@ -221,7 +181,6 @@ const updateUser = async(req, res = response) => {
         const { password, user, ...campos } = req.body;
         if (userDB.user !== user) {
             let validarUsuario = await UserCompany.findOne({ user });
-            if (!validarUsuario) validarUsuario = await UserBranch.findOne({ user });
             if (validarUsuario) {
                 return res.status(400).json({
                     ok: false,
@@ -231,16 +190,14 @@ const updateUser = async(req, res = response) => {
         }
 
         if (password) {
-
             // ENCRYPTAR PASSWORD
             const salt = bcrypt.genSaltSync();
             campos.password = bcrypt.hashSync(password, salt);
-
         }
 
         // UPDATE
         campos.user = user;
-        const userUpdate = await TargetUser.findByIdAndUpdate(uid, campos, { new: true, useFindAndModify: false });
+        const userUpdate = await UserCompany.findByIdAndUpdate(uid, campos, { new: true, useFindAndModify: false });
 
         res.json({
             ok: true,
@@ -254,34 +211,22 @@ const updateUser = async(req, res = response) => {
             msg: 'Error Inesperado'
         });
     }
-
 };
-/** =====================================================================
- *  UPDATE USER
-=========================================================================*/
+
 /** =====================================================================
  *  DELETE USER
 =========================================================================*/
 const deleteUser = async(req, res = response) => {
-
     const id = req.uid;
-
     const uid = req.params.id;
 
     try {
-        if (!req.companyDb || !req.branchDb) return res.status(400).json({ ok: false, msg: 'Faltan contextos de base de datos' });
+        if (!req.companyDb) return res.status(400).json({ ok: false, msg: 'Falta contexto de base de datos de empresa' });
+        
         const UserCompany = getUserModel(req.companyDb);
-        const UserBranch = getUserModel(req.branchDb);
 
         // SEARCH USER
         let userDB = await UserCompany.findById(uid);
-        let TargetUser = UserCompany;
-        
-        if (!userDB) {
-            userDB = await UserBranch.findById(uid);
-            TargetUser = UserBranch;
-        }
-
         if (!userDB) {
             return res.status(400).json({
                 ok: false,
@@ -291,8 +236,6 @@ const deleteUser = async(req, res = response) => {
         
         // Validar permisos para eliminar/desactivar usuarios
         let reqUser = await UserCompany.findById(req.uid);
-        if (!reqUser) reqUser = await UserBranch.findById(req.uid);
-        
         if (!reqUser) return res.status(404).json({ok: false, msg: 'Usuario no encontrado'});
 
         if (userDB.role === 'OWNER' && reqUser.role !== 'OWNER') {
@@ -309,22 +252,18 @@ const deleteUser = async(req, res = response) => {
 
         // CHANGE STATUS
         if (userDB.status === true) {
-
             if (id === uid) {
                 return res.status(400).json({
                     ok: false,
                     msg: 'El mismo usuario no puede desactivarse o activarse'
                 });
             }
-
             userDB.status = false;
-
         } else {
             userDB.status = true;
         }
-        // CHANGE STATUS
 
-        const userUpdate = await TargetUser.findByIdAndUpdate(uid, userDB, { new: true, useFindAndModify: false });
+        const userUpdate = await UserCompany.findByIdAndUpdate(uid, userDB, { new: true, useFindAndModify: false });
 
         res.json({
             ok: true,
@@ -338,12 +277,54 @@ const deleteUser = async(req, res = response) => {
             msg: 'Error inesperado, porfavor intente nuevamente'
         });
     }
-
 };
-/** =====================================================================
- *  DELETE USER
-=========================================================================*/
 
+/** =====================================================================
+ *  FORCE LOGOUT
+=========================================================================*/
+const forceLogout = async (req, res = response) => {
+    const id = req.params.id;
+
+    try {
+        if (!req.companyDb) return res.status(400).json({ ok: false, msg: 'Falta contexto de base de datos de empresa' });
+        
+        const UserCompany = getUserModel(req.companyDb);
+
+        // SEARCH USER
+        let userDB = await UserCompany.findById(id);
+        if (!userDB) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'No existe ningun usuario con este ID'
+            });
+        }
+        
+        // Validar permisos para forzar cierre de sesión
+        let reqUser = await UserCompany.findById(req.uid);
+        if (!reqUser) return res.status(404).json({ok: false, msg: 'Usuario administrador no encontrado'});
+
+        // Solo OWNER, ADMIN, o SUPERVISOR deberían poder cerrar sesiones.
+        if (reqUser.role === 'CAJERO') {
+            return res.status(403).json({ok: false, msg: 'El CAJERO no tiene permisos para cerrar sesiones de otros usuarios.'});
+        }
+
+        userDB.isLoggedIn = false;
+        await userDB.save();
+
+        res.json({
+            ok: true,
+            msg: 'Sesión cerrada exitosamente',
+            user: userDB
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado al cerrar sesión'
+        });
+    }
+};
 
 // EXPORTS
 module.exports = {
@@ -351,5 +332,6 @@ module.exports = {
     createUsers,
     updateUser,
     deleteUser,
-    getUserId
+    getUserId,
+    forceLogout
 };

@@ -9,6 +9,8 @@ const bodyParser = require('body-parser');
 // CRON JOBS
 const runDailyAverageRate = require('./cron/dailyRate');
 const { iniciarCronTRM } = require('./cron/trm.cron');
+const { startSanctionsCron } = require('./src/services/global/cron/sanctions.cron');
+const { startTurnosCron } = require('./src/services/global/cron/turnos.cron');
 
 
 
@@ -44,6 +46,7 @@ app.use('/api/v1/pais', require('./src/services/global/routes/pais.route'));
 app.use('/api/v1/departments', require('./src/services/global/routes/departments.route'));
 app.use('/api/v1/funds', require('./src/services/company/routes/funds.route'));
 app.use('/api/v1/company-profile', require('./src/services/company/routes/companyProfile.route'));
+app.use('/api/v1/company-branches', require('./src/services/company/routes/branches.route'));
 app.use('/api/v1/empresa', require('./src/services/branch/routes/empresa.route'));
 app.use('/api/v1/inventory', require('./src/services/branch/routes/inventory.route'));
 app.use('/api/v1/login', require('./src/services/company/routes/auth.route'));
@@ -61,7 +64,8 @@ app.use('/api/v1/traslados-sucursales', require('./src/services/company/routes/t
 app.use('/api/v1/turnos', require('./src/services/branch/routes/turnos.route'));
 app.use('/api/v1/uploads', require('./src/shared/routes/uploads.route'));
 app.use('/api/v1/pagos', require('./src/services/branch/routes/pagos.route'));
-
+app.use('/api/v1/global-dashboard', require('./src/services/global/routes/global-dashboard.route'));
+app.use('/api/v1/consecutivos', require('./src/services/branch/routes/consecutivos.route'));
 
 // SPA
 app.get('*', (req, res) => {
@@ -75,3 +79,5 @@ app.listen(process.env.PORT, () => {
 // Iniciar cron jobs
 runDailyAverageRate();
 iniciarCronTRM();
+startSanctionsCron();
+startTurnosCron();

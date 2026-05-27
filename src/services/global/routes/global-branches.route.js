@@ -4,7 +4,7 @@ const { validarCampos } = require('../../../shared/middlewares/validar-campos');
 const { validarJWT } = require('../../../shared/middlewares/validar-jwt');
 const { validarRoleGlobal } = require('../../../shared/middlewares/validar-role-global');
 
-const { getGlobalBranches, editGlobalBranchName } = require('../controllers/global-branches.controller');
+const { getGlobalBranches, editGlobalBranchName, createGlobalBranch } = require('../controllers/global-branches.controller');
 
 const router = Router();
 
@@ -13,6 +13,13 @@ router.use(validarRoleGlobal);
 
 // Obtener todas las empresas con sus sucursales
 router.get('/', getGlobalBranches);
+
+// Crear una nueva sucursal (para el wizard SaaS)
+router.post('/:subdominio', [
+    check('name', 'El nombre es obligatorio').not().isEmpty(),
+    check('path', 'La ruta es obligatoria').not().isEmpty(),
+    validarCampos
+], createGlobalBranch);
 
 // Editar el nombre de una sucursal
 router.put('/:subdominio/:branchId/name', [

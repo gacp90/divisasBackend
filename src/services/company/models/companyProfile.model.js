@@ -1,8 +1,8 @@
 const { Schema, model } = require('mongoose');
 
 const CompanyProfileSchema = Schema({
-    tipoPersona: {
-        type: String,
+    type: {
+        type: Boolean,
         required: true
     },
     nit: {

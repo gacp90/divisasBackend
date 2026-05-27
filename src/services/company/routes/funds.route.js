@@ -9,7 +9,7 @@ const { validarCampos } = require('../../../shared/middlewares/validar-campos');
 const { validarJWT } = require('../../../shared/middlewares/validar-jwt');
 
 // CONTROLLERS
-const { getFundsQuery, getFundsId, createFunds, updateFunds, createFoundstExcel } = require('../controllers/funds.controller');
+const { getFundsQuery, getFundsId, createFunds, updateFunds, createFoundstExcel, setPredeterminadoFund } = require('../controllers/funds.controller');
 
 const router = Router();
 
@@ -43,7 +43,13 @@ router.post('/create/excel', validarJWT, createFoundstExcel);
 =========================================================================*/
 router.put('/:id', validarJWT, updateFunds);
 
+/** =====================================================================
+ *  PUT PREDETERMINADO
+=========================================================================*/
+router.put('/default/:id', validarJWT, setPredeterminadoFund);
+
 
 
 // EXPORT
 module.exports = router;
+

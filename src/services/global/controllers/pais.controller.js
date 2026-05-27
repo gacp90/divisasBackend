@@ -132,6 +132,13 @@ const createPaisestExcel = async(req, res = response) => {
         let i = 0;
         for (const pais of paises) {
 
+            // Convertir status de string a boolean si viene del Excel
+            if (typeof pais.status === 'string') {
+                pais.status = (pais.status.toUpperCase() === 'TRUE');
+            } else if (pais.status === undefined) {
+                pais.status = true;
+            }
+
             const validatePais = await Pais.findOne({ code: pais.code });
 
             if (!validatePais) {

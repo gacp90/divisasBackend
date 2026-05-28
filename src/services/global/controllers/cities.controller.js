@@ -81,12 +81,12 @@ const createCity = async(req, res = response) => {
 
     try {
 
-        const validateCity = await City.findOne({ code, department });
+        const validateCity = await City.findOne({ name: name.trim().toUpperCase(), code, department });
 
         if (validateCity) {
             return res.status(400).json({
                 ok: false,
-                msg: 'Ya existe una ciudad con este codigo'
+                msg: 'Ya existe una ciudad con este nombre, código y departamento'
             });
         }
 
@@ -131,7 +131,7 @@ const createCitiesExcel = async (req, res = response) => {
             .filter(c => c.code && c.department)
             .map(ciudad => ({
                 updateOne: {
-                    filter: { code: ciudad.code, department: ciudad.department },
+                    filter: { name: ciudad.name, code: ciudad.code, department: ciudad.department },
                     update: { $setOnInsert: ciudad },
                     upsert: true
                 }
@@ -181,12 +181,20 @@ const updateCity = async(req, res = response) => {
 
         // VALIDATE
         const { code, ...campos } = req.body;
-        if (cityDB.code !== code) {
-            const validateCode = await City.findOne({ code });
+        
+        // Convert name to uppercase to check consistently
+        if (campos.name) campos.name = campos.name.trim().toUpperCase();
+
+        if (cityDB.code !== code || cityDB.name !== campos.name || cityDB.department?.toString() !== campos.department) {
+            const validateCode = await City.findOne({ 
+                name: campos.name || cityDB.name, 
+                code: code, 
+                department: campos.department || cityDB.department 
+            });
             if (validateCode) {
                 return res.status(400).json({
                     ok: false,
-                    msg: 'Ya existe una ciudad con este codigo...'
+                    msg: 'Ya existe una ciudad con este nombre, código y departamento...'
                 });
             }
 

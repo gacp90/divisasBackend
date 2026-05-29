@@ -180,8 +180,49 @@ const createGlobalBranch = async (req, res = response) => {
     }
 };
 
+/**
+ * Eliminar una sucursal lógicamente del registro de la empresa
+ */
+const deleteGlobalBranch = async (req, res = response) => {
+    const { subdominio, branchId } = req.params;
+
+    try {
+        const companyDb = getCompanyConnection(subdominio);
+        
+        let BranchModel;
+        try {
+            BranchModel = companyDb.model('Branch');
+        } catch (err) {
+            const branchSchema = require('../../company/models/branch.model');
+            BranchModel = branchSchema(companyDb);
+        }
+
+        const branchDB = await BranchModel.findByIdAndDelete(branchId);
+        
+        if (!branchDB) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'Sucursal no encontrada'
+            });
+        }
+
+        res.json({
+            ok: true,
+            msg: 'Sucursal eliminada del registro de la empresa'
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Hable con el administrador'
+        });
+    }
+};
+
 module.exports = {
     getGlobalBranches,
     editGlobalBranchName,
-    createGlobalBranch
+    createGlobalBranch,
+    deleteGlobalBranch
 };

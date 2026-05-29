@@ -4,7 +4,7 @@ const { validarCampos } = require('../../../shared/middlewares/validar-campos');
 const { validarJWT } = require('../../../shared/middlewares/validar-jwt');
 const { validarRoleGlobal } = require('../../../shared/middlewares/validar-role-global');
 
-const { getGlobalBranches, editGlobalBranchName, createGlobalBranch } = require('../controllers/global-branches.controller');
+const { getGlobalBranches, editGlobalBranchName, createGlobalBranch, deleteGlobalBranch } = require('../controllers/global-branches.controller');
 
 const router = Router();
 
@@ -26,5 +26,8 @@ router.put('/:subdominio/:branchId/name', [
     check('name', 'El nombre es obligatorio').not().isEmpty(),
     validarCampos
 ], editGlobalBranchName);
+
+// Eliminar una sucursal
+router.delete('/:subdominio/:branchId', deleteGlobalBranch);
 
 module.exports = router;

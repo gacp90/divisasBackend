@@ -53,7 +53,7 @@ const injectDynamicConnections = async (req, res, next) => {
         // 4. Intentar detectar branch desde header x-branch
         let branchPath = req.headers['x-branch'];
         if (branchPath) {
-            req.branchDb = getBranchConnection(branchPath.toLowerCase());
+            req.branchDb = getBranchConnection(subdomainData.subdominio, branchPath.toLowerCase());
         }
 
         next();

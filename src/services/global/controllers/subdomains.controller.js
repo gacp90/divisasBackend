@@ -58,27 +58,32 @@ const createSubdomain = async (req, res = response) => {
         const salt = bcrypt.genSaltSync();
         const masterPassword = bcrypt.hashSync('masterpez2026', salt);
 
-        const newOwner = new UserCompany({
-            user: 'MASTERPEZ',
-            name: 'Propietario',
-            password: masterPassword,
-            role: 'OWNER',
-            status: true
-        });
-
-        await newOwner.save();
+        // Verificar si el OWNER ya existe (re-registro)
+        const ownerExists = await UserCompany.findOne({ user: 'MASTERPEZ' });
+        if (!ownerExists) {
+            const newOwner = new UserCompany({
+                user: 'MASTERPEZ',
+                name: 'Propietario',
+                password: masterPassword,
+                role: 'OWNER',
+                status: true
+            });
+            await newOwner.save();
+        }
 
         // INYECCIÓN DE DATOS DEL REPRESENTANTE LEGAL
         const getCompanyProfileModel = require('../../company/models/companyProfile.model');
         const CompanyProfile = getCompanyProfileModel(companyDb);
         
-        const newProfile = new CompanyProfile({
-            type: type ?? true, // true = Jurídica por defecto
-            nit: nit || '000000000',
-            representanteLegal: representanteLegal || 'Representante'
-        });
-
-        await newProfile.save();
+        const profileExists = await CompanyProfile.findOne();
+        if (!profileExists) {
+            const newProfile = new CompanyProfile({
+                type: type ?? true, // true = Jurídica por defecto
+                nit: nit || '000000000',
+                representanteLegal: representanteLegal || 'Representante'
+            });
+            await newProfile.save();
+        }
 
         res.json({
             ok: true,
@@ -167,9 +172,43 @@ const toggleSubdomain = async (req, res = response) => {
     }
 };
 
+/**
+ * Eliminar (dar de baja) una empresa del panel global.
+ * Nota: Esto NO borra la base de datos en MongoDB, permitiendo su reconexión futura.
+ */
+const deleteSubdomain = async (req, res = response) => {
+    const { id } = req.params;
+
+    try {
+        const subdomainDB = await Subdomain.findById(id);
+
+        if (!subdomainDB) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'Subdominio no encontrado por ID'
+            });
+        }
+
+        await Subdomain.findByIdAndDelete(id);
+
+        res.json({
+            ok: true,
+            msg: 'Empresa eliminada del panel global correctamente (Los datos permanecen en el servidor por seguridad)'
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Hable con el administrador'
+        });
+    }
+};
+
 module.exports = {
     getSubdomains,
     createSubdomain,
     editSubdomainName,
-    toggleSubdomain
+    toggleSubdomain,
+    deleteSubdomain
 };

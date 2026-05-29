@@ -143,17 +143,27 @@ const createGlobalBranch = async (req, res = response) => {
         const fechaExpiracion = new Date();
         fechaExpiracion.setDate(fechaExpiracion.getDate() + 30);
 
-        const nuevaEmpresaInfo = new EmpresaModel({
-            name, // Razón Social local de la sucursal
-            oficial: oficial || {},
-            status: true,
-            suscripcion: {
+        const empresaExists = await EmpresaModel.findOne();
+        if (!empresaExists) {
+            const nuevaEmpresaInfo = new EmpresaModel({
+                name, // Razón Social local de la sucursal
+                oficial: oficial || {},
+                status: true,
+                suscripcion: {
+                    estado: 'ACTIVA',
+                    ultimoPago: fechaExpiracion
+                }
+            });
+
+            await nuevaEmpresaInfo.save();
+        } else {
+            // Update the existing company info just in case
+            empresaExists.suscripcion = {
                 estado: 'ACTIVA',
                 ultimoPago: fechaExpiracion
-            }
-        });
-
-        await nuevaEmpresaInfo.save();
+            };
+            await empresaExists.save();
+        }
 
         res.json({
             ok: true,

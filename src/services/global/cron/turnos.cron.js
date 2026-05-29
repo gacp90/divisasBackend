@@ -35,7 +35,7 @@ const startTurnosCron = () => {
             
             try {
               // Conectar a la base de datos de la sucursal
-              const branchDb = getBranchConnection(branch.path);
+              const branchDb = getBranchConnection(sub.subdominio, branch.path);
               const Turno = getTurnoModel(branchDb);
               const Inventory = getInventoryModel(branchDb);
               

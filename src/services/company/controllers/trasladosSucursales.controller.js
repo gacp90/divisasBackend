@@ -30,9 +30,10 @@ const createTrasladoSucursal = async (req, res = response) => {
             });
         }
 
+        const subdomain = req.headers['x-subdomain'] || '';
         // Conexiones a las Branch DB
-        const dbOrigen = getBranchConnection(sucursalOrigenId);
-        const dbDestino = getBranchConnection(sucursalDestinoId);
+        const dbOrigen = getBranchConnection(subdomain, sucursalOrigenId);
+        const dbDestino = getBranchConnection(subdomain, sucursalDestinoId);
 
         // Esperar conexión
         if (dbOrigen.readyState !== 1) await dbOrigen.asPromise();

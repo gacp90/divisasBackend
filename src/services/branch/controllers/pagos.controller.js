@@ -133,7 +133,7 @@ const aprobarPago = async (req, res = response) => {
 
         // Si el pago tiene un branchPath, actualizar la suscripción en la DB de esa sucursal
         if (pago.branchPath) {
-            const tempBranchDb = getBranchConnection(pago.branchPath);
+            const tempBranchDb = getBranchConnection(pago.tenant, pago.branchPath);
             // Esperar conexión
             if (tempBranchDb.readyState !== 1) {
                 await tempBranchDb.asPromise();

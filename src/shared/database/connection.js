@@ -51,9 +51,9 @@ const getCompanyConnection = (subdomain) => {
     return getDynamicConnection(`company_${subdomain.toLowerCase()}`);
 };
 
-const getBranchConnection = (branchPath) => {
-    if (!branchPath) throw new Error('branchPath es requerido para obtener la conexión');
-    return getDynamicConnection(`branch_${branchPath.toLowerCase()}`);
+const getBranchConnection = (subdomain, branchPath) => {
+    if (!subdomain || !branchPath) throw new Error('subdomain y branchPath son requeridos para obtener la conexión a la sucursal');
+    return getDynamicConnection(`branch_${subdomain.toLowerCase()}_${branchPath.toLowerCase()}`);
 };
 
 module.exports = {

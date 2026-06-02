@@ -137,13 +137,22 @@ const createTransaccion = async(req, res = response) => {
         // VERIFICAR EL TIPO DE TRANSACCION
         if (newTransaccion.transaccion === 'Compra') {
 
-            // VERIFICAR SI HAY SALDO
+            // VERIFICAR SI HAY SALDO GLOBAL
             const inventory = await Inventory.findOne({code: 'COP'});
             if (inventory.amount < newTransaccion.total) {
                 return res.status(400).json({
                     ok: false,
-                    msg: 'Lo sentimos, no tienes el saldo suficiente para realizar esta transacción.'
+                    msg: 'Lo sentimos, no hay el saldo global suficiente para realizar esta transacción.'
                 });                
+            }
+
+            // VERIFICAR SI HAY SALDO EN EL TURNO (CAJA)
+            const copSaldo = user.turno.saldos.find(s => s.moneda && s.moneda.code === 'COP');
+            if (!copSaldo || copSaldo.saldoActual < newTransaccion.total) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: `Fondos insuficientes en tu caja. No tienes suficiente efectivo físico en COP para registrar esta compra.`
+                });
             }
 
             // OBTENER EL CONCECUTIVO DE LA COMPRA
@@ -158,6 +167,18 @@ const createTransaccion = async(req, res = response) => {
                 newTransaccion.control = await concecutive('1099');
             }
         } else if (newTransaccion.transaccion === 'Venta') {
+
+            // VERIFICAR SI HAY SALDO EN EL TURNO (CAJA) PARA CADA DIVISA VENDIDA
+            for (const item of newTransaccion.items) {
+                const divisaSaldo = user.turno.saldos.find(s => String(s.moneda._id) === String(item.moneda));
+                if (!divisaSaldo || divisaSaldo.saldoActual < item.monto) {
+                    return res.status(400).json({
+                        ok: false,
+                        msg: `Fondos insuficientes en tu caja. No tienes suficiente saldo físico de la divisa vendida para registrar esta venta.`
+                    });
+                }
+            }
+
             // OBTENER EL CONCECUTIVO DE LA COMPRA
             newTransaccion.number = await concecutive('Venta');
 

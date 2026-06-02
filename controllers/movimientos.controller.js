@@ -113,6 +113,7 @@ const createMovimiento = async(req, res = response) => {
                 msg: 'La moneda COP no está inicializada en la caja de este turno' 
             });
         }
+        
         if (movimiento.type === 'Entrada') {
             turno.saldos[idxCop].saldoActual += movimiento.amount;
             turno.totalEntradasCOP += movimiento.amount;

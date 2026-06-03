@@ -5,6 +5,8 @@ const getInventoryModel = require('../models/inventory.model');
 const getUserModel = require('../../company/models/users.model');
 const getTurnoModel = require('../models/turnos.model');
 const getClientModel = require('../../company/models/clients.model');
+const getBranchModel = require('../../company/models/branch.model');
+const { getBranchConnection } = require('../../../shared/database/connection');
 
 const { concecutive } = require('../helpers/concecutive');
 const { updateInventoryAmount, revertInventoryAmount } = require('../helpers/update-inventory');
@@ -18,6 +20,8 @@ const getTransaccionesQuery = async(req, res = response) => {
     try {
         if (!req.branchDb) return res.status(400).json({ ok: false, msg: 'Falta contexto sucursal' });
         const Transaccion = getTransaccionModel(req.branchDb);
+        const ClientCompany = getClientModel(req.companyDb);
+        const UserCompany = getUserModel(req.companyDb);
 
         const { desde, hasta, sort, ...query } = req.body;
 
@@ -25,13 +29,15 @@ const getTransaccionesQuery = async(req, res = response) => {
             Transaccion.find(query)
             .populate({
                 path: 'client',
+                model: ClientCompany,
                 populate: {
-                    path: 'representante'
+                    path: 'representante',
+                    model: ClientCompany
                 }
             })
-            .populate('cajero')
-            .populate('declarant')
-            .populate('userCancel')
+            .populate({ path: 'cajero', model: UserCompany })
+            .populate({ path: 'declarant', model: ClientCompany })
+            .populate({ path: 'userCancel', model: UserCompany })
             .populate('items.moneda')
             .limit(hasta)
             .skip(desde)
@@ -55,6 +61,86 @@ const getTransaccionesQuery = async(req, res = response) => {
     }
 };
 
+/** ======================================================================
+ *  GET Transacciones Globales de Cliente (Multi-sucursal)
+=========================================================================*/
+const getTransaccionesQueryGlobal = async(req, res = response) => {
+    try {
+        if (!req.companyDb) return res.status(400).json({ ok: false, msg: 'Falta contexto compañía' });
+        
+        const Branch = getBranchModel(req.companyDb);
+        const ClientCompany = getClientModel(req.companyDb);
+        const UserCompany = getUserModel(req.companyDb);
+        
+        const { desde, hasta, sort, ...query } = req.body;
+        
+        // Obtener el subdominio desde el nombre de la DB (ej: 'company_simid' -> 'simid')
+        const companyDbName = req.companyDb.name || '';
+        const subdominio = companyDbName.split('_')[1];
+
+        if (!subdominio) {
+            return res.status(400).json({ ok: false, msg: 'No se pudo detectar el subdominio de la compañía' });
+        }
+
+        // Obtener todas las sucursales activas de la empresa
+        const branches = await Branch.find({ isActive: true });
+        
+        let transaccionesGlobales = [];
+
+        // Iterar sobre cada sucursal para extraer las transacciones
+        for (const branch of branches) {
+            try {
+                const branchDb = getBranchConnection(subdominio, branch.path);
+                const Transaccion = getTransaccionModel(branchDb);
+
+                const transaccionesSucursal = await Transaccion.find(query)
+                    .populate({
+                        path: 'client',
+                        model: ClientCompany,
+                        populate: {
+                            path: 'representante',
+                            model: ClientCompany
+                        }
+                    })
+                    .populate({ path: 'cajero', model: UserCompany })
+                    .populate({ path: 'declarant', model: ClientCompany })
+                    .populate({ path: 'userCancel', model: UserCompany })
+                    .populate('items.moneda');
+
+                transaccionesGlobales = [...transaccionesGlobales, ...transaccionesSucursal];
+            } catch (err) {
+                console.warn(`No se pudieron cargar transacciones de la sucursal ${branch.name}:`, err.message);
+            }
+        }
+
+        // Ordenar y paginar el arreglo unificado
+        if (sort && sort.fecha === -1) {
+            transaccionesGlobales.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+        } else if (sort && sort.fecha === 1) {
+            transaccionesGlobales.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+        }
+        
+        const total = transaccionesGlobales.length;
+        const dsd = Number(desde) || 0;
+        const hst = Number(hasta) || total;
+        
+        const paginadas = transaccionesGlobales.slice(dsd, dsd + hst);
+
+        res.json({
+            ok: true,
+            transacciones: paginadas,
+            total
+        });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado al cargar historial global, intente nuevamente'
+        });
+    }
+};
+
 /** =====================================================================
  *  GET Transaccion ID
 =========================================================================*/
@@ -63,13 +149,15 @@ const getTransaccionId = async(req, res = response) => {
     try {
         if (!req.branchDb) return res.status(400).json({ ok: false, msg: 'Falta contexto sucursal' });
         const Transaccion = getTransaccionModel(req.branchDb);
+        const ClientCompany = getClientModel(req.companyDb);
+        const UserCompany = getUserModel(req.companyDb);
         const tid = req.params.id;
 
         const transaccionDB = await Transaccion.findById(tid)
-            .populate('client')
-            .populate('cajero')
-            .populate('declarant')
-            .populate('userCancel')
+            .populate({ path: 'client', model: ClientCompany })
+            .populate({ path: 'cajero', model: UserCompany })
+            .populate({ path: 'declarant', model: ClientCompany })
+            .populate({ path: 'userCancel', model: UserCompany })
             .populate('items.moneda');
         if (!transaccionDB) {
             return res.status(400).json({
@@ -121,24 +209,55 @@ const createTransaccion = async(req, res = response) => {
             });
         }
 
-        if (!user.turno) {
+        if (!user.turno || !user.turno.abierto) {
             return res.status(400).json({
                 ok: false,
-                msg: 'No has abierto turno.'
+                msg: 'No tienes un turno abierto para operar. Por favor, abre uno.'
             });
+        }
+
+        // VALIDAR VIGENCIA DEL TURNO (NO PERMITIR OPERACIONES SI CAMBIÓ EL DÍA)
+        if (user.turno.open) {
+            const dateEnBogota = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Bogota"}));
+            const turnoOpenDate = new Date(new Date(user.turno.open).toLocaleString("en-US", {timeZone: "America/Bogota"}));
+            
+            if (dateEnBogota.toDateString() !== turnoOpenDate.toDateString()) {
+                return res.status(403).json({
+                    ok: false,
+                    msg: 'Tu turno ha expirado por cambio de fecha (es de un día anterior). Debes cerrarlo obligatoriamente para continuar.'
+                });
+            }
         }
         
         let newTransaccion = new Transaccion(req.body);
         
+        // VALIDAR VALORES NEGATIVOS
+        if (newTransaccion.total < 0 || newTransaccion.subtotal < 0 || newTransaccion.equivalencia < 0) {
+            return res.status(400).json({ ok: false, msg: 'Error: Los valores de la transacción no pueden ser negativos.' });
+        }
+
+        if (newTransaccion.items && newTransaccion.items.length > 0) {
+            for (const item of newTransaccion.items) {
+                if (item.monto < 0 || item.tasa < 0) {
+                    return res.status(400).json({ ok: false, msg: 'Error: Los montos y tasas de los ítems no pueden ser negativos.' });
+                }
+            }
+        }
+        
         // VERIFICAR EL TIPO DE TRANSACCION
         if (newTransaccion.transaccion === 'Compra') {
 
-            // VERIFICAR SI HAY SALDO
+            // VERIFICAR SI HAY SALDO EN EL TURNO (GAVETA)
             const inventory = await Inventory.findOne({code: 'COP'});
-            if (inventory.amount < newTransaccion.total) {
+            if (!inventory) {
+                return res.status(400).json({ ok: false, msg: 'Moneda COP no encontrada en el inventario' });
+            }
+
+            const indexCopTurno = user.turno.saldos.findIndex(s => String(s.moneda._id) === String(inventory._id) || s.moneda.code === 'COP');
+            if (indexCopTurno === -1 || user.turno.saldos[indexCopTurno].saldoActual < newTransaccion.total) {
                 return res.status(400).json({
                     ok: false,
-                    msg: 'Lo sentimos, no tienes el saldo suficiente para realizar esta transacción.'
+                    msg: 'Lo sentimos, no tienes suficiente COP en tu gaveta para realizar esta compra.'
                 });                
             }
 
@@ -154,7 +273,18 @@ const createTransaccion = async(req, res = response) => {
                 newTransaccion.control = await concecutive('1099', req.branchDb);
             }
         } else if (newTransaccion.transaccion === 'Venta') {
-            // OBTENER EL CONCECUTIVO DE LA COMPRA
+            // VERIFICAR SI HAY SALDO DE DIVISA EN LA GAVETA DEL CAJERO
+            for (const item of newTransaccion.items) {
+                const indexDivisaTurno = user.turno.saldos.findIndex(s => String(s.moneda._id) === String(item.moneda) || String(s.moneda) === String(item.moneda));
+                if (indexDivisaTurno === -1 || user.turno.saldos[indexDivisaTurno].saldoActual < item.monto) {
+                    return res.status(400).json({
+                        ok: false,
+                        msg: 'No tienes suficiente saldo de esta divisa en tu gaveta para realizar la venta.'
+                    });
+                }
+            }
+
+            // OBTENER EL CONCECUTIVO DE LA VENTA
             newTransaccion.number = await concecutive('Venta', req.branchDb);
 
             // VALIDAR EL MONTO Y OBTENER EL CONCECUTIVO DEPENDIENDO DEL MONTO
@@ -174,13 +304,30 @@ const createTransaccion = async(req, res = response) => {
         // SAVE
         await newTransaccion.save();
 
-        // UPDATE INVENTORY
-        await updateInventoryAmount(newTransaccion, user.turno, req.branchDb);
+        // UPDATE INVENTORY (CON ROLLBACK SI FALLA)
+        try {
+            await updateInventoryAmount(newTransaccion, user.turno, req.branchDb);
+        } catch (error) {
+            console.error('Error al actualizar inventario, anulando transacción:', error);
+            
+            // EN LUGAR DE ELIMINAR, ANULAMOS LA FACTURA PARA NO PERDER EL CONSECUTIVO LOCALMENTE
+            newTransaccion.status = false;
+            newTransaccion.estado = 'Anulada por error del sistema (Rollback)';
+            newTransaccion.fechaCancel = new Date();
+            newTransaccion.userCancel = uid;
+            newTransaccion.electronica = false; // Evita envíos accidentales a la DIAN
+            await newTransaccion.save();
+
+            return res.status(500).json({
+                ok: false,
+                msg: `Error crítico: La transacción no pudo ser guardada y fue anulada automáticamente. Por favor diríjase a la pestaña "Facturas", busque la factura anulada e imprímala para dejar constancia física de este error.`
+            });
+        }
 
         const transaccion = await Transaccion.findById(newTransaccion._id)
-            .populate('client')
-            .populate('cajero')
-            .populate('declarant')
+            .populate({ path: 'client', model: ClientCompany })
+            .populate({ path: 'cajero', model: UserCompany })
+            .populate({ path: 'declarant', model: ClientCompany })
             .populate('items.moneda');
 
         // ==============================================
@@ -415,10 +562,13 @@ const resendConexus = async(req, res = response) => {
         const Transaccion = getTransaccionModel(req.branchDb);
         const tid = req.params.id;  
 
+        const ClientCompany = getClientModel(req.companyDb);
+        const UserCompany = getUserModel(req.companyDb);
+
         const transaccionDB = await Transaccion.findById(tid)
-            .populate('client')
-            .populate('cajero')
-            .populate('declarant')
+            .populate({ path: 'client', model: ClientCompany })
+            .populate({ path: 'cajero', model: UserCompany })
+            .populate({ path: 'declarant', model: ClientCompany })
             .populate('items.moneda');
 
         if (!transaccionDB) {
@@ -497,11 +647,14 @@ const cancelTransaccion = async(req, res = response) => {
         const tid = req.params.id;
         const uid = req.uid;
 
+        const ClientCompany = getClientModel(req.companyDb);
+        const UserCompany = getUserModel(req.companyDb);
+
         const userDB = await User.findById(uid).populate('turno');
         const transaccion = await Transaccion.findById(tid)
-            .populate('client')
-            .populate('cajero')
-            .populate('declarant')
+            .populate({ path: 'client', model: ClientCompany })
+            .populate({ path: 'cajero', model: UserCompany })
+            .populate({ path: 'declarant', model: ClientCompany })
             .populate('items.moneda');
 
         if (!transaccion) {
@@ -561,9 +714,9 @@ const cancelTransaccion = async(req, res = response) => {
 
         // Haces los populates necesarios para la devolución...
         const devolucionPopulated = await Transaccion.findById(devolucion._id)
-            .populate('client')
-            .populate('cajero')
-            .populate('declarant')
+            .populate({ path: 'client', model: ClientCompany })
+            .populate({ path: 'cajero', model: UserCompany })
+            .populate({ path: 'declarant', model: ClientCompany })
             .populate('items.moneda');
 
         // 4. Invocas el helper pasándole AMBAS transacciones
@@ -605,9 +758,10 @@ const cancelTransaccion = async(req, res = response) => {
 // EXPORTS
 module.exports = {
     getTransaccionesQuery,
+    getTransaccionesQueryGlobal,
+    getTransaccionId,
     createTransaccion,
     updateTransaccion,
-    getTransaccionId,
     cancelTransaccion,
     resendConexus,
     importarTransaccionesBulk

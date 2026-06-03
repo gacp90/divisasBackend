@@ -17,12 +17,6 @@ const getGlobalDashboardStats = async (req, res = response) => {
             if (sub.isActive) {
                 empresasActivas++;
                 
-                if (sub.fechaVencimiento && new Date(sub.fechaVencimiento) >= now) {
-                    suscripcionesOK++;
-                } else {
-                    suscripcionesVencidas++;
-                }
-
                 try {
                     const companyDb = getCompanyConnection(sub.subdominio);
                     let BranchModel;
@@ -33,8 +27,16 @@ const getGlobalDashboardStats = async (req, res = response) => {
                         BranchModel = branchSchema(companyDb);
                     }
                     
-                    const branchesCount = await BranchModel.countDocuments();
-                    totalSucursales += branchesCount;
+                    const branches = await BranchModel.find();
+                    totalSucursales += branches.length;
+
+                    for (const branch of branches) {
+                        if (branch.fechaVencimiento && new Date(branch.fechaVencimiento) >= now) {
+                            suscripcionesOK++;
+                        } else {
+                            suscripcionesVencidas++;
+                        }
+                    }
                 } catch (innerError) {
                     console.error(`Error contando sucursales para ${sub.subdominio}:`, innerError);
                 }

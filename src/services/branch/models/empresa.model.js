@@ -132,6 +132,10 @@ const EmpresaSchema = Schema({
         default: true
     },
     conexus: conexusSchema,
+    horaCierreTurno: {
+        type: String,
+        default: '20:00'
+    },
     fecha: {
         type: Date,
         defaul: Date.now

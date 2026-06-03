@@ -16,8 +16,8 @@ const injectDynamicConnections = async (req, res, next) => {
 
         // Para desarrollo o si no hay subdominio (ej: peticiones globales puras)
         if (!subdominio) {
-            // Podríamos dejar que la ruta global continúe si no requiere contexto de empresa
-            // Pero si la ruta necesita DB de empresa, fallará más adelante.
+            // Podriamos dejar que la ruta global continue si no requiere contexto de empresa
+            // Pero si la ruta necesita DB de empresa, fallara mas adelante.
             return next();
         }
 
@@ -34,26 +34,32 @@ const injectDynamicConnections = async (req, res, next) => {
         if (!subdomainData) {
             return res.status(404).json({
                 ok: false,
-                msg: `El subdominio '${subdominio}' no está registrado o está inactivo.`
+                msg: `El subdominio '${subdominio}' no esta registrado o esta inactivo.`
             });
         }
 
-        // Validación de Pagos (Vencimiento)
-        if (subdomainData.fechaVencimiento && new Date() > new Date(subdomainData.fechaVencimiento)) {
-            // El interceptor atrapará el 403 y enviará al usuario a la pantalla de Suscripciones
-            return res.status(403).json({
-                ok: false,
-                msg: `La suscripción de la empresa ha vencido. Por favor realice el pago para continuar operando.`
-            });
-        }
-
-        // 3. Inyectar conexión Company
+        // 3. Inyectar conexion Company
         req.companyDb = getCompanyConnection(subdomainData.subdominio);
         
         // 4. Intentar detectar branch desde header x-branch
         let branchPath = req.headers['x-branch'];
         if (branchPath) {
             req.branchDb = getBranchConnection(subdomainData.subdominio, branchPath.toLowerCase());
+
+            // Validacion de Pagos a nivel de Sucursal (Branch)
+            let BranchModel;
+            try {
+                BranchModel = req.companyDb.model('Branch');
+            } catch (err) {
+                const branchSchema = require('../../company/models/branch.model');
+                BranchModel = branchSchema(req.companyDb);
+            }
+
+            const branchData = await BranchModel.findOne({ path: branchPath.toLowerCase() });
+            if (branchData && branchData.fechaVencimiento && new Date() > new Date(branchData.fechaVencimiento)) {
+                // Almacenamos el estado en el req para que otros middlewares (si existen) puedan decidir
+                req.isBranchExpired = true;
+            }
         }
 
         next();

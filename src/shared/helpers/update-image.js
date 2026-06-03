@@ -40,7 +40,7 @@ const updateImage = async(tipo, id, nameFile, desc, req) => {
             }
 
             // VALIDATE IMAGE
-            pathOld = `./uploads/user/${ empresa.logo }`;
+            pathOld = `./uploads/${tipo}/${ empresa.logo }`;
             deleteImage(pathOld);
 
             empresa.logo = nameFile;

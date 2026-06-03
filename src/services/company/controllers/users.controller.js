@@ -326,6 +326,52 @@ const forceLogout = async (req, res = response) => {
     }
 };
 
+/** =====================================================================
+ *  AUTORIZAR TURNO EXTRA
+=========================================================================*/
+const autorizarTurnoExtra = async (req, res = response) => {
+    const uid = req.params.id;
+
+    try {
+        if (!req.companyDb) return res.status(400).json({ ok: false, msg: 'Falta contexto de base de datos de empresa' });
+        
+        const UserCompany = getUserModel(req.companyDb);
+
+        // SEARCH USER
+        let userDB = await UserCompany.findById(uid);
+        if (!userDB) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'No existe ningun usuario con este ID'
+            });
+        }
+        
+        // Validar permisos
+        let reqUser = await UserCompany.findById(req.uid);
+        if (!reqUser) return res.status(404).json({ok: false, msg: 'Usuario administrador no encontrado'});
+
+        if (reqUser.role === 'CAJERO') {
+            return res.status(403).json({ok: false, msg: 'El CAJERO no tiene permisos para autorizar turnos.'});
+        }
+
+        userDB.autorizadoTurnoExtra = true;
+        await userDB.save();
+
+        res.json({
+            ok: true,
+            msg: 'Turno extra autorizado exitosamente',
+            user: userDB
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado al autorizar turno'
+        });
+    }
+};
+
 // EXPORTS
 module.exports = {
     getUsers,
@@ -333,5 +379,6 @@ module.exports = {
     updateUser,
     deleteUser,
     getUserId,
-    forceLogout
+    forceLogout,
+    autorizarTurnoExtra
 };

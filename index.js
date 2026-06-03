@@ -10,7 +10,7 @@ const bodyParser = require('body-parser');
 const runDailyAverageRate = require('./cron/dailyRate');
 const { iniciarCronTRM } = require('./cron/trm.cron');
 const { startSanctionsCron } = require('./src/services/global/cron/sanctions.cron');
-const { startTurnosCron } = require('./src/services/global/cron/turnos.cron');
+const { startTurnosCron, startCierreEstrictoCajerosCron } = require('./src/services/global/cron/turnos.cron');
 
 
 
@@ -81,3 +81,4 @@ runDailyAverageRate();
 iniciarCronTRM();
 startSanctionsCron();
 startTurnosCron();
+startCierreEstrictoCajerosCron();

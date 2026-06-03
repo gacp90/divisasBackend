@@ -135,6 +135,51 @@ const updateEmpresa = async(req, res = response) => {
         delete campos.representanteLegal;
         delete campos.represent;
 
+        // ==========================================
+        // LÓGICA DE INTERCAMBIO DE NÚMERO DE SUCURSAL
+        // ==========================================
+        if (campos.numberSuc && req.companyDb) {
+            const newNumberSuc = Number(campos.numberSuc);
+            const oldNumberSuc = Number(empresaDB.numberSuc || 1);
+
+            if (newNumberSuc !== oldNumberSuc) {
+                const getBranchModel = require('../../company/models/branch.model');
+                const BranchModel = getBranchModel(req.companyDb);
+
+                const currentPath = (req.headers['x-branch'] || req.branchPathToken || '').toLowerCase();
+                const branchActual = await BranchModel.findOne({ path: currentPath });
+                const branchConNuevoNumero = await BranchModel.findOne({ numero: newNumberSuc });
+
+                if (branchConNuevoNumero && branchActual && branchConNuevoNumero.id !== branchActual.id) {
+                    // Intercambiar en BranchModel
+                    branchConNuevoNumero.numero = oldNumberSuc;
+                    branchActual.numero = newNumberSuc;
+                    await branchConNuevoNumero.save();
+                    await branchActual.save();
+
+                    // Intercambiar en el documento Empresa de la OTRA sucursal
+                    const { getBranchConnection } = require('../../../shared/database/connection');
+                    const otherBranchDb = getBranchConnection(req.tenantToken, branchConNuevoNumero.path);
+                    
+                    if (otherBranchDb.readyState !== 1) {
+                        await otherBranchDb.asPromise();
+                    }
+
+                    const OtherEmpresa = getEmpresaModel(otherBranchDb);
+                    const otherEmpresaDoc = await OtherEmpresa.findOne();
+                    if (otherEmpresaDoc) {
+                        otherEmpresaDoc.numberSuc = String(oldNumberSuc);
+                        await otherEmpresaDoc.save();
+                    }
+                } else if (branchActual) {
+                    // Si no existe otra sucursal con ese número, solo actualizamos la actual
+                    branchActual.numero = newNumberSuc;
+                    await branchActual.save();
+                }
+            }
+        }
+        // ==========================================
+
         // UPDATE
         const empresaUpdate = await Empresa.findByIdAndUpdate(eid, campos, { new: true, useFindAndModify: false });
 
@@ -261,91 +306,66 @@ const updateLogo = async(req, res = response) => {
 
 const getEstadoSuscripcion = async (req, res) => {
     
-    // Si no hay branchDb, intentamos usar companyDb porque la empresa/suscripción debería ser global para la compañía.
+    // Si no hay branchDb, intentamos usar companyDb
     const dbConnection = req.companyDb || req.branchDb;
     if (!dbConnection) return res.status(500).json({ ok: false, msg: 'Falta contexto de base de datos' });
     
-    const Empresa = getEmpresaModel(dbConnection);
+    // Buscar la sucursal actual para revisar la fecha de vencimiento individual
+    let branchPath = req.headers['x-branch'];
+    let branchData = null;
 
-    const empresa = await Empresa.findOne();
-
-    if (!empresa) {
-        return res.status(404).json({
-            ok: false,
-            msg: 'Empresa no encontrada'
-        });
+    if (branchPath && req.companyDb) {
+        let BranchModel;
+        try {
+            BranchModel = req.companyDb.model('Branch');
+        } catch (err) {
+            const branchSchema = require('../../company/models/branch.model');
+            BranchModel = branchSchema(req.companyDb);
+        }
+        branchData = await BranchModel.findOne({ path: branchPath.toLowerCase() });
     }
 
-    const today = new Date();
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth();
-    const currentDay = today.getDate();
-    
-    // Obtener el último día del mes actual
-    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-    
-    const isLastTwoDays = currentDay >= 24;
-    const isFirstThreeDays = currentDay <= 5;
-    const isPastFourth = currentDay >= 6;
-
-    const ultimoPago = empresa.suscripcion?.ultimoPago;
-    
-    let isPaidForCurrentMonth = false;
-    
-    if (ultimoPago) {
-        const uPago = new Date(ultimoPago);
-        // Si pagó este mismo mes, está al día.
-        if (uPago.getMonth() === currentMonth && uPago.getFullYear() === currentYear) {
-            isPaidForCurrentMonth = true;
-        } else if (
-            // Si pagó a final del mes pasado (pago adelantado)
-            uPago.getFullYear() === currentYear && 
-            uPago.getMonth() === currentMonth - 1 && 
-            uPago.getDate() >= 24
-        ) {
-            isPaidForCurrentMonth = true;
-        } else if (
-            // Si pagó a final de diciembre del año pasado para enero de este año
-            uPago.getFullYear() === currentYear - 1 && 
-            uPago.getMonth() === 11 && currentMonth === 0 &&
-            uPago.getDate() >= 24
-        ) {
-            isPaidForCurrentMonth = true;
-        }
+    if (!branchData) {
+        return res.json({
+            ok: true,
+            estado: 'ACTIVA',
+            dias: 0,
+            mensaje: 'Sucursal no encontrada, asumiendo estado activo.'
+        });
     }
 
     let estadoCalculado = 'ACTIVA';
     let diasRestantes = 0;
-    let mensajeSuscripcion = '';
+    let mensajeSuscripcion = 'Tu suscripción está activa.';
 
-    if (!isPaidForCurrentMonth) {
-        if (isPastFourth) {
+    if (branchData.fechaVencimiento) {
+        const today = new Date();
+        const vencimiento = new Date(branchData.fechaVencimiento);
+        
+        // Normalizar fechas para comparar solo días
+        const todayStr = today.toISOString().split('T')[0];
+        const vencimientoStr = vencimiento.toISOString().split('T')[0];
+
+        if (todayStr > vencimientoStr) {
             estadoCalculado = 'BLOQUEADA';
-            mensajeSuscripcion = 'Tu suscripción ha sido bloqueada por falta de pago.';
-        } else if (isFirstThreeDays) {
-            estadoCalculado = 'ALERTA';
-            diasRestantes = 6 - currentDay; // Ej. si es día 2, faltan 4 días para el bloqueo (día 6)
-            mensajeSuscripcion = `Tu suscripción está vencida. Te quedan ${diasRestantes} día(s) de gracia antes del bloqueo.`;
-        } else if (isLastTwoDays) {
-            estadoCalculado = 'ALERTA';
-            diasRestantes = (lastDayOfMonth - currentDay) + 6; // Ej. día 29 de 30 = 1 día del mes + 5 de gracia = 6 días
-            mensajeSuscripcion = `Tu suscripción está próxima a vencer.`;
+            mensajeSuscripcion = 'La suscripción de esta sucursal ha vencido por falta de pago.';
         } else {
-            estadoCalculado = 'BLOQUEADA';
-            mensajeSuscripcion = 'Tu suscripción ha sido bloqueada por falta de pago.';
-        }
-    } else {
-        if (isLastTwoDays) {
-            estadoCalculado = 'ALERTA';
-            diasRestantes = (lastDayOfMonth - currentDay) + 6;
-            mensajeSuscripcion = `Tu suscripción vencerá pronto. Recuerda renovarla para el próximo mes.`;
+            // Calcular diferencia en días
+            const diffTime = Math.abs(vencimiento - today);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            
+            if (diffDays <= 5) {
+                estadoCalculado = 'ALERTA';
+                diasRestantes = diffDays;
+                mensajeSuscripcion = `Tu suscripción vencerá en ${diasRestantes} día(s). Recuerda renovarla.`;
+            }
         }
     }
 
-    // Si en la base de datos está inactiva manualmente
-    if (empresa.suscripcion?.estado === 'INACTIVA' && !ultimoPago) {
+    // Si la sucursal está inactiva manualmente
+    if (!branchData.isActive) {
          estadoCalculado = 'INACTIVA';
-         mensajeSuscripcion = 'Suscripción inactiva manualmente.';
+         mensajeSuscripcion = 'Sucursal inactiva manualmente.';
     }
 
     res.json({

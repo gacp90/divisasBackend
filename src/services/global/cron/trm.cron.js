@@ -1,8 +1,8 @@
 const cron = require('node-cron');
 const axios = require('axios');
-const Subdomain = require('../src/services/global/models/subdomain.model');
-const { getCompanyConnection } = require('../src/shared/database/connection');
-const getTrmModel = require('../src/services/company/models/trm.model');
+const Subdomain = require('../models/subdomain.model');
+const { getCompanyConnection } = require('../../../shared/database/connection');
+const getTrmModel = require('../../company/models/trm.model');
 
 const iniciarCronTRM = () => {
     

@@ -140,7 +140,20 @@ const createTraslado = async (req, res = response) => {
         }
 
         if (!userDB.turno?.abierto) {
-            return res.status(400).json({ ok: false, msg: 'Debes tener un turno abierto' });
+            return res.status(400).json({ ok: false, msg: 'Debes tener un turno abierto para realizar traslados.' });
+        }
+
+        // VALIDAR VIGENCIA DEL TURNO (NO PERMITIR OPERACIONES SI CAMBIÓ EL DÍA)
+        if (userDB.turno.open) {
+            const dateEnBogota = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Bogota"}));
+            const turnoOpenDate = new Date(new Date(userDB.turno.open).toLocaleString("en-US", {timeZone: "America/Bogota"}));
+            
+            if (dateEnBogota.toDateString() !== turnoOpenDate.toDateString()) {
+                return res.status(403).json({
+                    ok: false,
+                    msg: 'Tu turno ha expirado por cambio de fecha (es de un día anterior). Debes cerrarlo obligatoriamente para continuar.'
+                });
+            }
         }
 
         req.body.emisor = uid;

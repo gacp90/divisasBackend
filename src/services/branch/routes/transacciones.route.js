@@ -9,7 +9,7 @@ const { validarCampos } = require('../../../shared/middlewares/validar-campos');
 const { validarJWT } = require('../../../shared/middlewares/validar-jwt');
 
 // CONTROLLERS
-const { getTransaccionesQuery, getTransaccionId, createTransaccion, updateTransaccion, cancelTransaccion, resendConexus, importarTransaccionesBulk } = require('../controllers/transacciones.controller');
+const { getTransaccionesQuery, getTransaccionesQueryGlobal, getTransaccionId, createTransaccion, updateTransaccion, cancelTransaccion, resendConexus, importarTransaccionesBulk } = require('../controllers/transacciones.controller');
 
 const router = Router();
 
@@ -17,6 +17,11 @@ const router = Router();
  *  GET QUERY
 =========================================================================*/
 router.post('/query', validarJWT, getTransaccionesQuery);
+
+/** =====================================================================
+ *  GET QUERY GLOBAL (Multi-sucursal)
+=========================================================================*/
+router.post('/query-global-client', validarJWT, getTransaccionesQueryGlobal);
 
 /** =====================================================================
  *  GET ID

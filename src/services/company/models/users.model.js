@@ -15,7 +15,9 @@ module.exports = (connection) => {
         isOwner: { type: Boolean, default: false },
         img: { type: String },
         turno: { type: Schema.Types.ObjectId, ref: 'turnos' },
+        activeShiftBranch: { type: String, default: null },
         isLoggedIn: { type: Boolean, default: false },
+        autorizadoTurnoExtra: { type: Boolean, default: false },
         status: { type: Boolean, default: true },
         fecha: { type: Date, default: Date.now }
     });

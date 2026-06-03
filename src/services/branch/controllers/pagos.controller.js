@@ -35,7 +35,7 @@ const crearPago = async (req, res = response) => {
         
         // El tenant y branch deben venir del token del usuario que hace la solicitud
         const tenant = req.tenantToken;
-        const branchPath = req.branchPathToken;
+        const branchPath = req.branchPathToken || req.headers['x-branch'];
 
         if (!tenant) {
             return res.status(400).json({ ok: false, msg: 'No se pudo identificar el tenant del usuario' });
@@ -53,12 +53,14 @@ const crearPago = async (req, res = response) => {
 
         const pagoExistente = await Pago.findOne({
             tenant,
+            estado: 'PENDIENTE',
             fecha: { $gte: startOfMonth, $lte: endOfMonth }
         });
 
         if (pagoExistente) {
             // Actualizar la fecha al momento actual
             pagoExistente.fecha = new Date();
+            pagoExistente.branchPath = branchPath; // Actualizar branchPath
             if (referencia) {
                 pagoExistente.referencia = referencia;
             }
@@ -131,8 +133,9 @@ const aprobarPago = async (req, res = response) => {
             await subdomainDB.save();
         }
 
-        // Si el pago tiene un branchPath, actualizar la suscripción en la DB de esa sucursal
+        // Si el pago tiene un branchPath, actualizar la suscripción en la DB de esa sucursal y de la empresa
         if (pago.branchPath) {
+            // Actualizar Empresa local de la sucursal
             const tempBranchDb = getBranchConnection(pago.tenant, pago.branchPath);
             // Esperar conexión
             if (tempBranchDb.readyState !== 1) {
@@ -148,6 +151,26 @@ const aprobarPago = async (req, res = response) => {
                     ultimoPago: new Date()
                 };
                 await empresaBranch.save();
+            }
+
+            // Actualizar Branch en la BD Company
+            const { getCompanyConnection } = require('../../../shared/database/connection');
+            const getBranchModel = require('../../company/models/branch.model');
+            const companyDb = getCompanyConnection(pago.tenant);
+            if (companyDb.readyState !== 1) {
+                await companyDb.asPromise();
+            }
+            const Branch = getBranchModel(companyDb);
+            const branchDoc = await Branch.findOne({ path: pago.branchPath });
+            
+            if (branchDoc) {
+                let fechaActual = branchDoc.fechaVencimiento ? new Date(branchDoc.fechaVencimiento) : new Date();
+                if (fechaActual < new Date()) {
+                    fechaActual = new Date();
+                }
+                fechaActual.setDate(fechaActual.getDate() + 30);
+                branchDoc.fechaVencimiento = fechaActual;
+                await branchDoc.save();
             }
         }
 

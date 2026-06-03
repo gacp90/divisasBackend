@@ -59,7 +59,7 @@ const getGlobalBranches = async (req, res = response) => {
  */
 const editGlobalBranchName = async (req, res = response) => {
     const { subdominio, branchId } = req.params;
-    const { name } = req.body;
+    const { name, fechaVencimiento, numero } = req.body;
 
     try {
         const companyDb = getCompanyConnection(subdominio);
@@ -80,7 +80,10 @@ const editGlobalBranchName = async (req, res = response) => {
             });
         }
 
-        branchDB.name = name;
+        if (name) branchDB.name = name;
+        if (fechaVencimiento) branchDB.fechaVencimiento = new Date(fechaVencimiento);
+        if (numero) branchDB.numero = Number(numero);
+        
         await branchDB.save();
 
         res.json({
@@ -126,9 +129,12 @@ const createGlobalBranch = async (req, res = response) => {
             });
         }
 
+        const count = await BranchModel.countDocuments();
+
         const nuevaSucursal = new BranchModel({
             name,
             path,
+            numero: count + 1,
             isActive: true
         });
 
@@ -163,6 +169,22 @@ const createGlobalBranch = async (req, res = response) => {
                 ultimoPago: fechaExpiracion
             };
             await empresaExists.save();
+        }
+
+        // 3. Crear moneda base USD por defecto para la TRM
+        const getInventoryModel = require('../../branch/models/inventory.model');
+        const InventoryModel = getInventoryModel(branchDb);
+        const usdExists = await InventoryModel.findOne({ code: 'USD' });
+        if (!usdExists) {
+            const usdInventory = new InventoryModel({
+                code: 'USD',
+                currency: 'Dolar Americano',
+                amount: 0,
+                disponible: 0,
+                anterior: 0,
+                trm: 0
+            });
+            await usdInventory.save();
         }
 
         res.json({
@@ -220,9 +242,54 @@ const deleteGlobalBranch = async (req, res = response) => {
     }
 };
 
+/**
+ * Activar/Desactivar una sucursal lógicamente
+ */
+const toggleGlobalBranch = async (req, res = response) => {
+    const { subdominio, branchId } = req.params;
+    const { isActive } = req.body;
+
+    try {
+        const companyDb = getCompanyConnection(subdominio);
+        
+        let BranchModel;
+        try {
+            BranchModel = companyDb.model('Branch');
+        } catch (err) {
+            const branchSchema = require('../../company/models/branch.model');
+            BranchModel = branchSchema(companyDb);
+        }
+
+        const branchDB = await BranchModel.findById(branchId);
+        if (!branchDB) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'Sucursal no encontrada'
+            });
+        }
+
+        branchDB.isActive = isActive;
+        await branchDB.save();
+
+        res.json({
+            ok: true,
+            branch: branchDB,
+            msg: `Sucursal ${isActive ? 'activada' : 'desactivada'} correctamente`
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Hable con el administrador'
+        });
+    }
+};
+
 module.exports = {
     getGlobalBranches,
     editGlobalBranchName,
     createGlobalBranch,
-    deleteGlobalBranch
+    deleteGlobalBranch,
+    toggleGlobalBranch
 };

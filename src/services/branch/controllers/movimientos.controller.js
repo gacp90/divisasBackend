@@ -100,16 +100,33 @@ const createMovimiento = async(req, res = response) => {
             });
         }
 
-        if (!user.turno) {
+        if (!user.turno || !user.turno.abierto) {
             return res.status(400).json({
                 ok: false,
-                msg: 'No has abierto turno.'
+                msg: 'No tienes un turno abierto para operar. Por favor, abre uno.'
             });
+        }
+
+        // VALIDAR VIGENCIA DEL TURNO (NO PERMITIR OPERACIONES SI CAMBIÓ EL DÍA)
+        if (user.turno.open) {
+            const dateEnBogota = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Bogota"}));
+            const turnoOpenDate = new Date(new Date(user.turno.open).toLocaleString("en-US", {timeZone: "America/Bogota"}));
+            
+            if (dateEnBogota.toDateString() !== turnoOpenDate.toDateString()) {
+                return res.status(403).json({
+                    ok: false,
+                    msg: 'Tu turno ha expirado por cambio de fecha (es de un día anterior). Debes cerrarlo obligatoriamente para continuar.'
+                });
+            }
         }
 
         req.body.user = uid;
         req.body.turno = user.turno._id;
         const movimiento = new Movimiento(req.body);
+
+        if (movimiento.amount <= 0) {
+            return res.status(400).json({ ok: false, msg: 'Error: El monto del movimiento debe ser mayor a cero.' });
+        }
 
         // SI es entrada o salida
         const turno = await Turno.findById(user.turno._id).populate('saldos.moneda');

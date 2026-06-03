@@ -56,14 +56,8 @@ const login = async (req, res = response) => {
 
         // PREVENCIÓN DE SESIÓN CONCURRENTE (Solo para CAJEROS)
         if (userDB.role === 'CAJERO') {
-            if (userDB.isLoggedIn) {
-                console.log('Login failed: user already logged in', userDB);
-                return res.status(403).json({
-                    ok: false,
-                    msg: 'Ya tienes una sesión activa en otro dispositivo. Pide a un administrador que la cierre si es un error.'
-                });
-            }
-            // Marcar como logueado
+            // Nota: En vez de bloquear, simplemente permitimos el login 
+            // (el sistema de turnos ya evita que abran múltiples turnos simultáneamente).
             userDB.isLoggedIn = true;
             await userDB.save();
         }
@@ -113,23 +107,29 @@ const renewJWT = async (req, res = response) => {
             });
         }
 
-        if (!req.companyDb) {
-            return res.status(500).json({
-                ok: false,
-                msg: 'DB no configurada'
-            });
+        let userDbConnection;
+        if (tenant === 'global') {
+            const { globalConnection } = require('../../../shared/database/connection');
+            userDbConnection = globalConnection;
+        } else {
+            const { getCompanyConnection } = require('../../../shared/database/connection');
+            userDbConnection = getCompanyConnection(tenant);
+            if (userDbConnection.readyState !== 1) {
+                await userDbConnection.asPromise();
+            }
         }
 
-        const UserCompany = getUserModel(req.companyDb);
+        const UserCompany = getUserModel(userDbConnection);
 
-        let usuario = await UserCompany.findById(uid, 'user name role img address uid valid turno fecha status');
+        let usuario = await UserCompany.findById(uid, 'user name role img address uid valid turno activeShiftBranch fecha status');
 
         if (!usuario) {
             const UserGlobal = require('../../global/models/users.model');
-            usuario = await UserGlobal.findById(uid, 'user name role img address uid valid turno fecha status');
+            usuario = await UserGlobal.findById(uid, 'user name role img address uid valid turno activeShiftBranch fecha status');
         }
 
         if (!usuario) {
+            console.error('RENEW JWT ERROR: Usuario no encontrado para el uid:', uid);
             return res.status(404).json({
                 ok: false,
                 msg: 'Usuario no encontrado'

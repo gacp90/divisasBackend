@@ -110,7 +110,7 @@ const getImages = (req, res = response) => {
     const tipo = req.params.tipo;
     const image = req.params.image;
 
-    const pathImg = path.join(__dirname, `../uploads/${tipo}/${image}`);
+    const pathImg = path.join(__dirname, `../../../uploads/${tipo}/${image}`);
 
     // IMAGE DEFAULT
     if (fs.existsSync(pathImg)) {
@@ -118,10 +118,10 @@ const getImages = (req, res = response) => {
     } else {
         // CHECK TYPE
         if (tipo !== 'user') {
-            const pathImg = path.join(__dirname, `../uploads/default.png`);
+            const pathImg = path.join(__dirname, `../../../uploads/default.png`);
             res.sendFile(pathImg);
         } else {
-            const pathImg = path.join(__dirname, `../uploads/user/user-default.png`);
+            const pathImg = path.join(__dirname, `../../../uploads/user/user-default.png`);
             res.sendFile(pathImg);
         }
     }

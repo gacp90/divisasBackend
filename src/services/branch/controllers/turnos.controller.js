@@ -94,9 +94,23 @@ const createTurno = async (req, res = response) => {
         const Inventory = getInventoryModel(req.branchDb);
         const { saldos } = req.body;
         
-        const userDB = await User.findById(uid).populate('turno');
+        let userDB = await User.findById(uid).populate('turno');
+        
         if (!userDB) {
-            return res.status(404).json({ ok: false, msg: 'Usuario no encontrado' });
+            // Sincronizar desde la base de datos global de la empresa
+            if (req.companyDb) {
+                const UserCompany = getUserModel(req.companyDb);
+                const userC = await UserCompany.findById(uid);
+                
+                if (userC) {
+                    userDB = new User(userC.toObject());
+                    await userDB.save();
+                } else {
+                    return res.status(404).json({ ok: false, msg: 'Usuario no encontrado en la empresa' });
+                }
+            } else {
+                return res.status(404).json({ ok: false, msg: 'Usuario no encontrado' });
+            }
         }
 
         if (userDB.turno?.abierto) {
@@ -104,6 +118,34 @@ const createTurno = async (req, res = response) => {
                 ok: false,
                 msg: 'Ya tienes un turno abierto'
             });
+        }
+
+        // 1. Obtener la hora límite desde la configuración de la sucursal (Empresa)
+        let horaLimiteStr = '20:00'; // Default 8 PM
+        if (req.branchDb) {
+            const EmpresaModel = req.branchDb.models.Empresas;
+            if (EmpresaModel) {
+                const empresa = await EmpresaModel.findOne({});
+                if (empresa && empresa.horaCierreTurno) {
+                    horaLimiteStr = empresa.horaCierreTurno;
+                }
+            }
+        }
+
+        // 2. Verificar la hora actual en Bogotá
+        const dateEnBogota = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Bogota"}));
+        const hh = dateEnBogota.getHours().toString().padStart(2, '0');
+        const mm = dateEnBogota.getMinutes().toString().padStart(2, '0');
+        const currentHoraBogota = `${hh}:${mm}`;
+
+        // Si la hora actual superó la hora límite O es madrugada (ej. antes de las 5 AM)
+        if (currentHoraBogota >= horaLimiteStr || currentHoraBogota < '05:00') {
+            if (!userDB.autorizadoTurnoExtra) {
+                return res.status(403).json({
+                    ok: false,
+                    msg: `No puedes abrir turno en este horario (Límite: ${horaLimiteStr}). Solicita autorización al administrador.`
+                });
+            }
         }
 
         // VALIDAR SALDO DISPONIBLE EN INVENTARIO
@@ -144,9 +186,15 @@ const createTurno = async (req, res = response) => {
         // Promise ALL
         const promesasDeGuardado = [
             turno.save(),
-            userDB.updateOne({ turno: turno._id }),
+            userDB.updateOne({ turno: turno._id, activeShiftBranch: req.headers['x-branch'], autorizadoTurnoExtra: false }),
             ...inventariosParaActualizar.map(inv => inv.save())
         ];
+        
+        // UPDATE COMPANY DB PARA GLOBAL TRACKING DE CAJEROS
+        if (req.companyDb) {
+            const UserCompany = getUserModel(req.companyDb);
+            await UserCompany.updateOne({ _id: uid }, { turno: turno._id, activeShiftBranch: req.headers['x-branch'], autorizadoTurnoExtra: false });
+        }
 
         
         const [turnoGuardado] = await Promise.all(promesasDeGuardado);
@@ -254,6 +302,14 @@ const cerrarTurno = async (req, res = response) => {
         turno.close = Date.now();
 
         await turno.save();
+
+        const UserBranch = getUserModel(req.branchDb);
+        await UserBranch.updateOne({ _id: turno.user }, { activeShiftBranch: null, turno: null });
+        
+        if (req.companyDb) {
+            const UserCompany = getUserModel(req.companyDb);
+            await UserCompany.updateOne({ _id: turno.user }, { activeShiftBranch: null, turno: null });
+        }
 
         res.json({
             ok: true,

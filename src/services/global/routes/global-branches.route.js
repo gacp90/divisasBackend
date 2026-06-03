@@ -21,11 +21,17 @@ router.post('/:subdominio', [
     validarCampos
 ], createGlobalBranch);
 
-// Editar el nombre de una sucursal
+// Editar datos de una sucursal
 router.put('/:subdominio/:branchId/name', [
     check('name', 'El nombre es obligatorio').not().isEmpty(),
     validarCampos
 ], editGlobalBranchName);
+
+// Activar/Desactivar sucursal
+router.put('/:subdominio/:branchId/toggle', [
+    check('isActive', 'El estado isActive es obligatorio').isBoolean(),
+    validarCampos
+], require('../controllers/global-branches.controller').toggleGlobalBranch);
 
 // Eliminar una sucursal
 router.delete('/:subdominio/:branchId', deleteGlobalBranch);

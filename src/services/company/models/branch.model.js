@@ -22,6 +22,18 @@ const branchSchema = (connection) => {
             type: Boolean,
             default: true
         },
+        fechaVencimiento: {
+            type: Date,
+            default: () => {
+                const fecha = new Date();
+                fecha.setDate(fecha.getDate() + 7);
+                return fecha;
+            }
+        },
+        numero: {
+            type: Number,
+            default: 1
+        },
         createdAt: {
             type: Date,
             default: Date.now

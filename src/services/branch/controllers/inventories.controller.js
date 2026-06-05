@@ -205,8 +205,11 @@ const updateInventory = async(req, res = response) => {
             campos.currency = currency.trim();
         }
 
-        // Evitar que se modifique el monto inicial si ya hubo transacciones en el historial
-        if (campos.amount !== undefined) {
+        // Evitar que se modifique el monto inicial si ya hubo transacciones en el historial, pero solo si realmente estan intentando cambiarlo
+        const currentAmount = inventoryDB.amount || 0;
+        const newAmount = campos.amount !== undefined && campos.amount !== null ? Number(campos.amount) : currentAmount;
+
+        if (newAmount !== currentAmount) {
             const usedInTx = await Transaccion.exists({ 'items.moneda': invid });
             const usedInTr = await Traslado.exists({ $or: [{ monedaEntregada: invid }, { monedaRecibida: invid }] });
 

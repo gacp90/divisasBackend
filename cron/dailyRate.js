@@ -35,7 +35,7 @@ const runDailyAverageRate = () => {
               const Inventory = getInventoryModel(branchDb);
 
               // Buscar solo monedas con movimientos ayer
-              const dailyRates = await Rate.find({ date: new Date(yesterday) }).populate('currency', 'code amount anterior tbc')
+              const dailyRates = await Rate.find({ date: new Date(yesterday) }).populate('currency', 'code amount anterior tbc tpc tc')
 
               // Si no hubo transacciones, no se hace nada
               if (!dailyRates.length) {
@@ -55,9 +55,9 @@ const runDailyAverageRate = () => {
                   rate.currency,
                   { 
                     tb: rate.avgRate, 
-                    tbc: (totalCop / totalDivisa).toFixed(2),
-                    tpc: (totalCop / totalDivisa).toFixed(2),
+                    tbc: rate.currency.tpc || 0, // 📸 FOTOGRAFÍA EXACTA DE LA TASA PROMEDIO ACTUAL (WAC)
                     anterior: rate.currency.amount
+                    // Nota (Fase 2): Eliminamos la sobreescritura sucia de tpc aquí, ya que ahora tpc es la fuente de verdad matemática
                   }
                 ); 
               }

@@ -57,6 +57,10 @@ const actualizarSaldosTraslado = async (dataTraslado, branchDb) => {
         tReceptor.saldos[idxReceptorRecibida].saldoActual -= mRecibido; 
         tReceptor.saldos[idxReceptorEntregada].saldoActual += mEntregado; 
 
+        // FORZAR GUARDADO DE ARRAY (MONGOOSE BUGFIX)
+        tEmisor.markModified('saldos');
+        tReceptor.markModified('saldos');
+
         // SAVE
         await Promise.all([ tEmisor.save(), tReceptor.save() ]);
 

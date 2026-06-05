@@ -21,6 +21,9 @@ const startSanctionsCron = () => {
     } catch (e) {
       console.error('Error OFAC:', e.message);
     }
+  }, {
+    scheduled: true,
+    timezone: "America/Bogota"
   });
 };
 

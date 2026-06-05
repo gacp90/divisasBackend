@@ -45,16 +45,26 @@ const updateInventoryAmount = async(transaccion, turno, branchDb) => {
                     { upsert: true, new: true }
                 ).populate('currency', 'anterior tbc');
 
-                // TASA PROMEDIO ACTUAL
-                daily.avgRatec = daily.totalValue / daily.totalAmount;
-                inventory.tpc = daily.totalValue / daily.totalAmount;
-                inventory.tc = t.tasa;
+                // 1. CÁLCULO DE PROMEDIO PONDERADO MÓVIL -> AHORA EN `tpc`
+                const existenciaAnterior = inventory.amount - t.monto; // amount ya incluye t.monto
+                const promedioActual = inventory.tpc || 0; // Usar tpc como base histórica
+                const compra = t.monto;
+                const tasaCompra = t.tasa;
 
-                // CALCULAR LA TASA ACTUAL CON LA EL MONTO DE COMPRAS DEL DIA ANTERIOR
+                let promedioNuevo = promedioActual;
+                if (inventory.amount > 0) {
+                    promedioNuevo = ((existenciaAnterior * promedioActual) + (compra * tasaCompra)) / inventory.amount;
+                }
+
+                inventory.tpc = promedioNuevo; // tpc es el nuevo TC matemático
+                inventory.tc = t.tasa;         // tc vuelve a ser la "Última tasa de compra digitada"
+
+                // Mantenemos la actualización de variables heredadas para la Fase 2 (ta)
+                daily.avgRatec = daily.totalValue / daily.totalAmount;
+
                 let saldoCopAnterior = (daily.currency.anterior * daily.currency.tbc);
                 let totalDivisa = daily.totalAmount + daily.currency.anterior;
                 let totalCop = daily.totalValue + saldoCopAnterior;
-
                 inventory.ta = (totalCop / totalDivisa).toFixed(4);
 
                 await daily.save();
@@ -155,10 +165,29 @@ const revertInventoryAmount = async(transaccion, turno, branchDb) => {
                     { new: true } 
                 );
 
+                // 1. REVERSO DEL PROMEDIO PONDERADO MÓVIL -> AHORA EN `tpc`
+                const existenciaDespuesReverso = inventory.amount; // Este es el monto restado
+                const promedioActual = inventory.tpc || 0; // Usar tpc
+                const compraRevertida = t.monto;
+                const tasaCompraRevertida = t.tasa;
+                const existenciaAntesReverso = existenciaDespuesReverso + compraRevertida; // Sumamos lo que habíamos extraído
+
+                let promedioAnterior = 0;
+                if (existenciaDespuesReverso > 0) {
+                    // Fórmula matemática inversa exacta
+                    promedioAnterior = ((existenciaAntesReverso * promedioActual) - (compraRevertida * tasaCompraRevertida)) / existenciaDespuesReverso;
+                } else if (existenciaDespuesReverso <= 0) {
+                    // Si el inventario vuelve a quedar en 0 (o menor, que no debería), reiniciamos el promedio
+                    promedioAnterior = 0;
+                }
+                
+                inventory.tpc = promedioAnterior; // Guardar reversión en tpc
+                // Nota: tc se queda como esté, no se puede revertir fácilmente a la penúltima tasa digitada sin un historial profundo, 
+                // pero no afecta el modelo contable.
+
                 if (daily) {
                     if (daily.totalAmount > 0) {
                         daily.avgRatec = daily.totalValue / daily.totalAmount;
-                        inventory.tpc = daily.totalValue / daily.totalAmount;
                     } else {
                         daily.avgRatec = 0; 
                     }

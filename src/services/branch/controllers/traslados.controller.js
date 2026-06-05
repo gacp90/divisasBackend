@@ -216,7 +216,39 @@ const updateTraslado = async(req, res = response) => {
         // SEARCH
 
         // VALIDATE
-        const {...campos } = req.body;
+        let campos = { ...req.body };
+
+        if (campos.accion === 'PAGADO' || campos.pendiente === false) {
+            
+            if (trasladoDB.pendiente === false && trasladoDB.requiereRevision === false) {
+                return res.status(400).json({ ok: false, msg: 'El traslado ya fue resuelto previamente.' });
+            }
+
+            campos.pendiente = false;
+            campos.requiereRevision = false;
+            let historialItem = {
+                fecha: new Date(),
+                usuario: req.uid,
+                accion: 'PAGADO',
+                nota: campos.nota || 'Préstamo interno saldado operativamente.'
+            };
+            campos.$push = { historialRevision: historialItem };
+            delete campos.accion;
+            delete campos.nota;
+
+        } else if (campos.accion === 'MANTENER_PENDIENTE') {
+            let historialItem = {
+                fecha: new Date(),
+                usuario: req.uid,
+                accion: 'MANTENER_PENDIENTE',
+                nota: campos.nota || 'Pendiente mantenido'
+            };
+            campos.$push = { historialRevision: historialItem };
+            delete campos.accion;
+            delete campos.nota;
+            campos.pendiente = true;
+            campos.requiereRevision = true;
+        }
 
         // UPDATE
         const trasladoUpdate = await Traslado.findByIdAndUpdate(trasladoID, campos, { new: true, useFindAndModify: false });

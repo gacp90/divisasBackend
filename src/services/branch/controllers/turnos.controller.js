@@ -13,6 +13,7 @@ const getTurnosQuery = async(req, res) => {
         if (!req.branchDb) return res.status(400).json({ ok: false, msg: 'Falta contexto sucursal' });
         const Turno = getTurnoModel(req.branchDb);
         const User = getUserModel(req.branchDb);
+        const Inventory = getInventoryModel(req.branchDb); // FIx: needed for population
 
         const { desde, hasta, sort, ...query } = req.body;
 
@@ -36,7 +37,7 @@ const getTurnosQuery = async(req, res) => {
         console.log(error);
         return res.status(500).json({
             ok: false,
-            msg: 'Error inesperado, porfavor intente nuevamente'
+            msg: 'Error inesperado: ' + (error.message || error)
         });
 
     }
@@ -140,7 +141,14 @@ const createTurno = async (req, res = response) => {
 
         // Si la hora actual superó la hora límite O es madrugada (ej. antes de las 5 AM)
         if (currentHoraBogota >= horaLimiteStr || currentHoraBogota < '05:00') {
-            if (!userDB.autorizadoTurnoExtra) {
+            let autorizado = userDB.autorizadoTurnoExtra;
+            if (req.companyDb) {
+                const UserCompanyModel = getUserModel(req.companyDb);
+                const userC = await UserCompanyModel.findById(uid);
+                if (userC && userC.autorizadoTurnoExtra) autorizado = true;
+            }
+
+            if (userDB.role !== 'ADMIN' && userDB.role !== 'SUPERVISOR' && !autorizado) {
                 return res.status(403).json({
                     ok: false,
                     msg: `No puedes abrir turno en este horario (Límite: ${horaLimiteStr}). Solicita autorización al administrador.`

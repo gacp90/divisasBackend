@@ -62,6 +62,7 @@ app.use('/api/v1/global-branches', require('./src/services/global/routes/global-
 app.use('/api/v1/traslados', require('./src/services/branch/routes/traslados.route'));
 app.use('/api/v1/traslados-sucursales', require('./src/services/company/routes/trasladosSucursales.route'));
 app.use('/api/v1/turnos', require('./src/services/branch/routes/turnos.route'));
+app.use('/api/v1/audit', require('./src/services/company/routes/auditCronLogs.routes'));
 app.use('/api/v1/uploads', require('./src/shared/routes/uploads.route'));
 app.use('/api/v1/pagos', require('./src/services/branch/routes/pagos.route'));
 app.use('/api/v1/global-dashboard', require('./src/services/global/routes/global-dashboard.route'));

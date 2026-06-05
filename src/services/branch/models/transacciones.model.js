@@ -196,6 +196,14 @@ const TransaccionesSchema = Schema({
         default: false
     },
 
+    motivosIntensificada: [{
+        type: String
+    }],
+
+    otraRazonIntensificada: {
+        type: String
+    },
+
     reforzada: {
         type: Boolean,
         default: false

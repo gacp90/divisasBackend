@@ -5,6 +5,7 @@ const getBranchModel = require('../../company/models/branch.model');
 const getUserModel = require('../../company/models/users.model');
 const getTurnoModel = require('../../branch/models/turnos.model');
 const getInventoryModel = require('../../branch/models/inventory.model');
+const { processPendingTransfersForTurno } = require('../../../shared/helpers/processPendingTransfers');
 
 /** =====================================================================
  *  CRON: CIERRE AUTOMÁTICO DE TURNOS
@@ -64,6 +65,9 @@ const startTurnosCron = () => {
                   }
                 }
                 
+                // Procesar traslados pendientes
+                await processPendingTransfersForTurno(turno, branchDb, companyDb, sub.subdominio, branch.name);
+
                 // 5. Cerrar formalmente el turno
                 turno.abierto = false;
                 turno.close = Date.now();
@@ -165,6 +169,9 @@ const startCierreEstrictoCajerosCron = () => {
                               }
                             }
                             
+                            // Procesar traslados pendientes
+                            await processPendingTransfersForTurno(turno, branchDb, companyDb, sub.subdominio, branch.name);
+
                             // Cerrar formalmente el turno
                             turno.abierto = false;
                             turno.close = Date.now();

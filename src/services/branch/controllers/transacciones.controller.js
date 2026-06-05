@@ -52,7 +52,7 @@ const getTransaccionesQuery = async(req, res = response) => {
         });
 
     } catch (error) {
-        console.log(error);
+        console.log('OUTER ERROR:', error); const fs = require('fs'); fs.writeFileSync('d:/PROYECTO DE SOFTWARE/SIMIDMAS/diviBackend/error_log_outer.txt', String(error.stack || error));
         return res.status(500).json({
             ok: false,
             msg: 'Error inesperado, porfavor intente nuevamente'
@@ -92,6 +92,7 @@ const getTransaccionesQueryGlobal = async(req, res = response) => {
             try {
                 const branchDb = getBranchConnection(subdominio, branch.path);
                 const Transaccion = getTransaccionModel(branchDb);
+                const Inventory = getInventoryModel(branchDb);
 
                 const transaccionesSucursal = await Transaccion.find(query)
                     .populate({
@@ -105,7 +106,7 @@ const getTransaccionesQueryGlobal = async(req, res = response) => {
                     .populate({ path: 'cajero', model: UserCompany })
                     .populate({ path: 'declarant', model: ClientCompany })
                     .populate({ path: 'userCancel', model: UserCompany })
-                    .populate('items.moneda');
+                    .populate({ path: 'items.moneda', model: Inventory });
 
                 transaccionesGlobales = [...transaccionesGlobales, ...transaccionesSucursal];
             } catch (err) {
@@ -190,6 +191,8 @@ const createTransaccion = async(req, res = response) => {
     try {
         if (!req.branchDb || !req.companyDb) return res.status(400).json({ ok: false, msg: 'Faltan contextos de base de datos' });
         const Transaccion = getTransaccionModel(req.branchDb);
+        const ClientCompany = getClientModel(req.companyDb);
+        const UserCompany = getUserModel(req.companyDb);
         const User = getUserModel(req.branchDb);
         const Inventory = getInventoryModel(req.branchDb);
 
@@ -324,58 +327,79 @@ const createTransaccion = async(req, res = response) => {
             });
         }
 
-        const transaccion = await Transaccion.findById(newTransaccion._id)
-            .populate({ path: 'client', model: ClientCompany })
-            .populate({ path: 'cajero', model: UserCompany })
-            .populate({ path: 'declarant', model: ClientCompany })
-            .populate('items.moneda');
+        
+        try {
+            const transaccion = await Transaccion.findById(newTransaccion._id)
+                .populate({ path: 'client', model: ClientCompany })
+                .populate({ path: 'cajero', model: UserCompany })
+                .populate({ path: 'declarant', model: ClientCompany })
+                .populate({ path: 'items.moneda', model: Inventory });
 
-        // ==============================================
-        // ENVIAR A CONEXUS
-        // ==============================================
-        if (transaccion.electronica) {
-            const conexusResponse = await enviarFacturaConexus(transaccion, req.branchDb);
+            if (transaccion.electronica) {
+                const conexusResponse = await enviarFacturaConexus(transaccion, req.branchDb);
 
-            if (conexusResponse.ok && conexusResponse.data && conexusResponse.data.SetDocumentResult) {
-            
-                const resultado = conexusResponse.data.SetDocumentResult;
-
-                // Verificamos
-                if (resultado.CodResp !== 'ERR') {
-                    
-                    // Actualizamos
-                    transaccion.conexus = {
-                        CodQR: resultado.CodQR,
-                        Base64QR: resultado.Base64QR,
-                        CodigoTransaccion: resultado.CodigoTransaccion,
-                        FechaValidacion: resultado.FechaValidacion,
-                        estado: resultado.DetalleRespuesta
-                    };
-
-                    // Guardamos los nuevos datos en la base de datos
-                    await transaccion.save();
+                if (conexusResponse.ok && conexusResponse.data && conexusResponse.data.SetDocumentResult) {
+                    const resultado = conexusResponse.data.SetDocumentResult;
+                    if (resultado.CodResp !== 'ERR') {
+                        transaccion.conexus = {
+                            CodQR: resultado.CodQR,
+                            Base64QR: resultado.Base64QR,
+                            CodigoTransaccion: resultado.CodigoTransaccion,
+                            FechaValidacion: resultado.FechaValidacion,
+                            estado: resultado.DetalleRespuesta
+                        };
+                        await transaccion.save();
+                    } else {
+                        console.log("Factura rechazada por Conexus:", resultado.Detalles);
+                    }
                 } else {
-                    console.log("Factura rechazada por Conexus:", resultado.Detalles);
+                    transaccion.estado = 'Pendiente';
+                    await transaccion.save();
+                    console.log("Error al enviar la factura a Conexus:", conexusResponse.error || "Respuesta inesperada");
                 }
-            }else{
-                transaccion.estado = 'Pendiente';
-                await transaccion.save();
-                console.log("Error al enviar la factura a Conexus:", conexusResponse.error || "Respuesta inesperada");
             }
-            
+
+            return res.json({
+                ok: true,
+                transaccion,
+                turno: user.turno
+            });
+
+        } catch (innerError) {
+            console.error('Error crítico, ejecutando GHOST ROLLBACK:', innerError);
+            try { await revertInventoryAmount(newTransaccion, user.turno, req.branchDb); } catch(e) { }
+
+            await Transaccion.findByIdAndDelete(newTransaccion._id);
+
+            const Concecutive = require('../models/concecutives.model')(req.branchDb);
+            if (newTransaccion.number) {
+                await Concecutive.findOneAndUpdate({ type: newTransaccion.transaccion }, { $inc: { seq: -1 } });
+            }
+            if (newTransaccion.control) {
+                let controlType;
+                if (newTransaccion.transaccion === 'Compra') {
+                    if (newTransaccion.equivalencia > 200 && newTransaccion.equivalencia < 500) controlType = '1121';
+                    else if (newTransaccion.equivalencia >= 500) controlType = '1099';
+                } else if (newTransaccion.transaccion === 'Venta') {
+                    if (newTransaccion.equivalencia > 200 && newTransaccion.equivalencia < 500) controlType = '1121';
+                    else if (newTransaccion.equivalencia >= 500) controlType = '1100';
+                }
+                if (controlType) {
+                    await Concecutive.findOneAndUpdate({ type: controlType }, { $inc: { seq: -1 } });
+                }
+            }
+
+            return res.status(500).json({
+                ok: false,
+                msg: 'Error critico procesando la factura. El Ghost Rollback actuo por seguridad: ' + String(innerError.message || innerError)
+            });
         }
-
-        res.json({
-            ok: true,
-            transaccion,
-            turno: user.turno
-        });
-
     } catch (error) {
-        console.log(error);
-        res.status(500).json({
+        console.error('OUTER ERROR in createTransaccion:', error);
+        require('fs').writeFileSync('d:/PROYECTO DE SOFTWARE/SIMIDMAS/diviBackend/error_log_outer.txt', String(error.stack || error.message || error));
+        return res.status(500).json({
             ok: false,
-            msg: 'Error Inesperado'
+            msg: 'Error Inesperado. Intente nuevamente.'
         });
     }
 };

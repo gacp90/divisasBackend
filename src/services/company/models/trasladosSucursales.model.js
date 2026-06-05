@@ -68,6 +68,18 @@ const TrasladosSucursalesSchema = Schema({
         default: false
     },
 
+    requiereRevision: {
+        type: Boolean,
+        default: false
+    },
+
+    historialRevision: [{
+        fecha: { type: Date, default: Date.now },
+        usuario: { type: String },
+        accion: { type: String, enum: ['PAGADO', 'MANTENER_PENDIENTE'] },
+        nota: { type: String }
+    }],
+
     status: {
         type: Boolean,
         default: true

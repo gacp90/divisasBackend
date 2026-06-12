@@ -56,12 +56,22 @@ const getTrasladosCierre = async(req, res) => {
         const { turno } = req.body;
 
         const [trasladosEmitidos, trasladosRecibidos] = await Promise.all([
-            Traslado.find({turnoEmisor: turno })
+            Traslado.find({
+                $or: [
+                    { turnoEmisor: turno },
+                    { emisor: req.uid, pendiente: true, requiereRevision: true }
+                ]
+            })
                 .populate('emisor')
                 .populate('receptor')
                 .populate('monedaEntregada')
                 .populate('monedaRecibida'),
-            Traslado.find({turnoReceptor: turno })
+            Traslado.find({
+                $or: [
+                    { turnoReceptor: turno },
+                    { receptor: req.uid, pendiente: true, requiereRevision: true }
+                ]
+            })
                 .populate('emisor')
                 .populate('receptor')
                 .populate('monedaEntregada')
@@ -226,22 +236,56 @@ const updateTraslado = async(req, res = response) => {
 
             campos.pendiente = false;
             campos.requiereRevision = false;
+            
+            const { getCompanyConnection } = require('../../../shared/database/connection');
+            const subdominio = req.headers['x-subdomain'] || req.branchDb.name.split('_')[0];
+            const companyDb = getCompanyConnection(subdominio);
+
+            const getUserModel = require('../../company/models/users.model');
+            const UserCompany = getUserModel(companyDb); 
+            const userExec = await UserCompany.findById(req.uid);
+            const userName = userExec ? userExec.name : req.uid;
+            const userRole = userExec ? userExec.role : (req.userRole || 'ADMINISTRADOR');
+            
             let historialItem = {
                 fecha: new Date(),
-                usuario: req.uid,
+                usuario: userName, 
+                rolUsuario: userRole,
                 accion: 'PAGADO',
-                nota: campos.nota || 'Préstamo interno saldado operativamente.'
+                nota: campos.nota || 'Préstamo interno saldado operativamente.',
+                estadoAnterior: 'Requiere Revisión Administrativa',
+                estadoNuevo: 'Pagado'
             };
             campos.$push = { historialRevision: historialItem };
             delete campos.accion;
             delete campos.nota;
 
+            const getAuditCronLogsModel = require('../../company/models/auditCronLogs.model');
+            const AuditCronLogs = getAuditCronLogsModel(companyDb);
+            await AuditCronLogs.updateMany(
+                { trasladosInvolucrados: String(trasladoID) },
+                { $inc: { trasladosResueltos: 1 } }
+            );
+
         } else if (campos.accion === 'MANTENER_PENDIENTE') {
+            const { getCompanyConnection } = require('../../../shared/database/connection');
+            const subdominio = req.headers['x-subdomain'] || req.branchDb.name.split('_')[0];
+            const companyDb = getCompanyConnection(subdominio);
+
+            const getUserModel = require('../../company/models/users.model');
+            const UserCompany = getUserModel(companyDb); 
+            const userExec = await UserCompany.findById(req.uid);
+            const userName = userExec ? userExec.name : req.uid;
+            const userRole = userExec ? userExec.role : (req.userRole || 'ADMINISTRADOR');
+
             let historialItem = {
                 fecha: new Date(),
-                usuario: req.uid,
+                usuario: userName,
+                rolUsuario: userRole,
                 accion: 'MANTENER_PENDIENTE',
-                nota: campos.nota || 'Pendiente mantenido'
+                nota: campos.nota || 'Pendiente mantenido',
+                estadoAnterior: 'Requiere Revisión Administrativa',
+                estadoNuevo: 'Requiere Revisión Administrativa'
             };
             campos.$push = { historialRevision: historialItem };
             delete campos.accion;

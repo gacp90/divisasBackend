@@ -11,8 +11,7 @@ const { processPendingTransfersForTurno } = require('../../../shared/helpers/pro
  *  CRON: CIERRE AUTOMÁTICO DE TURNOS
  *  Ejecución: 23:59 todos los días ('59 23 * * *')
  * =========================================================================*/
-const startTurnosCron = () => {
-  cron.schedule('59 23 * * *', async () => {
+const runCierreTurnosGlobal = async () => {
     console.log('--- INICIANDO CRON DE CIERRE AUTOMÁTICO DE TURNOS (23:59) ---');
 
     try {
@@ -29,7 +28,7 @@ const startTurnosCron = () => {
           const User = getUserModel(companyDb);
           
           // 2. Obtener todas las sucursales de esta empresa
-          const branches = await Branch.find({ status: true });
+          const branches = await Branch.find({ isActive: true });
           
           for (const branch of branches) {
             console.log(`  -> Procesando Sucursal: ${branch.name} (${branch.path})`);
@@ -86,6 +85,15 @@ const startTurnosCron = () => {
               console.error(`[CRON TURNOS ERROR] Fallo al procesar sucursal ${branch.name}:`, errBranch.message);
             }
           }
+          
+          // --- LIMPIEZA DE AUDITORÍA (VENTANA DE 7 DÍAS) ---
+          const getAuditCronLogsModel = require('../../company/models/auditCronLogs.model');
+          const AuditCronLogs = getAuditCronLogsModel(companyDb);
+          const sevenDaysAgo = new Date();
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+          const eliminados = await AuditCronLogs.deleteMany({ fechaCierreAuto: { $lt: sevenDaysAgo } });
+          console.log(`[CRON LIMPIEZA] Eliminados ${eliminados.deletedCount} registros de auditoría anteriores a 7 días en ${sub.subdominio}.`);
+          
         } catch (errCompany) {
           console.error(`[CRON TURNOS ERROR] Fallo al procesar empresa ${sub.subdominio}:`, errCompany.message);
         }
@@ -96,7 +104,10 @@ const startTurnosCron = () => {
     } catch (error) {
       console.error('[CRON TURNOS ERROR CRÍTICO]', error);
     }
-  }, {
+};
+
+const startTurnosCron = () => {
+  cron.schedule('59 23 * * *', runCierreTurnosGlobal, {
     timezone: 'America/Bogota'
   });
 };
@@ -105,10 +116,11 @@ const startTurnosCron = () => {
  *  CRON: CIERRE ESTRICTO DE CAJEROS (VIGILANTE MINUTO A MINUTO)
  *  Ejecución: Cada minuto ('* * * * *')
  * =========================================================================*/
-const startCierreEstrictoCajerosCron = () => {
-  cron.schedule('* * * * *', async () => {
+
+const runCierreEstrictoCajeros = async (mockDate = null) => {
     try {
-      const nowBogota = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Bogota"}));
+      const nowBogota = mockDate || new Date(new Date().toLocaleString("en-US", {timeZone: "America/Bogota"}));
+      console.log(`[VIGILANTE CAJEROS] Verificando turnos a las: ${nowBogota.toLocaleTimeString()}`);
       
       // 1. Obtener todas las empresas/subdominios activos
       const subdomains = await Subdomain.find({ isActive: true });
@@ -119,7 +131,7 @@ const startCierreEstrictoCajerosCron = () => {
           const Branch = getBranchModel(companyDb);
           const User = getUserModel(companyDb);
           
-          const branches = await Branch.find({ status: true });
+          const branches = await Branch.find({ isActive: true });
           
           for (const branch of branches) {
             try {
@@ -154,7 +166,7 @@ const startCierreEstrictoCajerosCron = () => {
                         
                         // Si se abrió ANTES de la hora límite de hoy, significa que es un turno diurno vencido. Lo cerramos de golpe.
                         if (turnoOpenBogota < horaLimiteDate) {
-                            console.log(`[CRON CAJEROS] Cerrando de golpe el turno del cajero: ${turno.user.name || turno.user}`);
+                            console.log(`[CRON CAJEROS] Cerrando de golpe el turno del cajero: ${turno.user.name || turno.user} de sucursal ${branch.name}`);
                             
                             // Devolver los saldos físicos al inventario
                             for (const saldo of turno.saldos) {
@@ -198,12 +210,17 @@ const startCierreEstrictoCajerosCron = () => {
     } catch (error) {
       console.error('[CRON CAJEROS ERROR CRÍTICO]', error);
     }
-  }, {
+};
+
+const startCierreEstrictoCajerosCron = () => {
+  cron.schedule('* * * * *', () => runCierreEstrictoCajeros(), {
     timezone: 'America/Bogota'
   });
 };
 
 module.exports = {
   startTurnosCron,
-  startCierreEstrictoCajerosCron
+  startCierreEstrictoCajerosCron,
+  runCierreTurnosGlobal,
+  runCierreEstrictoCajeros
 };

@@ -45,9 +45,17 @@ const AuditCronLogsSchema = Schema({
     leido: {
         type: Boolean,
         default: false
+    },
+    totalTraslados: {
+        type: Number,
+        default: 0
+    },
+    trasladosResueltos: {
+        type: Number,
+        default: 0
     }
 
-});
+}, { timestamps: true });
 
 AuditCronLogsSchema.method('toJSON', function() {
     const { __v, _id, ...object } = this.toObject();

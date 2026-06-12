@@ -185,12 +185,29 @@ const getTrasladosSucursalesQuery = async(req, res) => {
 
         const { desde, hasta, sort, ...query } = req.body;
 
+        let matchQuery = { ...query };
+        if (query.turnoEmisorId) {
+            matchQuery = {
+                $or: [
+                    { turnoEmisorId: query.turnoEmisorId },
+                    { emisorId: req.uid, pendiente: true, requiereRevision: true }
+                ]
+            };
+        } else if (query.turnoReceptorId) {
+            matchQuery = {
+                $or: [
+                    { turnoReceptorId: query.turnoReceptorId },
+                    { receptorId: req.uid, pendiente: true, requiereRevision: true }
+                ]
+            };
+        }
+
         const [traslados, total] = await Promise.all([
-            TrasladosSucursales.find(query)
+            TrasladosSucursales.find(matchQuery)
             .limit(hasta)
             .skip(desde)
             .sort(sort),
-            TrasladosSucursales.countDocuments(query)
+            TrasladosSucursales.countDocuments(matchQuery)
         ]);
 
         const getBranchModel = require('../models/branch.model');
@@ -327,24 +344,48 @@ const updateTrasladoSucursal = async(req, res) => {
             // Actualizar Traslado global
             req.body.pendiente = false;
             req.body.requiereRevision = false;
-            
+            const getUserModel = require('../models/users.model');
+            const UserCompany = getUserModel(req.companyDb);
+            const userExec = await UserCompany.findById(req.uid);
+            const userName = userExec ? userExec.name : req.uid;
+            const userRole = userExec ? userExec.role : (req.userRole || 'ADMINISTRADOR');
+
             // Agregar historial
             let historialItem = {
                 fecha: new Date(),
-                usuario: req.uid,
+                usuario: userName,
+                rolUsuario: userRole,
                 accion: 'PAGADO',
-                nota: req.body.nota || `Pago administrativo ejecutado. Destino previo COP: ${inventoryDestinoPrevio}, Destino final COP: ${invDestinoCOP.amount}. Origen previo COP: ${inventoryOrigenPrevio}, Origen final COP: ${invOrigenCOP ? invOrigenCOP.amount : montoRequerido}.`
+                nota: req.body.nota || `Pago administrativo ejecutado. Destino previo COP: ${inventoryDestinoPrevio}, Destino final COP: ${invDestinoCOP.amount}. Origen previo COP: ${inventoryOrigenPrevio}, Origen final COP: ${invOrigenCOP ? invOrigenCOP.amount : montoRequerido}.`,
+                estadoAnterior: 'Requiere Revisión Administrativa',
+                estadoNuevo: 'Pagado'
             };
             req.body.$push = { historialRevision: historialItem };
             delete req.body.accion;
             delete req.body.nota;
 
+            const getAuditCronLogsModel = require('../models/auditCronLogs.model');
+            const AuditCronLogs = getAuditCronLogsModel(req.companyDb);
+            await AuditCronLogs.updateMany(
+                { trasladosInvolucrados: String(trasladoId) },
+                { $inc: { trasladosResueltos: 1 } }
+            );
+
         } else if (req.body.accion === 'MANTENER_PENDIENTE') {
+            const getUserModel = require('../models/users.model');
+            const UserCompany = getUserModel(req.companyDb);
+            const userExec = await UserCompany.findById(req.uid);
+            const userName = userExec ? userExec.name : req.uid;
+            const userRole = userExec ? userExec.role : (req.userRole || 'ADMINISTRADOR');
+
             let historialItem = {
                 fecha: new Date(),
-                usuario: req.uid,
+                usuario: userName,
+                rolUsuario: userRole,
                 accion: 'MANTENER_PENDIENTE',
-                nota: req.body.nota || 'Pendiente mantenido'
+                nota: req.body.nota || 'Pendiente mantenido',
+                estadoAnterior: 'Requiere Revisión Administrativa',
+                estadoNuevo: 'Requiere Revisión Administrativa'
             };
             req.body.$push = { historialRevision: historialItem };
             delete req.body.accion;
@@ -434,11 +475,75 @@ const getTurnosGlobal = async(req, res) => {
     }
 };
 
+/** =====================================================================
+ *  GET TRASLADOS INTERNOS GLOBAL (AUDITORIA)
+=========================================================================*/
+const getTrasladoModel = require('../../branch/models/traslados.model');
+
+const getTrasladosInternosGlobal = async(req, res) => {
+    try {
+        if (!req.companyDb) return res.status(400).json({ ok: false, msg: 'Falta contexto Company DB' });
+        
+        const Branch = getBranchModel(req.companyDb);
+        const UserCompany = getUserModel(req.companyDb);
+        const branches = await Branch.find({ isActive: true });
+
+        const subdominio = req.headers['x-subdomain'] || '';
+        if (!subdominio) return res.status(400).json({ ok: false, msg: 'No se pudo detectar el subdominio' });
+
+        let trasladosInternosGlobales = [];
+
+        for (const branch of branches) {
+            try {
+                const branchDb = getBranchConnection(subdominio, branch.path);
+                if (branchDb.readyState !== 1) await branchDb.asPromise();
+                const TrasladoLocal = getTrasladoModel(branchDb);
+
+                const trasladosBranch = await TrasladoLocal.find({ requiereRevision: true });
+
+                const mapeados = await Promise.all(trasladosBranch.map(async t => {
+                    const obj = t.toJSON();
+                    obj._id = t._id;
+                    obj.branchId = branch._id;
+                    obj.branchPath = branch.path; // Permite al frontend enviar el x-branch
+                    obj.sucursalOrigenName = branch.name;
+                    obj.sucursalDestinoName = branch.name;
+                    
+                    const [emisor, receptor] = await Promise.all([
+                        UserCompany.findById(t.emisor).catch(() => null),
+                        UserCompany.findById(t.receptor).catch(() => null)
+                    ]);
+
+                    obj.emisorName = emisor ? emisor.name : t.emisor;
+                    obj.receptorName = receptor ? receptor.name : t.receptor;
+
+                    return obj;
+                }));
+
+                trasladosInternosGlobales = [...trasladosInternosGlobales, ...mapeados];
+            } catch (err) {
+                console.warn(`No se pudieron cargar traslados internos de sucursal ${branch.name}:`, err);
+            }
+        }
+
+        res.json({
+            ok: true,
+            traslados: trasladosInternosGlobales,
+            total: trasladosInternosGlobales.length
+        });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ ok: false, msg: 'Error inesperado consultando traslados internos globales' });
+    }
+};
+
 // EXPORTS
 module.exports = {
     createTrasladoSucursal,
     getTrasladosSucursalesQuery,
     updateTrasladoSucursal,
-    getTurnosGlobal
+    getTurnosGlobal,
+    getTrasladosInternosGlobal
 };
 

@@ -8,7 +8,7 @@ const getTrmModel = require('../../company/models/trm.model');
 /** ======================================================================
  *  GET INVENTORY
 =========================================================================*/
-const getInventoriesQuery = async(req, res) => {
+const getInventoriesQuery = async (req, res) => {
 
     try {
         if (!req.branchDb || !req.companyDb) return res.status(400).json({ ok: false, msg: 'Faltan contextos de base de datos' });
@@ -22,10 +22,10 @@ const getInventoriesQuery = async(req, res) => {
 
         const [inventories, total, latestTrm] = await Promise.all([
             Inventory.find(query)
-            .limit(hasta)
-            .skip(desde)
-            .sort(sort)
-            .lean(),
+                .limit(hasta)
+                .skip(desde)
+                .sort(sort)
+                .lean(),
             Inventory.countDocuments({ status: true }),
             Trm.findOne().sort({ _id: -1 })
         ]);
@@ -79,7 +79,7 @@ const getInventoriesQuery = async(req, res) => {
 /** =====================================================================
  *  GET INVENTORY ID
 =========================================================================*/
-const getInventoryId = async(req, res = response) => {
+const getInventoryId = async (req, res = response) => {
 
     try {
         if (!req.branchDb) return res.status(400).json({ ok: false, msg: 'Falta contexto sucursal' });
@@ -114,7 +114,7 @@ const getInventoryId = async(req, res = response) => {
 /** =====================================================================
  *  CREATE INVENTORY
 =========================================================================*/
-const createInventory = async(req, res = response) => {
+const createInventory = async (req, res = response) => {
 
     let { currency, code } = req.body;
 
@@ -143,10 +143,19 @@ const createInventory = async(req, res = response) => {
         }
 
         const inventory = new Inventory(req.body);
+        console.log('--- CREANDO DIVISA ---');
+        console.log('Payload recibido:', req.body);
         inventory.code = code;
         inventory.currency = currency;
         inventory.disponible = inventory.amount;
         inventory.anterior = inventory.amount;
+        inventory.modoUtilidad = 'HISTORICO'; // Default value
+
+        // Inicializar tasas en el punto de partida (TPC arranca igual que TA)
+        if (req.body.ta !== undefined && req.body.ta !== null) {
+            inventory.ta = req.body.ta;
+            inventory.tpc = req.body.ta;
+        }
 
 
         // SAVE
@@ -169,13 +178,13 @@ const createInventory = async(req, res = response) => {
 /** =====================================================================
  *  UPDATE INVENTORY
 =========================================================================*/
-const updateInventory = async(req, res = response) => {
+const updateInventory = async (req, res = response) => {
 
     const invid = req.params.id;
 
     try {
         if (!req.branchDb || !req.companyDb) return res.status(400).json({ ok: false, msg: 'Faltan contextos' });
-        
+
         const Inventory = getInventoryModel(req.branchDb);
         const Transaccion = getTransaccionModel(req.branchDb);
         const Traslado = getTrasladoModel(req.companyDb);
@@ -205,18 +214,33 @@ const updateInventory = async(req, res = response) => {
             campos.currency = currency.trim();
         }
 
-        // Evitar que se modifique el monto inicial si ya hubo transacciones en el historial, pero solo si realmente estan intentando cambiarlo
+        // Evitar que se modifiquen los parámetros históricos o base (Monto Inicial, TA, TPC) si ya hubo transacciones
         const currentAmount = inventoryDB.amount || 0;
         const newAmount = campos.amount !== undefined && campos.amount !== null ? Number(campos.amount) : currentAmount;
 
-        if (newAmount !== currentAmount) {
+        const currentTa = inventoryDB.ta || 0;
+        const newTa = campos.ta !== undefined && campos.ta !== null ? Number(campos.ta) : currentTa;
+
+        const currentTc = inventoryDB.tc || 0;
+        const newTc = campos.tc !== undefined && campos.tc !== null ? Number(campos.tc) : currentTc;
+
+        if (newAmount !== currentAmount || newTa !== currentTa || newTc !== currentTc) {
             const usedInTx = await Transaccion.exists({ 'items.moneda': invid });
             const usedInTr = await Traslado.exists({ $or: [{ monedaEntregada: invid }, { monedaRecibida: invid }] });
 
             if (inventoryDB.amount !== inventoryDB.disponible || usedInTx || usedInTr) {
                 return res.status(400).json({
                     ok: false,
-                    msg: 'No se puede modificar el monto porque esta divisa ya tiene un historial de transacciones o traslados.'
+                    msg: 'No se pueden modificar los montos iniciales ni las tasas base (TA/TPC) porque esta divisa ya tiene un historial operativo activo.'
+                });
+            }
+        }
+
+        if (campos.modoUtilidad && campos.modoUtilidad !== inventoryDB.modoUtilidad) {
+            if (inventoryDB.amount !== 0) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: 'No se puede modificar el Método de Utilidad si la divisa tiene existencia mayor a cero.'
                 });
             }
         }
@@ -238,6 +262,14 @@ const updateInventory = async(req, res = response) => {
 
             const newTrm = new Trm({ valor: campos.trm, fecha: new Date() });
             await newTrm.save();
+        }
+
+        // ACTUALIZAR ta y tpc SI LA DIVISA AUN ESTA EN CERO INVENTARIO
+        if (inventoryDB.amount === 0 || inventoryDB.amount == null) {
+            if (campos.ta !== undefined) {
+                campos.ta = campos.ta;
+                campos.tpc = campos.ta;
+            }
         }
 
         // UPDATE

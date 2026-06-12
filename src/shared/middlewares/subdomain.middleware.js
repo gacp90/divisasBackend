@@ -51,7 +51,7 @@ const injectDynamicConnections = async (req, res, next) => {
             try {
                 BranchModel = req.companyDb.model('Branch');
             } catch (err) {
-                const branchSchema = require('../../company/models/branch.model');
+                const branchSchema = require('../../services/company/models/branch.model');
                 BranchModel = branchSchema(req.companyDb);
             }
 

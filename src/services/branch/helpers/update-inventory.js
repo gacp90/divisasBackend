@@ -21,6 +21,10 @@ const updateInventoryAmount = async(transaccion, turno, branchDb) => {
             // VERIFICAR EL TIPO DE TRANSACCION PARA SUMAR O RESTAR EL INVENTARIO
             if (transaccion.transaccion === 'Compra') {
     
+                if (!pesos) {
+                    throw new Error('No se encontró la moneda base (COP). Debes crearla antes de realizar transacciones.');
+                }
+
                 // COMPRO MONEDA SUMA A LA MISMA MONEDA
                 inventory.amount += t.monto;
                 // RESTA LOS PESOS
@@ -43,7 +47,7 @@ const updateInventoryAmount = async(transaccion, turno, branchDb) => {
                     }
                     },
                     { upsert: true, new: true }
-                ).populate('currency', 'anterior tbc');
+                ).populate('currency');
 
                 // 1. CÁLCULO DE PROMEDIO PONDERADO MÓVIL -> AHORA EN `tpc`
                 const existenciaAnterior = inventory.amount - t.monto; // amount ya incluye t.monto
@@ -52,25 +56,27 @@ const updateInventoryAmount = async(transaccion, turno, branchDb) => {
                 const tasaCompra = t.tasa;
 
                 let promedioNuevo = promedioActual;
-                if (inventory.amount > 0) {
+                if (existenciaAnterior === 0) {
+                    promedioNuevo = tasaCompra;
+                } else if (inventory.amount > 0) {
                     promedioNuevo = ((existenciaAnterior * promedioActual) + (compra * tasaCompra)) / inventory.amount;
                 }
 
                 inventory.tpc = promedioNuevo; // tpc es el nuevo TC matemático
-                inventory.tc = t.tasa;         // tc vuelve a ser la "Última tasa de compra digitada"
+                if (t.updateTasaDefault === true) {
+                    inventory.tc = t.tasa;     // Actualizar la tasa por defecto si el usuario lo confirmó
+                }
 
-                // Mantenemos la actualización de variables heredadas para la Fase 2 (ta)
-                daily.avgRatec = daily.totalValue / daily.totalAmount;
-
-                let saldoCopAnterior = (daily.currency.anterior * daily.currency.tbc);
-                let totalDivisa = daily.totalAmount + daily.currency.anterior;
-                let totalCop = daily.totalValue + saldoCopAnterior;
-                inventory.ta = (totalCop / totalDivisa).toFixed(4);
+                // Eliminar cálculos de tbc heredados
 
                 await daily.save();
     
             } else if (transaccion.transaccion === 'Venta') {
     
+                if (!pesos) {
+                    throw new Error('No se encontró la moneda base (COP). Debes crearla antes de realizar transacciones.');
+                }
+
                 // VENDIO MONEDA RESTA A LA MISMA MONEDA
                 inventory.amount -= t.monto;
                 // SUMA LOS PESOS
@@ -97,9 +103,10 @@ const updateInventoryAmount = async(transaccion, turno, branchDb) => {
 
                 // TASA PROMEDIO ACTUAL
                 daily.avgRate = daily.totalValueV / daily.totalAmountV;
-                inventory.tp = daily.totalValueV / daily.totalAmountV;
                 
-                inventory.tv = t.tasa;
+                if (t.updateTasaDefault === true) {
+                    inventory.tv = t.tasa;
+                }
 
                 await daily.save();
     
@@ -146,6 +153,10 @@ const revertInventoryAmount = async(transaccion, turno, branchDb) => {
                 // VALIDACIÓN DEl TURNO
                 if (indexDivisaTurno === -1 || turno.saldos[indexDivisaTurno].saldoActual < t.monto) {
                     throw new Error(`Fondos insuficientes en gaveta. No tienes ${t.monto} ${inventory.code} para devolver al cliente.`);
+                }
+
+                if (!pesos) {
+                    throw new Error('No se encontró la moneda base (COP).');
                 }
 
                 inventory.amount -= t.monto;
@@ -222,7 +233,7 @@ const revertInventoryAmount = async(transaccion, turno, branchDb) => {
                 if (daily) {
                     if (daily.totalAmount > 0) {
                         daily.avgRate = daily.totalValue / daily.totalAmount;
-                        inventory.tp = daily.totalValue / daily.totalAmount;
+                        // Update Rate
                     } else {
                         daily.avgRate = 0;
                     }
@@ -318,7 +329,7 @@ const revertInventoryAmount = async(transaccion, turno, branchDb) => {
                 if (daily) {
                     if (daily.totalAmount > 0) {
                         daily.avgRate = daily.totalValue / daily.totalAmount;
-                        inventory.tp = daily.totalValue / daily.totalAmount;
+                        // Update Rate
                     } else {
                         daily.avgRate = 0;
                     }

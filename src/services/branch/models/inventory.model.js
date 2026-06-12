@@ -39,38 +39,29 @@ const InvetorySchema = Schema({
         require: true
     },
 
-    tp: {
-        type: Number,
-        dafault: 0
-    },
-
     tpc: {
         type: Number,
-        dafault: 0
+        default: 0
     },
 
     trm: {
         type: Number,
-        dafault: 0
+        default: 0
     },
 
     trmUpdate: {
         type: Date
     },
 
-    tb: {
-        type: Number,
-        dafault: 0
-    },
-
     ta: {
         type: Number,
-        dafault: 0
+        default: 0
     },
 
-    tbc: {
-        type: Number,
-        dafault: 0
+    modoUtilidad: {
+        type: String,
+        enum: ['HISTORICO', 'PROMEDIO_MOVIL'],
+        default: 'HISTORICO'
     },
 
     status: {

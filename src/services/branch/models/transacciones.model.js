@@ -61,12 +61,12 @@ const ItemsSchema = Schema({
         default: 0
     },
 
-    baseliq: {
-        type: Number,
-        default: 0
+    updateTasaDefault: {
+        type: Boolean,
+        default: false
     },
 
-    tvb: {
+    baseliq: {
         type: Number,
         default: 0
     },

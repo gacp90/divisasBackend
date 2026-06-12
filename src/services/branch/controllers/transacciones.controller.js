@@ -359,10 +359,24 @@ const createTransaccion = async(req, res = response) => {
                 }
             }
 
+            const zeroInventories = [];
+            if (transaccion.items && transaccion.items.length > 0) {
+                for (const item of transaccion.items) {
+                    if (item.moneda && item.moneda.amount <= 0 && item.moneda.code !== 'COP') {
+                        zeroInventories.push({
+                            invid: item.moneda._id,
+                            code: item.moneda.code,
+                            currency: item.moneda.currency
+                        });
+                    }
+                }
+            }
+
             return res.json({
                 ok: true,
                 transaccion,
-                turno: user.turno
+                turno: user.turno,
+                zeroInventories
             });
 
         } catch (innerError) {
@@ -466,7 +480,6 @@ const importarTransaccionesBulk = async (req, res = response) => {
                 pcda: trx.tasa,
                 dift: 0,
                 baseliq: trx.baseliq,
-                tvb: trx.tasa,
                 trm: trx.trm,
                 equivalencia: trx.equivalencia 
             };

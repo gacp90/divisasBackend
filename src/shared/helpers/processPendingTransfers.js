@@ -24,6 +24,9 @@ const processPendingTransfersForTurno = async (turno, branchDb, companyDb, subdo
 
         const totalPendientes = internos.length + externos.length;
 
+        const userName = turno.user ? (turno.user.name || turno.user.username || String(turno.user)) : 'Usuario Desconocido';
+        const userRole = turno.user ? turno.user.role : 'DESCONOCIDO';
+
         if (totalPendientes > 0) {
             console.log(`[CRON TURNOS] Turno ${turnoId} tiene ${totalPendientes} traslados pendientes. Pasando a requiereRevision.`);
 
@@ -32,15 +35,31 @@ const processPendingTransfersForTurno = async (turno, branchDb, companyDb, subdo
 
             // Procesar internos
             for (let t of internos) {
-                // Solo si no habia sido revisado
                 if (!t.requiereRevision) {
                     t.requiereRevision = true;
-                    // Valor en COP (si alguno de los montos es COP, lo sumamos. En internos usualmente no hay montoCOP directo, sumamos el monto entregado si es COP. Pero para simplificar sumamos todo)
-                    // Para mayor precision, buscamos el valor
                     valorTotalCOP += t.montoRecibido || t.montoEntregado;
                     trasladosIds.push(String(t._id));
-                    await t.save();
                 }
+
+                // Guardar metadatos operativos en la raíz del documento
+                t.fechaCierreAutomatico = new Date();
+                t.motivoRevision = 'Turno cerrado automáticamente. Pasando a revisión administrativa.';
+
+                // Inyectar firma del Cron si no existe, garantizando que no se duplique
+                const yaCerradoPorCron = t.historialRevision.some(h => h.rolUsuario === 'CRON');
+                if (!yaCerradoPorCron) {
+                    t.historialRevision.push({
+                        fecha: new Date(),
+                        usuario: 'SISTEMA',
+                        rolUsuario: 'CRON',
+                        accion: 'CIERRE AUTOMÁTICO CRON',
+                        nota: t.motivoRevision,
+                        estadoAnterior: 'Pendiente',
+                        estadoNuevo: 'Requiere Revisión Administrativa'
+                    });
+                }
+                
+                await t.save();
             }
 
             // Procesar externos
@@ -53,14 +72,30 @@ const processPendingTransfersForTurno = async (turno, branchDb, companyDb, subdo
                         valorTotalCOP += t.montoRecibido;
                     }
                     trasladosIds.push(String(t._id));
-                    await t.save();
                 }
+
+                // Guardar metadatos operativos en la raíz del documento
+                t.fechaCierreAutomatico = new Date();
+                t.motivoRevision = 'Turno cerrado automáticamente. Pasando a revisión administrativa.';
+
+                // Inyectar firma del Cron si no existe, garantizando que no se duplique
+                const yaCerradoPorCron = t.historialRevision.some(h => h.rolUsuario === 'CRON');
+                if (!yaCerradoPorCron) {
+                    t.historialRevision.push({
+                        fecha: new Date(),
+                        usuario: 'SISTEMA',
+                        rolUsuario: 'CRON',
+                        accion: 'CIERRE AUTOMÁTICO CRON',
+                        nota: t.motivoRevision,
+                        estadoAnterior: 'Pendiente',
+                        estadoNuevo: 'Requiere Revisión Administrativa'
+                    });
+                }
+                
+                await t.save();
             }
 
             if (trasladosIds.length > 0) {
-                // Crear Log de Auditoria
-                const userName = turno.user ? (turno.user.name || turno.user.username || String(turno.user)) : 'Usuario Desconocido';
-                
                 const auditLog = new AuditCronLogs({
                     turnoId: turnoId,
                     fechaApertura: turno.open,
@@ -71,10 +106,33 @@ const processPendingTransfersForTurno = async (turno, branchDb, companyDb, subdo
                     valorTotalCOP: valorTotalCOP,
                     estadoOriginal: 'Pendiente',
                     estadoFinal: 'Requiere Revisión Administrativa',
-                    accionCron: 'Cierre Automático Forzado'
+                    accionCron: 'Cierre Automático Forzado',
+                    leido: false,
+                    totalTraslados: trasladosIds.length,
+                    trasladosResueltos: 0
                 });
 
                 await auditLog.save();
+            }
+        } else {
+            // No hay pendientes
+            if (userRole === 'CAJERO') {
+                const auditLog = new AuditCronLogs({
+                    turnoId: turnoId,
+                    fechaApertura: turno.open,
+                    fechaCierreAuto: new Date(),
+                    usuario: userName,
+                    sucursal: sucursalOrigenName || 'Sucursal Desconocida',
+                    trasladosInvolucrados: [],
+                    valorTotalCOP: 0,
+                    estadoOriginal: 'Normal',
+                    estadoFinal: 'Cerrado Limpio',
+                    accionCron: 'Cierre Automático',
+                    leido: true // Marcar como leido para que no dispare alerta
+                });
+
+                await auditLog.save();
+                console.log(`[CRON TURNOS] Turno ${turnoId} de CAJERO cerrado sin incidentes (Cerrado Limpio).`);
             }
         }
     } catch (error) {

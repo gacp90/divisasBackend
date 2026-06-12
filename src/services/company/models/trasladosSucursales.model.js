@@ -73,11 +73,22 @@ const TrasladosSucursalesSchema = Schema({
         default: false
     },
 
+    fechaCierreAutomatico: {
+        type: Date
+    },
+
+    motivoRevision: {
+        type: String
+    },
+
     historialRevision: [{
         fecha: { type: Date, default: Date.now },
         usuario: { type: String },
-        accion: { type: String, enum: ['PAGADO', 'MANTENER_PENDIENTE'] },
-        nota: { type: String }
+        rolUsuario: { type: String },
+        accion: { type: String, enum: ['PAGADO', 'MANTENER_PENDIENTE', 'REQUIERE REVISIÓN', 'CIERRE AUTOMÁTICO CRON'] },
+        nota: { type: String },
+        estadoAnterior: { type: String },
+        estadoNuevo: { type: String }
     }],
 
     status: {

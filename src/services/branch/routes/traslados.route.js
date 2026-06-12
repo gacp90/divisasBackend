@@ -37,7 +37,8 @@ router.post('/', validarJWT, createTraslado);
 /** =====================================================================
  *  PUT
 =========================================================================*/
-router.put('/:id', validarJWT, updateTraslado);
+const { validarRoleResolucion } = require('../../../shared/middlewares/validar-role-admin');
+router.put('/:id', [validarJWT, validarRoleResolucion], updateTraslado);
 
 // EXPORT
 module.exports = router;

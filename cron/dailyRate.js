@@ -54,10 +54,8 @@ const runDailyAverageRate = () => {
                 await Inventory.findByIdAndUpdate(
                   rate.currency,
                   { 
-                    tb: rate.avgRate, 
-                    tbc: rate.currency.tpc || 0, // 📸 FOTOGRAFÍA EXACTA DE LA TASA PROMEDIO ACTUAL (WAC)
+                    ta: rate.currency.tpc || 0, // 📸 TA HEREDA EL PROMEDIO MÓVIL DEL DÍA ANTERIOR
                     anterior: rate.currency.amount
-                    // Nota (Fase 2): Eliminamos la sobreescritura sucia de tpc aquí, ya que ahora tpc es la fuente de verdad matemática
                   }
                 ); 
               }

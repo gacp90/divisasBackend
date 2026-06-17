@@ -4,8 +4,8 @@ const Inventory = require('../models/inventory.model'); // Tu modelo actual
 
 const iniciarCronTRM = () => {
     
-    // Se ejecuta cada 10 minutos
-    cron.schedule('*/10 * * * *', async () => {
+    // Se ejecuta todos los días a las 3:00 AM
+    cron.schedule('0 3 * * *', async () => {
         try {
             const url = 'https://www.datos.gov.co/resource/ceyp-9c7c.json?$order=vigenciadesde DESC&$limit=1';
             const { data } = await axios.get(url);
@@ -35,6 +35,9 @@ const iniciarCronTRM = () => {
         } catch (error) {
             console.error('[CRON] Error consultando la TRM al Banco de la República. Ignorando...');
         }
+    }, {
+        scheduled: true,
+        timezone: "America/Bogota"
     });
 
     console.log('CronJob de TRM programado y vinculado al Inventario USD');

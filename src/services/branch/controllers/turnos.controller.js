@@ -245,8 +245,20 @@ const updateTurno = async(req, res = response) => {
         }
         // SEARCH
 
+        if (!turnoDB.abierto) {
+            return res.status(403).json({
+                ok: false,
+                msg: "Inmutabilidad Hist�rica: No puedes editar un turno que ya ha sido cerrado"
+            });
+        }
+
         // VALIDATE
         const {...campos } = req.body;
+
+        // SANITIZACION DE INMUTABILIDAD FINANCIERA
+        delete campos.saldos;
+        delete campos.totalEntradasCOP;
+        delete campos.totalSalidasCOP;
 
         // UPDATE
         const turnoUpdate = await Turno.findByIdAndUpdate(turid, campos, { new: true, useFindAndModify: false });

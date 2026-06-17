@@ -3,6 +3,7 @@ const { response } = require('express');
 const getMovimientoModel = require('../models/movimientos.model');
 const getUserModel = require('../../company/models/users.model');
 const getTurnoModel = require('../models/turnos.model');
+const getInventoryModel = require('../models/inventory.model');
 
 
 /** ======================================================================
@@ -89,6 +90,7 @@ const createMovimiento = async(req, res = response) => {
         const Movimiento = getMovimientoModel(req.branchDb);
         const User = getUserModel(req.branchDb);
         const Turno = getTurnoModel(req.branchDb);
+        const Inventory = getInventoryModel(req.branchDb);
 
         const uid = req.uid;
         const user = await User.findById(uid)
@@ -130,6 +132,8 @@ const createMovimiento = async(req, res = response) => {
 
         // SI es entrada o salida
         const turno = await Turno.findById(user.turno._id).populate('saldos.moneda');
+        const inventarioCop = await Inventory.findOne({ code: 'COP' });
+        if (!inventarioCop) return res.status(400).json({ ok: false, msg: 'No se encontr� el inventario global de COP' });
         const idxCop = turno.saldos.findIndex(s => s.moneda && s.moneda.code === 'COP');
 
         if (idxCop === -1) {
@@ -141,6 +145,7 @@ const createMovimiento = async(req, res = response) => {
         if (movimiento.type === 'Entrada') {
             turno.saldos[idxCop].saldoActual += movimiento.amount;
             turno.totalEntradasCOP += movimiento.amount;
+            inventarioCop.amount += movimiento.amount;
             
         }else{
             if (turno.saldos[idxCop].saldoActual < movimiento.amount) {
@@ -151,12 +156,14 @@ const createMovimiento = async(req, res = response) => {
             }
             turno.saldos[idxCop].saldoActual -= movimiento.amount; 
             turno.totalSalidasCOP += movimiento.amount;
+            inventarioCop.amount -= movimiento.amount;
         }
 
         //save
         const [movimientoNew, turnoNew] = await Promise.all([
             movimiento.save(),
-            turno.save()
+            turno.save(),
+            inventarioCop.save()
         ])
 
         await turnoNew.populate('saldos.moneda');
@@ -225,6 +232,7 @@ const deleteMovimiento = async(req, res = response) => {
         if (!req.branchDb) return res.status(400).json({ ok: false, msg: 'Falta contexto sucursal' });
         const Movimiento = getMovimientoModel(req.branchDb);
         const Turno = getTurnoModel(req.branchDb);
+        const Inventory = getInventoryModel(req.branchDb);
         
         // Validar movimiento
         const movimiento = await Movimiento.findById(movimientoId);
@@ -247,6 +255,9 @@ const deleteMovimiento = async(req, res = response) => {
             return res.status(400).json({ ok: false, msg: 'Moneda COP no encontrada en el turno' });
         }
 
+        const inventarioCop = await Inventory.findOne({ code: 'COP' });
+        if (!inventarioCop) return res.status(400).json({ ok: false, msg: 'No se encontr� el inventario global de COP' });
+
         const amount = movimiento.amount;
 
         // Tipo de movimiento
@@ -261,17 +272,20 @@ const deleteMovimiento = async(req, res = response) => {
             }
             turno.saldos[idxCop].saldoActual -= amount;
             turno.totalEntradasCOP -= amount;
+            inventarioCop.amount -= amount;
 
         } else if (movimiento.type === 'Salida') {
         
             turno.saldos[idxCop].saldoActual += amount; 
             turno.totalSalidasCOP -= amount;
+            inventarioCop.amount += amount;
         }
 
     
         await Promise.all([
             movimiento.deleteOne(),
-            turno.save()           
+            turno.save(),
+            inventarioCop.save()
         ]);
 
         await turno.populate('saldos.moneda');

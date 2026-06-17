@@ -39,6 +39,20 @@ const runCierreTurnosGlobal = async () => {
               const Turno = getTurnoModel(branchDb);
               const Inventory = getInventoryModel(branchDb);
               const UserBranch = getUserModel(branchDb);
+
+              // ==============================================================
+              // ACTUALIZACIÓN HISTÓRICA DE TA (TASA ANTERIOR)
+              // Independiente de los turnos, debe ejecutarse a las 23:59
+              // ==============================================================
+              const divisasActivas = await Inventory.find({ status: true });
+              for (const divisa of divisasActivas) {
+                  // La TA hereda la TPC final del día para iniciar el nuevo día contable.
+                  const tpcCierre = divisa.tpc || divisa.tc || 0;
+                  divisa.ta = tpcCierre;
+                  await divisa.save();
+              }
+              console.log(`    -> TA actualizada exitosamente para las divisas activas de ${branch.name}.`);
+              // ==============================================================
               
               // 3. Buscar turnos abiertos en esta sucursal
               const turnosAbiertos = await Turno.find({ abierto: true }).populate('user');

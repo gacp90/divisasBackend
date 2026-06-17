@@ -202,6 +202,56 @@ const updateInventory = async (req, res = response) => {
 
         // VALIDATE
         const { currency, ...campos } = req.body;
+
+        // 1. Sanitizaci�n incondicional de TPC
+        delete campos.tpc;
+
+        // 2. Validaci�n Inteligente de Siembras de Efectivo F�sico
+        if (campos.amount !== undefined || campos.disponible !== undefined) {
+            if (inventoryDB.amount !== inventoryDB.disponible) {
+                // Regla A: Hubo movimiento de caja. Se bloquea la siembra manual.
+                delete campos.amount;
+                delete campos.disponible;
+            } else {
+                // Regla B: Validaci�n profunda en base de datos para garantizar inmutabilidad hist�rica
+                const txAsociada = await Transaccion.findOne({ "items.moneda": invid });
+                const trasladoAsociado = await Traslado.findOne({ 
+                    $or: [{ monedaEntregada: invid }, { monedaRecibida: invid }] 
+                });
+
+                if (txAsociada || trasladoAsociado) {
+                    // Regla C: Ya hay historial contable. Se bloquea la siembra manual.
+                    delete campos.amount;
+                    delete campos.disponible;
+                }
+                // Si no entra en los IF, es una Siembra de Saldo Inicial V�lida y permitimos la edici�n.
+            }
+        }
+
+        // 1. Sanitizaci�n incondicional de TPC
+        delete campos.tpc;
+
+        // 2. Validaci�n Inteligente de Siembras de Efectivo F�sico
+        if (campos.amount !== undefined || campos.disponible !== undefined) {
+            if (inventoryDB.amount !== inventoryDB.disponible) {
+                // Regla A: Hubo movimiento de caja. Se bloquea la siembra manual.
+                delete campos.amount;
+                delete campos.disponible;
+            } else {
+                // Regla B: Validaci�n profunda en base de datos para garantizar inmutabilidad hist�rica
+                const txAsociada = await Transaccion.findOne({ "items.moneda": invid });
+                const trasladoAsociado = await Traslado.findOne({ 
+                    $or: [{ monedaEntregada: invid }, { monedaRecibida: invid }] 
+                });
+
+                if (txAsociada || trasladoAsociado) {
+                    // Regla C: Ya hay historial contable. Se bloquea la siembra manual.
+                    delete campos.amount;
+                    delete campos.disponible;
+                }
+                // Si no entra en los IF, es una Siembra de Saldo Inicial V�lida y permitimos la edici�n.
+            }
+        }
         if (currency && inventoryDB.currency !== currency) {
             const validateCurrency = await Inventory.findOne({ currency });
             if (validateCurrency) {

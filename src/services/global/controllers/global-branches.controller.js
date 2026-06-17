@@ -176,13 +176,19 @@ const createGlobalBranch = async (req, res = response) => {
         const InventoryModel = getInventoryModel(branchDb);
         const usdExists = await InventoryModel.findOne({ code: 'USD' });
         if (!usdExists) {
+            // Buscar la TRM global actual para heredarla a esta nueva sucursal
+            const getTrmModel = require('../../company/models/trm.model');
+            const Trm = getTrmModel(companyDb);
+            const latestTrm = await Trm.findOne().sort({ _id: -1 });
+
             const usdInventory = new InventoryModel({
                 code: 'USD',
                 currency: 'Dolar Americano',
                 amount: 0,
                 disponible: 0,
                 anterior: 0,
-                trm: 0
+                trm: latestTrm ? latestTrm.valor : 0,
+                trmUpdate: latestTrm ? new Date() : undefined
             });
             await usdInventory.save();
         }

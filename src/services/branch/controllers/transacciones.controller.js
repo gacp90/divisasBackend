@@ -285,6 +285,21 @@ const createTransaccion = async(req, res = response) => {
                         msg: 'No tienes suficiente saldo de esta divisa en tu gaveta para realizar la venta.'
                     });
                 }
+
+                // --- INICIO CÁLCULO REGULATORIO (BASELIQ) ---
+                const inv = await Inventory.findById(item.moneda);
+                if (inv) {
+                    let pcda = (inv.modoUtilidad === 'PROMEDIO_MOVIL') ? inv.tpc : inv.ta;
+                    let dift = item.tasa - pcda;
+                    if (dift < 0) { dift = 0; }
+                    let baseliq = dift * item.monto;
+
+                    // Esterilización: Sobrescribir payload del frontend, petrificar datos
+                    item.pcda = pcda;
+                    item.dift = dift;
+                    item.baseliq = baseliq;
+                }
+                // --- FIN CÁLCULO REGULATORIO ---
             }
 
             // OBTENER EL CONCECUTIVO DE LA VENTA

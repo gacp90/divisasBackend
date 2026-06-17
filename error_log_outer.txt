@@ -1,4 +1,4 @@
-MissingSchemaError: Schema hasn't been registered for model "turnos".
+MissingSchemaError: Schema hasn't been registered for model "Inventories".
 Use mongoose.model(name, schema)
     at Connection.model (D:\PROYECTO DE SOFTWARE\SIMIDMAS\diviBackend\node_modules\mongoose\lib\connection.js:1218:13)
     at _getModelFromConn (D:\PROYECTO DE SOFTWARE\SIMIDMAS\diviBackend\node_modules\mongoose\lib\helpers\populate\getModelsMapForPopulate.js:569:15)
@@ -9,4 +9,4 @@ Use mongoose.model(name, schema)
     at D:\PROYECTO DE SOFTWARE\SIMIDMAS\diviBackend\node_modules\mongoose\lib\model.js:4448:5
     at new Promise (<anonymous>)
     at Function.populate (D:\PROYECTO DE SOFTWARE\SIMIDMAS\diviBackend\node_modules\mongoose\lib\model.js:4447:10)
-    at D:\PROYECTO DE SOFTWARE\SIMIDMAS\diviBackend\node_modules\mongoose\lib\query.js:2483:11
+    at model.Query._find (D:\PROYECTO DE SOFTWARE\SIMIDMAS\diviBackend\node_modules\mongoose\lib\query.js:2288:20)

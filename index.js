@@ -57,7 +57,7 @@ app.use('/api/v1/turnos', require('./routes/turnos.route'));
 app.use('/api/v1/uploads', require('./routes/uploads.route'));
 app.use('/api/v1/pagos', require('./routes/pagos.route'));
 app.use('/api/v1/consecutivos', require('./routes/consecutivos.route'));
-
+app.use('/api/v1/reportes', require('./routes/reportes.route'));
 
 // SPA
 app.get('*', (req, res) => {

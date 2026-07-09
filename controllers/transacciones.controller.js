@@ -158,16 +158,16 @@ const createTransaccion = async(req, res = response) => {
             // OBTENER EL CONCECUTIVO DE LA COMPRA
             newTransaccion.number = await concecutive('Compra');
 
-            // 1. Calcular dólares físicos transados (si los hay)
+            // 1. Calcular dólares físicos transados (extraídos directamente del payload del frontend)
             let usdMonto = 0;
-            for (const item of newTransaccion.items) {
-                const divisaSaldo = user.turno.saldos.find(s => s.moneda && String(s.moneda._id) === String(item.moneda));
-                if (divisaSaldo && divisaSaldo.moneda.code === 'USD') {
-                    usdMonto += item.monto;
+            const rawItems = req.body.items || [];
+            for (const item of rawItems) {
+                if (item.monedaCode === 'USD') {
+                    usdMonto += Number(item.monto) || 0;
                 }
             }
 
-            // 2. Indicadores de regla de negocio
+            // 2. Indicadores de regla de negocio (evaluación estricta de umbrales)
             const aplicaEquivalenciaAlto = newTransaccion.equivalencia >= 500;
             const aplicaMontoUSDAlto = usdMonto >= 500;
             
@@ -196,16 +196,16 @@ const createTransaccion = async(req, res = response) => {
             // OBTENER EL CONCECUTIVO DE LA VENTA
             newTransaccion.number = await concecutive('Venta');
 
-            // 1. Calcular dólares físicos transados (si los hay)
+            // 1. Calcular dólares físicos transados (extraídos directamente del payload del frontend)
             let usdMonto = 0;
-            for (const item of newTransaccion.items) {
-                const divisaSaldo = user.turno.saldos.find(s => s.moneda && String(s.moneda._id) === String(item.moneda));
-                if (divisaSaldo && divisaSaldo.moneda.code === 'USD') {
-                    usdMonto += item.monto;
+            const rawItems = req.body.items || [];
+            for (const item of rawItems) {
+                if (item.monedaCode === 'USD') {
+                    usdMonto += Number(item.monto) || 0;
                 }
             }
 
-            // 2. Indicadores de regla de negocio
+            // 2. Indicadores de regla de negocio (evaluación estricta de umbrales)
             const aplicaEquivalenciaAlto = newTransaccion.equivalencia >= 500;
             const aplicaMontoUSDAlto = usdMonto >= 500;
             

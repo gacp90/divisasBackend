@@ -158,13 +158,27 @@ const createTransaccion = async(req, res = response) => {
             // OBTENER EL CONCECUTIVO DE LA COMPRA
             newTransaccion.number = await concecutive('Compra');
 
-            // VALIDAR EL MONTO Y OBTENER EL CONCECUTIVO DEPENDIENDO DEL MONTO
-            if (newTransaccion.equivalencia > 200 && newTransaccion.equivalencia < 500) {
-                // Asignar número de control para facturas entre $200 y $500
-                newTransaccion.control = await concecutive('1121');
-            } else if (newTransaccion.equivalencia >= 500) {
-                // Asignar número de control para facturas mayores a $500
+            // 1. Calcular dólares físicos transados (si los hay)
+            let usdMonto = 0;
+            for (const item of newTransaccion.items) {
+                const divisaSaldo = user.turno.saldos.find(s => s.moneda && String(s.moneda._id) === String(item.moneda));
+                if (divisaSaldo && divisaSaldo.moneda.code === 'USD') {
+                    usdMonto += item.monto;
+                }
+            }
+
+            // 2. Indicadores de regla de negocio
+            const aplicaEquivalenciaAlto = newTransaccion.equivalencia >= 500;
+            const aplicaMontoUSDAlto = usdMonto >= 500;
+            
+            const aplicaEquivalenciaMedio = newTransaccion.equivalencia > 200 && newTransaccion.equivalencia < 500;
+            const aplicaMontoUSDMedio = usdMonto > 200 && usdMonto < 500;
+
+            // 3. Evaluar e asignar consecutivo (COMPRA)
+            if (aplicaEquivalenciaAlto || aplicaMontoUSDAlto) {
                 newTransaccion.control = await concecutive('1099');
+            } else if (aplicaEquivalenciaMedio || aplicaMontoUSDMedio) {
+                newTransaccion.control = await concecutive('1121');
             }
         } else if (newTransaccion.transaccion === 'Venta') {
 
@@ -179,16 +193,30 @@ const createTransaccion = async(req, res = response) => {
                 }
             }
 
-            // OBTENER EL CONCECUTIVO DE LA COMPRA
+            // OBTENER EL CONCECUTIVO DE LA VENTA
             newTransaccion.number = await concecutive('Venta');
 
-            // VALIDAR EL MONTO Y OBTENER EL CONCECUTIVO DEPENDIENDO DEL MONTO
-            if (newTransaccion.equivalencia > 200 && newTransaccion.equivalencia < 500) {
-                // Asignar número de control para facturas entre $200 y $500
-                newTransaccion.control = await concecutive('1121');
-            } else if (newTransaccion.equivalencia >= 500) {
-                // Asignar número de control para facturas mayores a $500
+            // 1. Calcular dólares físicos transados (si los hay)
+            let usdMonto = 0;
+            for (const item of newTransaccion.items) {
+                const divisaSaldo = user.turno.saldos.find(s => s.moneda && String(s.moneda._id) === String(item.moneda));
+                if (divisaSaldo && divisaSaldo.moneda.code === 'USD') {
+                    usdMonto += item.monto;
+                }
+            }
+
+            // 2. Indicadores de regla de negocio
+            const aplicaEquivalenciaAlto = newTransaccion.equivalencia >= 500;
+            const aplicaMontoUSDAlto = usdMonto >= 500;
+            
+            const aplicaEquivalenciaMedio = newTransaccion.equivalencia > 200 && newTransaccion.equivalencia < 500;
+            const aplicaMontoUSDMedio = usdMonto > 200 && usdMonto < 500;
+
+            // 3. Evaluar e asignar consecutivo (VENTA)
+            if (aplicaEquivalenciaAlto || aplicaMontoUSDAlto) {
                 newTransaccion.control = await concecutive('1100');
+            } else if (aplicaEquivalenciaMedio || aplicaMontoUSDMedio) {
+                newTransaccion.control = await concecutive('1121');
             }
         }
 

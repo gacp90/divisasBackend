@@ -22,14 +22,13 @@ const getReporteDian = async (req, res = response) => {
         // Mapeo de reglas de negocio específicas de la DIAN según el formato
         if (formato === '1100') {
             opciones.tipoTransaccion = 'Venta';
-            opciones.operadorMonto = { $gte: 500 };
+            opciones.formatoFiscal = '1100';
         } else if (formato === '1099') {
             opciones.tipoTransaccion = 'Compra';
-            opciones.operadorMonto = { $gte: 500 };
+            opciones.formatoFiscal = '1099';
         } else if (formato === '1121') {
-            // El formato 1121 aplica tanto a Compra como a Venta, así que no filtramos tipoTransaccion,
-            // pero el servicio ya garantiza que no pasen Notas de Crédito.
-            opciones.operadorMonto = { $gt: 200, $lt: 500 };
+            // El formato 1121 aplica tanto a Compra como a Venta
+            opciones.formatoFiscal = '1121';
         } else {
             return res.status(400).json({ ok: false, msg: 'Formato DIAN no soportado.' });
         }
@@ -65,7 +64,7 @@ const getReporteUiaf = async (req, res = response) => {
 
         // UIAF requiere todas las operaciones (Compra/Venta) mayores o iguales a 500 USD
         const opciones = {
-            operadorMonto: { $gte: 500 }
+            formatoFiscal: 'UIAF'
         };
 
         const transacciones = await ReportesService.getFiscalData({ fechain, fechaout }, opciones);

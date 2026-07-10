@@ -158,11 +158,12 @@ const createTransaccion = async(req, res = response) => {
             // OBTENER EL CONCECUTIVO DE LA COMPRA
             newTransaccion.number = await concecutive('Compra');
 
-            // 1. Calcular dólares físicos transados (extraídos directamente del payload del frontend)
+            // 1. Calcular dólares físicos transados (extraídos directamente del payload o de la bdd)
             let usdMonto = 0;
             const rawItems = req.body.items || [];
+            const usdInv = await require('../models/inventory.model').findOne({ code: 'USD' });
             for (const item of rawItems) {
-                if (item.monedaCode === 'USD') {
+                if (item.monedaCode === 'USD' || (usdInv && String(item.moneda) === String(usdInv._id))) {
                     usdMonto += Number(item.monto) || 0;
                 }
             }
@@ -196,11 +197,12 @@ const createTransaccion = async(req, res = response) => {
             // OBTENER EL CONCECUTIVO DE LA VENTA
             newTransaccion.number = await concecutive('Venta');
 
-            // 1. Calcular dólares físicos transados (extraídos directamente del payload del frontend)
+            // 1. Calcular dólares físicos transados (extraídos directamente del payload o de la bdd)
             let usdMonto = 0;
             const rawItems = req.body.items || [];
+            const usdInv = await require('../models/inventory.model').findOne({ code: 'USD' });
             for (const item of rawItems) {
-                if (item.monedaCode === 'USD') {
+                if (item.monedaCode === 'USD' || (usdInv && String(item.moneda) === String(usdInv._id))) {
                     usdMonto += Number(item.monto) || 0;
                 }
             }

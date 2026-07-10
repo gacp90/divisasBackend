@@ -31,29 +31,8 @@ class ReportesService {
             query.transaccion = tipoTransaccion;
         }
 
-        if (operadorMonto) {
-            // Obtenemos el ID de la moneda USD para evaluar su monto físico
-            const usdInventory = await Inventories.findOne({ code: 'USD' });
-
-            const eqCondition = { equivalencia: operadorMonto };
-
-            if (usdInventory) {
-                const usdCondition = {
-                    items: {
-                        $elemMatch: {
-                            moneda: usdInventory._id,
-                            monto: operadorMonto
-                        }
-                    }
-                };
-                query.$or = [eqCondition, usdCondition];
-            } else {
-                Object.assign(query, eqCondition);
-            }
-        }
-
         // Consultar ordenado por fecha con datos poblados para poder inyectar campos virtuales
-        const transacciones = await Transaccion.find(query)
+        const transaccionesDB = await Transaccion.find(query)
             .populate({
                 path: 'client',
                 populate: {
@@ -63,6 +42,51 @@ class ReportesService {
             .populate('items.moneda')
             .sort({ fecha: 1 })
             .lean();
+
+        // ------------------------------------------------------------------
+        // FILTRADO FISCAL (Regla de Oro: Métrica Dual)
+        // ------------------------------------------------------------------
+        const usdInventory = await Inventories.findOne({ code: 'USD' });
+        const usdId = usdInventory ? String(usdInventory._id) : null;
+        let transacciones = [];
+
+        for (const tx of transaccionesDB) {
+            let usdMonto = 0;
+            if (usdId && tx.items && Array.isArray(tx.items)) {
+                for (const item of tx.items) {
+                    // Validamos si la moneda del item coincide con USD
+                    let isUsd = false;
+                    if (item.moneda) {
+                        // Si el objeto está populado
+                        if (item.moneda._id && String(item.moneda._id) === usdId) isUsd = true;
+                        if (item.moneda.code === 'USD') isUsd = true;
+                        // Si NO está populado y es solo el ObjectId en string
+                        if (String(item.moneda) === usdId) isUsd = true;
+                    }
+                    
+                    if (isUsd) {
+                        usdMonto += (Number(item.monto) || 0);
+                    }
+                }
+            }
+
+            const maxVal = Math.max(Number(tx.equivalencia) || 0, usdMonto);
+            const formato = opciones.formatoFiscal;
+
+            let cumpleRegla = false;
+
+            if (formato === '1100' || formato === '1099' || formato === 'UIAF') {
+                cumpleRegla = (maxVal >= 500);
+            } else if (formato === '1121') {
+                cumpleRegla = (maxVal > 200 && maxVal < 500);
+            } else {
+                cumpleRegla = true; // Fallback si no hay formato
+            }
+
+            if (cumpleRegla) {
+                transacciones.push(tx);
+            }
+        }
 
         // Obtener la empresa para el fallback de contingencia (UIAF legacy)
         const empresa = await Empresa.findOne();
